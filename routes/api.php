@@ -1,14 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FeatureConversationController;
 use App\Http\Controllers\FeaturesController;
 use App\Http\Controllers\ValidationController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\LeadConversationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
+use App\Models\FeatureConversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['api'])->group(function($router) {
+Route::middleware(['api'])->group(function ($router) {
     Route::post('login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
@@ -45,13 +48,17 @@ Route::middleware(['api'])->group(function($router) {
     Route::get('leads/project/{id}', [LeadController::class, 'showByProjectId'])->name('leads.showByProjectId');
     Route::post('leads', [LeadController::class, 'store'])->name('leads.store');
     Route::get('leads/{slug}', [LeadController::class, 'showByLeadSlug'])->name('leads.showByLeadSlug');
+    //Feature conversation
 
+    Route::post('leads/messages/create', [LeadConversationController::class, 'handleStoreMessage']);
     Route::get('features/lead/{id}', [FeaturesController::class, 'showByLeadId'])->name('features.showByLeadId');
     Route::post('features', [FeaturesController::class, 'store'])->name('features.store');
     Route::put('features/validation/2/{id}', [ValidationController::class, 'updateStepTwo'])->name('features.updateStepTwo');
     Route::put('features/validation/3/{id}', [ValidationController::class, 'updateStepthree'])->name('features.updateStepTwo');
     Route::put('features/validation/4/{id}', [ValidationController::class, 'updateStepfour'])->name('features.updateStepfour');
     Route::put('features/unvalidation/3/{id}', [ValidationController::class, 'downSteptwo'])->name('features.downSteptwo');
+
+
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');
     Route::get('invites/get/{email}', [InviteController::class, 'getInvitations'])->name('invites.get');
