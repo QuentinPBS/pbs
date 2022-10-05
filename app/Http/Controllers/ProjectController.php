@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Project\ShowProjectByCreatorAction;
+use App\Models\User;
+use App\Models\Project;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Actions\Project\ShowProjectById;
+use App\Actions\Project\StoreMemberAction;
+use App\Http\Requests\ProjectStoreRequest;
+use App\Actions\Project\StoreProjectAction;
 use App\Actions\Project\ShowProjectBySlugAction;
 use App\Actions\Project\ShowProjectByUserIdAction;
+use App\Actions\Project\ShowProjectByCreatorAction;
 use App\Actions\Project\StoreAdminProjectMemberAction;
-use App\Actions\Project\StoreMemberAction;
-use App\Actions\Project\StoreProjectAction;
-use App\Http\Requests\ProjectStoreRequest;
-use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -46,16 +49,46 @@ class ProjectController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ProjectStoreRequest $request, StoreProjectAction $storeProjectAction, StoreMemberAction $storeMemberAction, StoreAdminProjectMemberAction $storeAdminProjectMemberAction)
+    public function store(ProjectStoreRequest $request)
     {
-        $project = $storeProjectAction->execute($request, auth()->id());
-        $storeMemberAction->execute(auth()->id(), $project->id, 1);
 
-        $storeAdminProjectMemberAction->execute($project->id);
+        $validatedData = $request->validated();
+
+        $file = $validatedData['image'];
+        $path = null;
+        if ($file) {
+
+            $filePath = time() . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path("storage/projects"), $filePath);
+            $path = "storage/projects" . '/' . $filePath;
+        }
+
+        $newProject = Project::create([
+            'name' => $validatedData['name'],
+            'description' => $validatedData['description'],
+            'image' => $path,
+            'user_id' => auth()->id(),
+        ]);
+
+        // why saving static data..
+        $members = [
+            [
+                'user_id' => User::first()?->id,
+                'role_id' => 1
+            ], [
+
+                'user_id' => auth()->id(),
+                'role_id' => 2
+            ]
+        ];
+
+        $newProject->members()->sync($members);
+
 
         $response = [
             'message' => 'Project created successfully',
-            'project' => $project
+            'project' => $newProject
         ];
 
         return response()->json($response, 201);

@@ -30,6 +30,39 @@ function isFunction(val) {
 function isProxy(value) {
   return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReactive)(value) || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReadonly)(value);
 }
+function get(obj, stringPath, def) {
+  // Cache the current object
+  let current = obj;
+  const path = stringPath.split('.'); // For each item in the path, dig into the object
+
+  for (let i = 0; i < path.length; i++) {
+    // If the item isn't found, return the default (or null)
+    if (!current[path[i]]) return def; // Otherwise, update the current  value
+
+    current = current[path[i]];
+  }
+
+  return current;
+}
+function gatherBooleanGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.some(path => {
+      return get(nestedResults, path, {
+        [property]: false
+      })[property];
+    });
+  });
+}
+function gatherArrayGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.reduce((all, path) => {
+      const fetchedProperty = get(nestedResults, path, {
+        [property]: false
+      })[property] || [];
+      return all.concat(fetchedProperty);
+    }, []);
+  });
+}
 
 /**
  * Response form a raw Validator function.
@@ -250,6 +283,7 @@ function sortValidations() {
   const rules = {};
   const nestedValidators = {};
   const config = {};
+  let validationGroups = null;
   validationKeys.forEach(key => {
     const v = validations[key];
 
@@ -266,6 +300,10 @@ function sortValidations() {
           $validator: v
         };
         break;
+
+      case key === '$validationGroups':
+        validationGroups = v;
+        break;
       // Catch $-prefixed properties as config
 
       case key.startsWith('$'):
@@ -281,7 +319,8 @@ function sortValidations() {
   return {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   };
 }
 
@@ -710,7 +749,8 @@ function setValidations(_ref) {
   const {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   } = sortValidations(validations);
   const mergedConfig = Object.assign({}, globalConfig, config); // create protected state for cases when the state branch does not exist yet.
   // This protects when using the OptionsAPI as the data is bound after the setup method
@@ -730,8 +770,23 @@ function setValidations(_ref) {
   const results = createValidationResults(rules, nestedState, key, resultsCache, path, mergedConfig, instance, nestedExternalResults, state); // Use nested keys to repeat the process
   // *WARN*: This is recursive
 
-  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults); // Collect and merge this level validation results
+  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults);
+  const $validationGroups = {};
+
+  if (validationGroups) {
+    Object.entries(validationGroups).forEach(_ref2 => {
+      let [key, group] = _ref2;
+      $validationGroups[key] = {
+        $invalid: gatherBooleanGroupProperties(group, nestedResults, '$invalid'),
+        $error: gatherBooleanGroupProperties(group, nestedResults, '$error'),
+        $pending: gatherBooleanGroupProperties(group, nestedResults, '$pending'),
+        $errors: gatherArrayGroupProperties(group, nestedResults, '$errors'),
+        $silentErrors: gatherArrayGroupProperties(group, nestedResults, '$silentErrors')
+      };
+    });
+  } // Collect and merge this level validation results
   // with all nested validation results
+
 
   const {
     $dirty,
@@ -821,7 +876,8 @@ function setValidations(_ref) {
     $commit
   }, childResults && {
     $getResultsForChild,
-    $clearExternalResults
+    $clearExternalResults,
+    $validationGroups
   }, nestedResults));
 }
 
@@ -1002,7 +1058,10 @@ function ComputedProxyFactory(target) {
  * @return {ComputedRef<*>}
  */
 
+let uid = 0;
 function useVuelidate(validations, state) {
+  var _getCurrentInstance;
+
   let globalConfig = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   // if we pass only one argument, its most probably the globalConfig.
@@ -1020,14 +1079,11 @@ function useVuelidate(validations, state) {
     $externalResults,
     currentVueInstance
   } = globalConfig;
-  const instance = currentVueInstance || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)();
-  const componentOptions = instance ? instance.proxy.$options : {}; // if there is no registration name, add one.
+  const instance = currentVueInstance || ((_getCurrentInstance = (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)()) === null || _getCurrentInstance === void 0 ? void 0 : _getCurrentInstance.proxy);
+  const componentOptions = instance ? instance.$options : {}; // if there is no registration name, add one.
 
-  if (!$registerAs && instance) {
-    // NOTE:
-    // ._uid // Vue 2.x Composition-API plugin
-    // .uid // Vue 3.0
-    const uid = instance.uid || instance._uid;
+  if (!$registerAs) {
+    uid += 1;
     $registerAs = `_vuelidate_${uid}`;
   }
 
@@ -1050,7 +1106,7 @@ function useVuelidate(validations, state) {
     (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.onBeforeMount)(() => {
       // Delay binding state to validations defined with the Options API until mounting, when the data
       // has been attached to the component instance. From that point on it will be reactive.
-      state.value = instance.proxy;
+      state.value = instance;
       (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.watch)(() => isFunction(rules) ? rules.call(state.value, new ComputedProxyFactory(state.value)) : rules, validations => {
         validationResults.value = setValidations({
           validations,
@@ -1058,8 +1114,8 @@ function useVuelidate(validations, state) {
           childResults,
           resultsCache,
           globalConfig,
-          instance: instance.proxy,
-          externalResults: $externalResults || instance.proxy.vuelidateExternalResults
+          instance,
+          externalResults: $externalResults || instance.vuelidateExternalResults
         });
       }, {
         immediate: true
@@ -1076,7 +1132,7 @@ function useVuelidate(validations, state) {
         childResults,
         resultsCache,
         globalConfig,
-        instance: instance ? instance.proxy : {},
+        instance: instance !== null && instance !== void 0 ? instance : {},
         externalResults: $externalResults
       });
     }, {
@@ -1249,7 +1305,7 @@ function forEach(validators) {
       }
 
       // go over the collection. It can be a ref as well.
-      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem) => {
+      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem, index) => {
         // go over each property
         const collectionEntryResult = Object.entries(collectionItem).reduce((all, _ref) => {
           let [property, $model] = _ref;
@@ -1261,7 +1317,7 @@ function forEach(validators) {
             // extract the validator. Supports simple and extended validators.
             const validatorFunction = unwrapNormalizedValidator(currentValidator); // Call the validator, passing the VM as this, the value, current iterated object and the rest.
 
-            const $response = validatorFunction.call(this, $model, collectionItem, ...others); // extract the valid from the result
+            const $response = validatorFunction.call(this, $model, collectionItem, index, ...others); // extract the valid from the result
 
             const $valid = unwrapValidatorResponse($response); // store the entire response for later
 
@@ -2650,7 +2706,7 @@ var APISettings = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }),
-  baseURL: "".concat("http://paybystep2.test", "/api")
+  baseURL: "".concat("http://localhost:8000", "/api")
 };
 
 /***/ }),
@@ -2720,7 +2776,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Register_vue_vue_type_template_id_b7e42868__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Register.vue?vue&type=template&id=b7e42868 */ "./resources/js/Pages/Register.vue?vue&type=template&id=b7e42868");
 /* harmony import */ var _Register_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Register.vue?vue&type=script&lang=js */ "./resources/js/Pages/Register.vue?vue&type=script&lang=js");
 /* harmony import */ var _Register_vue_vue_type_style_index_0_id_b7e42868_lang_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Register.vue?vue&type=style&index=0&id=b7e42868&lang=scss */ "./resources/js/Pages/Register.vue?vue&type=style&index=0&id=b7e42868&lang=scss");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -2728,7 +2784,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Register_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Register_vue_vue_type_template_id_b7e42868__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Register.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Register_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Register_vue_vue_type_template_id_b7e42868__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Register.vue"]])
 /* hot reload */
 if (false) {}
 

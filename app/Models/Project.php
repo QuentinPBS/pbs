@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Spatie\Sluggable\SlugOptions;
+use App\Models\User;
 use Spatie\Sluggable\HasSlug;
+use Spatie\Sluggable\SlugOptions;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Project extends Model
 {
@@ -43,7 +44,7 @@ class Project extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
@@ -55,6 +56,9 @@ class Project extends Model
     {
         return $this->hasMany(Invitations::class);
     }
-
-
+    /* Get members for the project. */
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'members');
+    }
 }

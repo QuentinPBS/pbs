@@ -30,6 +30,39 @@ function isFunction(val) {
 function isProxy(value) {
   return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReactive)(value) || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReadonly)(value);
 }
+function get(obj, stringPath, def) {
+  // Cache the current object
+  let current = obj;
+  const path = stringPath.split('.'); // For each item in the path, dig into the object
+
+  for (let i = 0; i < path.length; i++) {
+    // If the item isn't found, return the default (or null)
+    if (!current[path[i]]) return def; // Otherwise, update the current  value
+
+    current = current[path[i]];
+  }
+
+  return current;
+}
+function gatherBooleanGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.some(path => {
+      return get(nestedResults, path, {
+        [property]: false
+      })[property];
+    });
+  });
+}
+function gatherArrayGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.reduce((all, path) => {
+      const fetchedProperty = get(nestedResults, path, {
+        [property]: false
+      })[property] || [];
+      return all.concat(fetchedProperty);
+    }, []);
+  });
+}
 
 /**
  * Response form a raw Validator function.
@@ -250,6 +283,7 @@ function sortValidations() {
   const rules = {};
   const nestedValidators = {};
   const config = {};
+  let validationGroups = null;
   validationKeys.forEach(key => {
     const v = validations[key];
 
@@ -266,6 +300,10 @@ function sortValidations() {
           $validator: v
         };
         break;
+
+      case key === '$validationGroups':
+        validationGroups = v;
+        break;
       // Catch $-prefixed properties as config
 
       case key.startsWith('$'):
@@ -281,7 +319,8 @@ function sortValidations() {
   return {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   };
 }
 
@@ -710,7 +749,8 @@ function setValidations(_ref) {
   const {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   } = sortValidations(validations);
   const mergedConfig = Object.assign({}, globalConfig, config); // create protected state for cases when the state branch does not exist yet.
   // This protects when using the OptionsAPI as the data is bound after the setup method
@@ -730,8 +770,23 @@ function setValidations(_ref) {
   const results = createValidationResults(rules, nestedState, key, resultsCache, path, mergedConfig, instance, nestedExternalResults, state); // Use nested keys to repeat the process
   // *WARN*: This is recursive
 
-  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults); // Collect and merge this level validation results
+  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults);
+  const $validationGroups = {};
+
+  if (validationGroups) {
+    Object.entries(validationGroups).forEach(_ref2 => {
+      let [key, group] = _ref2;
+      $validationGroups[key] = {
+        $invalid: gatherBooleanGroupProperties(group, nestedResults, '$invalid'),
+        $error: gatherBooleanGroupProperties(group, nestedResults, '$error'),
+        $pending: gatherBooleanGroupProperties(group, nestedResults, '$pending'),
+        $errors: gatherArrayGroupProperties(group, nestedResults, '$errors'),
+        $silentErrors: gatherArrayGroupProperties(group, nestedResults, '$silentErrors')
+      };
+    });
+  } // Collect and merge this level validation results
   // with all nested validation results
+
 
   const {
     $dirty,
@@ -821,7 +876,8 @@ function setValidations(_ref) {
     $commit
   }, childResults && {
     $getResultsForChild,
-    $clearExternalResults
+    $clearExternalResults,
+    $validationGroups
   }, nestedResults));
 }
 
@@ -1002,7 +1058,10 @@ function ComputedProxyFactory(target) {
  * @return {ComputedRef<*>}
  */
 
+let uid = 0;
 function useVuelidate(validations, state) {
+  var _getCurrentInstance;
+
   let globalConfig = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   // if we pass only one argument, its most probably the globalConfig.
@@ -1020,14 +1079,11 @@ function useVuelidate(validations, state) {
     $externalResults,
     currentVueInstance
   } = globalConfig;
-  const instance = currentVueInstance || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)();
-  const componentOptions = instance ? instance.proxy.$options : {}; // if there is no registration name, add one.
+  const instance = currentVueInstance || ((_getCurrentInstance = (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)()) === null || _getCurrentInstance === void 0 ? void 0 : _getCurrentInstance.proxy);
+  const componentOptions = instance ? instance.$options : {}; // if there is no registration name, add one.
 
-  if (!$registerAs && instance) {
-    // NOTE:
-    // ._uid // Vue 2.x Composition-API plugin
-    // .uid // Vue 3.0
-    const uid = instance.uid || instance._uid;
+  if (!$registerAs) {
+    uid += 1;
     $registerAs = `_vuelidate_${uid}`;
   }
 
@@ -1050,7 +1106,7 @@ function useVuelidate(validations, state) {
     (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.onBeforeMount)(() => {
       // Delay binding state to validations defined with the Options API until mounting, when the data
       // has been attached to the component instance. From that point on it will be reactive.
-      state.value = instance.proxy;
+      state.value = instance;
       (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.watch)(() => isFunction(rules) ? rules.call(state.value, new ComputedProxyFactory(state.value)) : rules, validations => {
         validationResults.value = setValidations({
           validations,
@@ -1058,8 +1114,8 @@ function useVuelidate(validations, state) {
           childResults,
           resultsCache,
           globalConfig,
-          instance: instance.proxy,
-          externalResults: $externalResults || instance.proxy.vuelidateExternalResults
+          instance,
+          externalResults: $externalResults || instance.vuelidateExternalResults
         });
       }, {
         immediate: true
@@ -1076,7 +1132,7 @@ function useVuelidate(validations, state) {
         childResults,
         resultsCache,
         globalConfig,
-        instance: instance ? instance.proxy : {},
+        instance: instance !== null && instance !== void 0 ? instance : {},
         externalResults: $externalResults
       });
     }, {
@@ -1250,7 +1306,7 @@ function forEach(validators) {
       }
 
       // go over the collection. It can be a ref as well.
-      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem) => {
+      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem, index) => {
         // go over each property
         const collectionEntryResult = Object.entries(collectionItem).reduce((all, _ref) => {
           let [property, $model] = _ref;
@@ -1262,7 +1318,7 @@ function forEach(validators) {
             // extract the validator. Supports simple and extended validators.
             const validatorFunction = unwrapNormalizedValidator(currentValidator); // Call the validator, passing the VM as this, the value, current iterated object and the rest.
 
-            const $response = validatorFunction.call(this, $model, collectionItem, ...others); // extract the valid from the result
+            const $response = validatorFunction.call(this, $model, collectionItem, index, ...others); // extract the valid from the result
 
             const $valid = unwrapValidatorResponse($response); // store the entire response for later
 
@@ -2175,11 +2231,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var quill__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! quill */ "./node_modules/quill/dist/quill.js");
 /* harmony import */ var quill__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(quill__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! quill-delta */ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Delta.js");
+/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! quill-delta */ "./node_modules/quill-delta/dist/Delta.js");
 /* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(quill_delta__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm-bundler.js");
 /*!
- * VueQuill @vueup/vue-quill v1.0.0-beta.9
+ * VueQuill @vueup/vue-quill v1.0.0-beta.10
  * https://vueup.github.io/vue-quill/
  * 
  * Includes quill v1.3.7
@@ -2187,7 +2243,7 @@ __webpack_require__.r(__webpack_exports__);
  * 
  * Copyright (c) 2022 Ahmad Luthfi Masruri
  * Released under the MIT license
- * Date: 2022-07-15T12:19:26.189Z
+ * Date: 2022-09-03T02:53:33.894Z
  */
 
 
@@ -2520,1461 +2576,6 @@ const QuillEditor = (0,vue__WEBPACK_IMPORTED_MODULE_2__.defineComponent)({
 
 /***/ }),
 
-/***/ "./node_modules/@vueup/vue-quill/node_modules/fast-diff/diff.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/@vueup/vue-quill/node_modules/fast-diff/diff.js ***!
-  \**********************************************************************/
-/***/ ((module) => {
-
-/**
- * This library modifies the diff-patch-match library by Neil Fraser
- * by removing the patch and match functionality and certain advanced
- * options in the diff function. The original license is as follows:
- *
- * ===
- *
- * Diff Match and Patch
- *
- * Copyright 2006 Google Inc.
- * http://code.google.com/p/google-diff-match-patch/
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-/**
- * The data structure representing a diff is an array of tuples:
- * [[DIFF_DELETE, 'Hello'], [DIFF_INSERT, 'Goodbye'], [DIFF_EQUAL, ' world.']]
- * which means: delete 'Hello', add 'Goodbye' and keep ' world.'
- */
-var DIFF_DELETE = -1;
-var DIFF_INSERT = 1;
-var DIFF_EQUAL = 0;
-
-
-/**
- * Find the differences between two texts.  Simplifies the problem by stripping
- * any common prefix or suffix off the texts before diffing.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @param {Int|Object} [cursor_pos] Edit position in text1 or object with more info
- * @return {Array} Array of diff tuples.
- */
-function diff_main(text1, text2, cursor_pos, _fix_unicode) {
-  // Check for equality
-  if (text1 === text2) {
-    if (text1) {
-      return [[DIFF_EQUAL, text1]];
-    }
-    return [];
-  }
-
-  if (cursor_pos != null) {
-    var editdiff = find_cursor_edit_diff(text1, text2, cursor_pos);
-    if (editdiff) {
-      return editdiff;
-    }
-  }
-
-  // Trim off common prefix (speedup).
-  var commonlength = diff_commonPrefix(text1, text2);
-  var commonprefix = text1.substring(0, commonlength);
-  text1 = text1.substring(commonlength);
-  text2 = text2.substring(commonlength);
-
-  // Trim off common suffix (speedup).
-  commonlength = diff_commonSuffix(text1, text2);
-  var commonsuffix = text1.substring(text1.length - commonlength);
-  text1 = text1.substring(0, text1.length - commonlength);
-  text2 = text2.substring(0, text2.length - commonlength);
-
-  // Compute the diff on the middle block.
-  var diffs = diff_compute_(text1, text2);
-
-  // Restore the prefix and suffix.
-  if (commonprefix) {
-    diffs.unshift([DIFF_EQUAL, commonprefix]);
-  }
-  if (commonsuffix) {
-    diffs.push([DIFF_EQUAL, commonsuffix]);
-  }
-  diff_cleanupMerge(diffs, _fix_unicode);
-  return diffs;
-};
-
-
-/**
- * Find the differences between two texts.  Assumes that the texts do not
- * have any common prefix or suffix.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @return {Array} Array of diff tuples.
- */
-function diff_compute_(text1, text2) {
-  var diffs;
-
-  if (!text1) {
-    // Just add some text (speedup).
-    return [[DIFF_INSERT, text2]];
-  }
-
-  if (!text2) {
-    // Just delete some text (speedup).
-    return [[DIFF_DELETE, text1]];
-  }
-
-  var longtext = text1.length > text2.length ? text1 : text2;
-  var shorttext = text1.length > text2.length ? text2 : text1;
-  var i = longtext.indexOf(shorttext);
-  if (i !== -1) {
-    // Shorter text is inside the longer text (speedup).
-    diffs = [
-      [DIFF_INSERT, longtext.substring(0, i)],
-      [DIFF_EQUAL, shorttext],
-      [DIFF_INSERT, longtext.substring(i + shorttext.length)]
-    ];
-    // Swap insertions for deletions if diff is reversed.
-    if (text1.length > text2.length) {
-      diffs[0][0] = diffs[2][0] = DIFF_DELETE;
-    }
-    return diffs;
-  }
-
-  if (shorttext.length === 1) {
-    // Single character string.
-    // After the previous speedup, the character can't be an equality.
-    return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
-  }
-
-  // Check to see if the problem can be split in two.
-  var hm = diff_halfMatch_(text1, text2);
-  if (hm) {
-    // A half-match was found, sort out the return data.
-    var text1_a = hm[0];
-    var text1_b = hm[1];
-    var text2_a = hm[2];
-    var text2_b = hm[3];
-    var mid_common = hm[4];
-    // Send both pairs off for separate processing.
-    var diffs_a = diff_main(text1_a, text2_a);
-    var diffs_b = diff_main(text1_b, text2_b);
-    // Merge the results.
-    return diffs_a.concat([[DIFF_EQUAL, mid_common]], diffs_b);
-  }
-
-  return diff_bisect_(text1, text2);
-};
-
-
-/**
- * Find the 'middle snake' of a diff, split the problem in two
- * and return the recursively constructed diff.
- * See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @return {Array} Array of diff tuples.
- * @private
- */
-function diff_bisect_(text1, text2) {
-  // Cache the text lengths to prevent multiple calls.
-  var text1_length = text1.length;
-  var text2_length = text2.length;
-  var max_d = Math.ceil((text1_length + text2_length) / 2);
-  var v_offset = max_d;
-  var v_length = 2 * max_d;
-  var v1 = new Array(v_length);
-  var v2 = new Array(v_length);
-  // Setting all elements to -1 is faster in Chrome & Firefox than mixing
-  // integers and undefined.
-  for (var x = 0; x < v_length; x++) {
-    v1[x] = -1;
-    v2[x] = -1;
-  }
-  v1[v_offset + 1] = 0;
-  v2[v_offset + 1] = 0;
-  var delta = text1_length - text2_length;
-  // If the total number of characters is odd, then the front path will collide
-  // with the reverse path.
-  var front = (delta % 2 !== 0);
-  // Offsets for start and end of k loop.
-  // Prevents mapping of space beyond the grid.
-  var k1start = 0;
-  var k1end = 0;
-  var k2start = 0;
-  var k2end = 0;
-  for (var d = 0; d < max_d; d++) {
-    // Walk the front path one step.
-    for (var k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
-      var k1_offset = v_offset + k1;
-      var x1;
-      if (k1 === -d || (k1 !== d && v1[k1_offset - 1] < v1[k1_offset + 1])) {
-        x1 = v1[k1_offset + 1];
-      } else {
-        x1 = v1[k1_offset - 1] + 1;
-      }
-      var y1 = x1 - k1;
-      while (
-        x1 < text1_length && y1 < text2_length &&
-        text1.charAt(x1) === text2.charAt(y1)
-      ) {
-        x1++;
-        y1++;
-      }
-      v1[k1_offset] = x1;
-      if (x1 > text1_length) {
-        // Ran off the right of the graph.
-        k1end += 2;
-      } else if (y1 > text2_length) {
-        // Ran off the bottom of the graph.
-        k1start += 2;
-      } else if (front) {
-        var k2_offset = v_offset + delta - k1;
-        if (k2_offset >= 0 && k2_offset < v_length && v2[k2_offset] !== -1) {
-          // Mirror x2 onto top-left coordinate system.
-          var x2 = text1_length - v2[k2_offset];
-          if (x1 >= x2) {
-            // Overlap detected.
-            return diff_bisectSplit_(text1, text2, x1, y1);
-          }
-        }
-      }
-    }
-
-    // Walk the reverse path one step.
-    for (var k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
-      var k2_offset = v_offset + k2;
-      var x2;
-      if (k2 === -d || (k2 !== d && v2[k2_offset - 1] < v2[k2_offset + 1])) {
-        x2 = v2[k2_offset + 1];
-      } else {
-        x2 = v2[k2_offset - 1] + 1;
-      }
-      var y2 = x2 - k2;
-      while (
-        x2 < text1_length && y2 < text2_length &&
-        text1.charAt(text1_length - x2 - 1) === text2.charAt(text2_length - y2 - 1)
-      ) {
-        x2++;
-        y2++;
-      }
-      v2[k2_offset] = x2;
-      if (x2 > text1_length) {
-        // Ran off the left of the graph.
-        k2end += 2;
-      } else if (y2 > text2_length) {
-        // Ran off the top of the graph.
-        k2start += 2;
-      } else if (!front) {
-        var k1_offset = v_offset + delta - k2;
-        if (k1_offset >= 0 && k1_offset < v_length && v1[k1_offset] !== -1) {
-          var x1 = v1[k1_offset];
-          var y1 = v_offset + x1 - k1_offset;
-          // Mirror x2 onto top-left coordinate system.
-          x2 = text1_length - x2;
-          if (x1 >= x2) {
-            // Overlap detected.
-            return diff_bisectSplit_(text1, text2, x1, y1);
-          }
-        }
-      }
-    }
-  }
-  // Diff took too long and hit the deadline or
-  // number of diffs equals number of characters, no commonality at all.
-  return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
-};
-
-
-/**
- * Given the location of the 'middle snake', split the diff in two parts
- * and recurse.
- * @param {string} text1 Old string to be diffed.
- * @param {string} text2 New string to be diffed.
- * @param {number} x Index of split point in text1.
- * @param {number} y Index of split point in text2.
- * @return {Array} Array of diff tuples.
- */
-function diff_bisectSplit_(text1, text2, x, y) {
-  var text1a = text1.substring(0, x);
-  var text2a = text2.substring(0, y);
-  var text1b = text1.substring(x);
-  var text2b = text2.substring(y);
-
-  // Compute both diffs serially.
-  var diffs = diff_main(text1a, text2a);
-  var diffsb = diff_main(text1b, text2b);
-
-  return diffs.concat(diffsb);
-};
-
-
-/**
- * Determine the common prefix of two strings.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {number} The number of characters common to the start of each
- *     string.
- */
-function diff_commonPrefix(text1, text2) {
-  // Quick check for common null cases.
-  if (!text1 || !text2 || text1.charAt(0) !== text2.charAt(0)) {
-    return 0;
-  }
-  // Binary search.
-  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
-  var pointermin = 0;
-  var pointermax = Math.min(text1.length, text2.length);
-  var pointermid = pointermax;
-  var pointerstart = 0;
-  while (pointermin < pointermid) {
-    if (
-      text1.substring(pointerstart, pointermid) ==
-      text2.substring(pointerstart, pointermid)
-    ) {
-      pointermin = pointermid;
-      pointerstart = pointermin;
-    } else {
-      pointermax = pointermid;
-    }
-    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
-  }
-
-  if (is_surrogate_pair_start(text1.charCodeAt(pointermid - 1))) {
-    pointermid--;
-  }
-
-  return pointermid;
-};
-
-
-/**
- * Determine the common suffix of two strings.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {number} The number of characters common to the end of each string.
- */
-function diff_commonSuffix(text1, text2) {
-  // Quick check for common null cases.
-  if (!text1 || !text2 || text1.slice(-1) !== text2.slice(-1)) {
-    return 0;
-  }
-  // Binary search.
-  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
-  var pointermin = 0;
-  var pointermax = Math.min(text1.length, text2.length);
-  var pointermid = pointermax;
-  var pointerend = 0;
-  while (pointermin < pointermid) {
-    if (
-      text1.substring(text1.length - pointermid, text1.length - pointerend) ==
-      text2.substring(text2.length - pointermid, text2.length - pointerend)
-    ) {
-      pointermin = pointermid;
-      pointerend = pointermin;
-    } else {
-      pointermax = pointermid;
-    }
-    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
-  }
-
-  if (is_surrogate_pair_end(text1.charCodeAt(text1.length - pointermid))) {
-    pointermid--;
-  }
-
-  return pointermid;
-};
-
-
-/**
- * Do the two texts share a substring which is at least half the length of the
- * longer text?
- * This speedup can produce non-minimal diffs.
- * @param {string} text1 First string.
- * @param {string} text2 Second string.
- * @return {Array.<string>} Five element Array, containing the prefix of
- *     text1, the suffix of text1, the prefix of text2, the suffix of
- *     text2 and the common middle.  Or null if there was no match.
- */
-function diff_halfMatch_(text1, text2) {
-  var longtext = text1.length > text2.length ? text1 : text2;
-  var shorttext = text1.length > text2.length ? text2 : text1;
-  if (longtext.length < 4 || shorttext.length * 2 < longtext.length) {
-    return null;  // Pointless.
-  }
-
-  /**
-   * Does a substring of shorttext exist within longtext such that the substring
-   * is at least half the length of longtext?
-   * Closure, but does not reference any external variables.
-   * @param {string} longtext Longer string.
-   * @param {string} shorttext Shorter string.
-   * @param {number} i Start index of quarter length substring within longtext.
-   * @return {Array.<string>} Five element Array, containing the prefix of
-   *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
-   *     of shorttext and the common middle.  Or null if there was no match.
-   * @private
-   */
-  function diff_halfMatchI_(longtext, shorttext, i) {
-    // Start with a 1/4 length substring at position i as a seed.
-    var seed = longtext.substring(i, i + Math.floor(longtext.length / 4));
-    var j = -1;
-    var best_common = '';
-    var best_longtext_a, best_longtext_b, best_shorttext_a, best_shorttext_b;
-    while ((j = shorttext.indexOf(seed, j + 1)) !== -1) {
-      var prefixLength = diff_commonPrefix(
-        longtext.substring(i), shorttext.substring(j));
-      var suffixLength = diff_commonSuffix(
-        longtext.substring(0, i), shorttext.substring(0, j));
-      if (best_common.length < suffixLength + prefixLength) {
-        best_common = shorttext.substring(
-          j - suffixLength, j) + shorttext.substring(j, j + prefixLength);
-        best_longtext_a = longtext.substring(0, i - suffixLength);
-        best_longtext_b = longtext.substring(i + prefixLength);
-        best_shorttext_a = shorttext.substring(0, j - suffixLength);
-        best_shorttext_b = shorttext.substring(j + prefixLength);
-      }
-    }
-    if (best_common.length * 2 >= longtext.length) {
-      return [
-        best_longtext_a, best_longtext_b,
-        best_shorttext_a, best_shorttext_b, best_common
-      ];
-    } else {
-      return null;
-    }
-  }
-
-  // First check if the second quarter is the seed for a half-match.
-  var hm1 = diff_halfMatchI_(longtext, shorttext, Math.ceil(longtext.length / 4));
-  // Check again based on the third quarter.
-  var hm2 = diff_halfMatchI_(longtext, shorttext, Math.ceil(longtext.length / 2));
-  var hm;
-  if (!hm1 && !hm2) {
-    return null;
-  } else if (!hm2) {
-    hm = hm1;
-  } else if (!hm1) {
-    hm = hm2;
-  } else {
-    // Both matched.  Select the longest.
-    hm = hm1[4].length > hm2[4].length ? hm1 : hm2;
-  }
-
-  // A half-match was found, sort out the return data.
-  var text1_a, text1_b, text2_a, text2_b;
-  if (text1.length > text2.length) {
-    text1_a = hm[0];
-    text1_b = hm[1];
-    text2_a = hm[2];
-    text2_b = hm[3];
-  } else {
-    text2_a = hm[0];
-    text2_b = hm[1];
-    text1_a = hm[2];
-    text1_b = hm[3];
-  }
-  var mid_common = hm[4];
-  return [text1_a, text1_b, text2_a, text2_b, mid_common];
-};
-
-
-/**
- * Reorder and merge like edit sections.  Merge equalities.
- * Any edit section can move as long as it doesn't cross an equality.
- * @param {Array} diffs Array of diff tuples.
- * @param {boolean} fix_unicode Whether to normalize to a unicode-correct diff
- */
-function diff_cleanupMerge(diffs, fix_unicode) {
-  diffs.push([DIFF_EQUAL, '']);  // Add a dummy entry at the end.
-  var pointer = 0;
-  var count_delete = 0;
-  var count_insert = 0;
-  var text_delete = '';
-  var text_insert = '';
-  var commonlength;
-  while (pointer < diffs.length) {
-    if (pointer < diffs.length - 1 && !diffs[pointer][1]) {
-      diffs.splice(pointer, 1);
-      continue;
-    }
-    switch (diffs[pointer][0]) {
-      case DIFF_INSERT:
-
-        count_insert++;
-        text_insert += diffs[pointer][1];
-        pointer++;
-        break;
-      case DIFF_DELETE:
-        count_delete++;
-        text_delete += diffs[pointer][1];
-        pointer++;
-        break;
-      case DIFF_EQUAL:
-        var previous_equality = pointer - count_insert - count_delete - 1;
-        if (fix_unicode) {
-          // prevent splitting of unicode surrogate pairs.  when fix_unicode is true,
-          // we assume that the old and new text in the diff are complete and correct
-          // unicode-encoded JS strings, but the tuple boundaries may fall between
-          // surrogate pairs.  we fix this by shaving off stray surrogates from the end
-          // of the previous equality and the beginning of this equality.  this may create
-          // empty equalities or a common prefix or suffix.  for example, if AB and AC are
-          // emojis, `[[0, 'A'], [-1, 'BA'], [0, 'C']]` would turn into deleting 'ABAC' and
-          // inserting 'AC', and then the common suffix 'AC' will be eliminated.  in this
-          // particular case, both equalities go away, we absorb any previous inequalities,
-          // and we keep scanning for the next equality before rewriting the tuples.
-          if (previous_equality >= 0 && ends_with_pair_start(diffs[previous_equality][1])) {
-            var stray = diffs[previous_equality][1].slice(-1);
-            diffs[previous_equality][1] = diffs[previous_equality][1].slice(0, -1);
-            text_delete = stray + text_delete;
-            text_insert = stray + text_insert;
-            if (!diffs[previous_equality][1]) {
-              // emptied out previous equality, so delete it and include previous delete/insert
-              diffs.splice(previous_equality, 1);
-              pointer--;
-              var k = previous_equality - 1;
-              if (diffs[k] && diffs[k][0] === DIFF_INSERT) {
-                count_insert++;
-                text_insert = diffs[k][1] + text_insert;
-                k--;
-              }
-              if (diffs[k] && diffs[k][0] === DIFF_DELETE) {
-                count_delete++;
-                text_delete = diffs[k][1] + text_delete;
-                k--;
-              }
-              previous_equality = k;
-            }
-          }
-          if (starts_with_pair_end(diffs[pointer][1])) {
-            var stray = diffs[pointer][1].charAt(0);
-            diffs[pointer][1] = diffs[pointer][1].slice(1);
-            text_delete += stray;
-            text_insert += stray;
-          }
-        }
-        if (pointer < diffs.length - 1 && !diffs[pointer][1]) {
-          // for empty equality not at end, wait for next equality
-          diffs.splice(pointer, 1);
-          break;
-        }
-        if (text_delete.length > 0 || text_insert.length > 0) {
-          // note that diff_commonPrefix and diff_commonSuffix are unicode-aware
-          if (text_delete.length > 0 && text_insert.length > 0) {
-            // Factor out any common prefixes.
-            commonlength = diff_commonPrefix(text_insert, text_delete);
-            if (commonlength !== 0) {
-              if (previous_equality >= 0) {
-                diffs[previous_equality][1] += text_insert.substring(0, commonlength);
-              } else {
-                diffs.splice(0, 0, [DIFF_EQUAL, text_insert.substring(0, commonlength)]);
-                pointer++;
-              }
-              text_insert = text_insert.substring(commonlength);
-              text_delete = text_delete.substring(commonlength);
-            }
-            // Factor out any common suffixes.
-            commonlength = diff_commonSuffix(text_insert, text_delete);
-            if (commonlength !== 0) {
-              diffs[pointer][1] =
-                text_insert.substring(text_insert.length - commonlength) + diffs[pointer][1];
-              text_insert = text_insert.substring(0, text_insert.length - commonlength);
-              text_delete = text_delete.substring(0, text_delete.length - commonlength);
-            }
-          }
-          // Delete the offending records and add the merged ones.
-          var n = count_insert + count_delete;
-          if (text_delete.length === 0 && text_insert.length === 0) {
-            diffs.splice(pointer - n, n);
-            pointer = pointer - n;
-          } else if (text_delete.length === 0) {
-            diffs.splice(pointer - n, n, [DIFF_INSERT, text_insert]);
-            pointer = pointer - n + 1;
-          } else if (text_insert.length === 0) {
-            diffs.splice(pointer - n, n, [DIFF_DELETE, text_delete]);
-            pointer = pointer - n + 1;
-          } else {
-            diffs.splice(pointer - n, n, [DIFF_DELETE, text_delete], [DIFF_INSERT, text_insert]);
-            pointer = pointer - n + 2;
-          }
-        }
-        if (pointer !== 0 && diffs[pointer - 1][0] === DIFF_EQUAL) {
-          // Merge this equality with the previous one.
-          diffs[pointer - 1][1] += diffs[pointer][1];
-          diffs.splice(pointer, 1);
-        } else {
-          pointer++;
-        }
-        count_insert = 0;
-        count_delete = 0;
-        text_delete = '';
-        text_insert = '';
-        break;
-    }
-  }
-  if (diffs[diffs.length - 1][1] === '') {
-    diffs.pop();  // Remove the dummy entry at the end.
-  }
-
-  // Second pass: look for single edits surrounded on both sides by equalities
-  // which can be shifted sideways to eliminate an equality.
-  // e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
-  var changes = false;
-  pointer = 1;
-  // Intentionally ignore the first and last element (don't need checking).
-  while (pointer < diffs.length - 1) {
-    if (diffs[pointer - 1][0] === DIFF_EQUAL &&
-      diffs[pointer + 1][0] === DIFF_EQUAL) {
-      // This is a single edit surrounded by equalities.
-      if (diffs[pointer][1].substring(diffs[pointer][1].length -
-        diffs[pointer - 1][1].length) === diffs[pointer - 1][1]) {
-        // Shift the edit over the previous equality.
-        diffs[pointer][1] = diffs[pointer - 1][1] +
-          diffs[pointer][1].substring(0, diffs[pointer][1].length -
-            diffs[pointer - 1][1].length);
-        diffs[pointer + 1][1] = diffs[pointer - 1][1] + diffs[pointer + 1][1];
-        diffs.splice(pointer - 1, 1);
-        changes = true;
-      } else if (diffs[pointer][1].substring(0, diffs[pointer + 1][1].length) ==
-        diffs[pointer + 1][1]) {
-        // Shift the edit over the next equality.
-        diffs[pointer - 1][1] += diffs[pointer + 1][1];
-        diffs[pointer][1] =
-          diffs[pointer][1].substring(diffs[pointer + 1][1].length) +
-          diffs[pointer + 1][1];
-        diffs.splice(pointer + 1, 1);
-        changes = true;
-      }
-    }
-    pointer++;
-  }
-  // If shifts were made, the diff needs reordering and another shift sweep.
-  if (changes) {
-    diff_cleanupMerge(diffs, fix_unicode);
-  }
-};
-
-function is_surrogate_pair_start(charCode) {
-  return charCode >= 0xD800 && charCode <= 0xDBFF;
-}
-
-function is_surrogate_pair_end(charCode) {
-  return charCode >= 0xDC00 && charCode <= 0xDFFF;
-}
-
-function starts_with_pair_end(str) {
-  return is_surrogate_pair_end(str.charCodeAt(0));
-}
-
-function ends_with_pair_start(str) {
-  return is_surrogate_pair_start(str.charCodeAt(str.length - 1));
-}
-
-function remove_empty_tuples(tuples) {
-  var ret = [];
-  for (var i = 0; i < tuples.length; i++) {
-    if (tuples[i][1].length > 0) {
-      ret.push(tuples[i]);
-    }
-  }
-  return ret;
-}
-
-function make_edit_splice(before, oldMiddle, newMiddle, after) {
-  if (ends_with_pair_start(before) || starts_with_pair_end(after)) {
-    return null;
-  }
-  return remove_empty_tuples([
-    [DIFF_EQUAL, before],
-    [DIFF_DELETE, oldMiddle],
-    [DIFF_INSERT, newMiddle],
-    [DIFF_EQUAL, after]
-  ]);
-}
-
-function find_cursor_edit_diff(oldText, newText, cursor_pos) {
-  // note: this runs after equality check has ruled out exact equality
-  var oldRange = typeof cursor_pos === 'number' ?
-    { index: cursor_pos, length: 0 } : cursor_pos.oldRange;
-  var newRange = typeof cursor_pos === 'number' ?
-    null : cursor_pos.newRange;
-  // take into account the old and new selection to generate the best diff
-  // possible for a text edit.  for example, a text change from "xxx" to "xx"
-  // could be a delete or forwards-delete of any one of the x's, or the
-  // result of selecting two of the x's and typing "x".
-  var oldLength = oldText.length;
-  var newLength = newText.length;
-  if (oldRange.length === 0 && (newRange === null || newRange.length === 0)) {
-    // see if we have an insert or delete before or after cursor
-    var oldCursor = oldRange.index;
-    var oldBefore = oldText.slice(0, oldCursor);
-    var oldAfter = oldText.slice(oldCursor);
-    var maybeNewCursor = newRange ? newRange.index : null;
-    editBefore: {
-      // is this an insert or delete right before oldCursor?
-      var newCursor = oldCursor + newLength - oldLength;
-      if (maybeNewCursor !== null && maybeNewCursor !== newCursor) {
-        break editBefore;
-      }
-      if (newCursor < 0 || newCursor > newLength) {
-        break editBefore;
-      }
-      var newBefore = newText.slice(0, newCursor);
-      var newAfter = newText.slice(newCursor);
-      if (newAfter !== oldAfter) {
-        break editBefore;
-      }
-      var prefixLength = Math.min(oldCursor, newCursor);
-      var oldPrefix = oldBefore.slice(0, prefixLength);
-      var newPrefix = newBefore.slice(0, prefixLength);
-      if (oldPrefix !== newPrefix) {
-        break editBefore;
-      }
-      var oldMiddle = oldBefore.slice(prefixLength);
-      var newMiddle = newBefore.slice(prefixLength);
-      return make_edit_splice(oldPrefix, oldMiddle, newMiddle, oldAfter);
-    }
-    editAfter: {
-      // is this an insert or delete right after oldCursor?
-      if (maybeNewCursor !== null && maybeNewCursor !== oldCursor) {
-        break editAfter;
-      }
-      var cursor = oldCursor;
-      var newBefore = newText.slice(0, cursor);
-      var newAfter = newText.slice(cursor);
-      if (newBefore !== oldBefore) {
-        break editAfter;
-      }
-      var suffixLength = Math.min(oldLength - cursor, newLength - cursor);
-      var oldSuffix = oldAfter.slice(oldAfter.length - suffixLength);
-      var newSuffix = newAfter.slice(newAfter.length - suffixLength);
-      if (oldSuffix !== newSuffix) {
-        break editAfter;
-      }
-      var oldMiddle = oldAfter.slice(0, oldAfter.length - suffixLength);
-      var newMiddle = newAfter.slice(0, newAfter.length - suffixLength);
-      return make_edit_splice(oldBefore, oldMiddle, newMiddle, oldSuffix);
-    }
-  }
-  if (oldRange.length > 0 && newRange && newRange.length === 0) {
-    replaceRange: {
-      // see if diff could be a splice of the old selection range
-      var oldPrefix = oldText.slice(0, oldRange.index);
-      var oldSuffix = oldText.slice(oldRange.index + oldRange.length);
-      var prefixLength = oldPrefix.length;
-      var suffixLength = oldSuffix.length;
-      if (newLength < prefixLength + suffixLength) {
-        break replaceRange;
-      }
-      var newPrefix = newText.slice(0, prefixLength);
-      var newSuffix = newText.slice(newLength - suffixLength);
-      if (oldPrefix !== newPrefix || oldSuffix !== newSuffix) {
-        break replaceRange;
-      }
-      var oldMiddle = oldText.slice(prefixLength, oldLength - suffixLength);
-      var newMiddle = newText.slice(prefixLength, newLength - suffixLength);
-      return make_edit_splice(oldPrefix, oldMiddle, newMiddle, oldSuffix);
-    }
-  }
-
-  return null;
-}
-
-function diff(text1, text2, cursor_pos) {
-  // only pass fix_unicode=true at the top level, not when diff_main is
-  // recursively invoked
-  return diff_main(text1, text2, cursor_pos, true);
-}
-
-diff.INSERT = DIFF_INSERT;
-diff.DELETE = DIFF_DELETE;
-diff.EQUAL = DIFF_EQUAL;
-
-module.exports = diff;
-
-
-/***/ }),
-
-/***/ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/AttributeMap.js":
-/*!*************************************************************************************!*\
-  !*** ./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/AttributeMap.js ***!
-  \*************************************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-var lodash_clonedeep_1 = __importDefault(__webpack_require__(/*! lodash.clonedeep */ "./node_modules/lodash.clonedeep/index.js"));
-var lodash_isequal_1 = __importDefault(__webpack_require__(/*! lodash.isequal */ "./node_modules/lodash.isequal/index.js"));
-var AttributeMap;
-(function (AttributeMap) {
-    function compose(a, b, keepNull) {
-        if (a === void 0) { a = {}; }
-        if (b === void 0) { b = {}; }
-        if (typeof a !== 'object') {
-            a = {};
-        }
-        if (typeof b !== 'object') {
-            b = {};
-        }
-        var attributes = lodash_clonedeep_1.default(b);
-        if (!keepNull) {
-            attributes = Object.keys(attributes).reduce(function (copy, key) {
-                if (attributes[key] != null) {
-                    copy[key] = attributes[key];
-                }
-                return copy;
-            }, {});
-        }
-        for (var key in a) {
-            if (a[key] !== undefined && b[key] === undefined) {
-                attributes[key] = a[key];
-            }
-        }
-        return Object.keys(attributes).length > 0 ? attributes : undefined;
-    }
-    AttributeMap.compose = compose;
-    function diff(a, b) {
-        if (a === void 0) { a = {}; }
-        if (b === void 0) { b = {}; }
-        if (typeof a !== 'object') {
-            a = {};
-        }
-        if (typeof b !== 'object') {
-            b = {};
-        }
-        var attributes = Object.keys(a)
-            .concat(Object.keys(b))
-            .reduce(function (attrs, key) {
-            if (!lodash_isequal_1.default(a[key], b[key])) {
-                attrs[key] = b[key] === undefined ? null : b[key];
-            }
-            return attrs;
-        }, {});
-        return Object.keys(attributes).length > 0 ? attributes : undefined;
-    }
-    AttributeMap.diff = diff;
-    function invert(attr, base) {
-        if (attr === void 0) { attr = {}; }
-        if (base === void 0) { base = {}; }
-        attr = attr || {};
-        var baseInverted = Object.keys(base).reduce(function (memo, key) {
-            if (base[key] !== attr[key] && attr[key] !== undefined) {
-                memo[key] = base[key];
-            }
-            return memo;
-        }, {});
-        return Object.keys(attr).reduce(function (memo, key) {
-            if (attr[key] !== base[key] && base[key] === undefined) {
-                memo[key] = null;
-            }
-            return memo;
-        }, baseInverted);
-    }
-    AttributeMap.invert = invert;
-    function transform(a, b, priority) {
-        if (priority === void 0) { priority = false; }
-        if (typeof a !== 'object') {
-            return b;
-        }
-        if (typeof b !== 'object') {
-            return undefined;
-        }
-        if (!priority) {
-            return b; // b simply overwrites us without priority
-        }
-        var attributes = Object.keys(b).reduce(function (attrs, key) {
-            if (a[key] === undefined) {
-                attrs[key] = b[key]; // null is a valid value
-            }
-            return attrs;
-        }, {});
-        return Object.keys(attributes).length > 0 ? attributes : undefined;
-    }
-    AttributeMap.transform = transform;
-})(AttributeMap || (AttributeMap = {}));
-exports["default"] = AttributeMap;
-//# sourceMappingURL=AttributeMap.js.map
-
-/***/ }),
-
-/***/ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Delta.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Delta.js ***!
-  \******************************************************************************/
-/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var fast_diff_1 = __importDefault(__webpack_require__(/*! fast-diff */ "./node_modules/@vueup/vue-quill/node_modules/fast-diff/diff.js"));
-var lodash_clonedeep_1 = __importDefault(__webpack_require__(/*! lodash.clonedeep */ "./node_modules/lodash.clonedeep/index.js"));
-var lodash_isequal_1 = __importDefault(__webpack_require__(/*! lodash.isequal */ "./node_modules/lodash.isequal/index.js"));
-var AttributeMap_1 = __importDefault(__webpack_require__(/*! ./AttributeMap */ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/AttributeMap.js"));
-var Op_1 = __importDefault(__webpack_require__(/*! ./Op */ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Op.js"));
-var NULL_CHARACTER = String.fromCharCode(0); // Placeholder char for embed in diff()
-var Delta = /** @class */ (function () {
-    function Delta(ops) {
-        // Assume we are given a well formed ops
-        if (Array.isArray(ops)) {
-            this.ops = ops;
-        }
-        else if (ops != null && Array.isArray(ops.ops)) {
-            this.ops = ops.ops;
-        }
-        else {
-            this.ops = [];
-        }
-    }
-    Delta.prototype.insert = function (arg, attributes) {
-        var newOp = {};
-        if (typeof arg === 'string' && arg.length === 0) {
-            return this;
-        }
-        newOp.insert = arg;
-        if (attributes != null &&
-            typeof attributes === 'object' &&
-            Object.keys(attributes).length > 0) {
-            newOp.attributes = attributes;
-        }
-        return this.push(newOp);
-    };
-    Delta.prototype.delete = function (length) {
-        if (length <= 0) {
-            return this;
-        }
-        return this.push({ delete: length });
-    };
-    Delta.prototype.retain = function (length, attributes) {
-        if (length <= 0) {
-            return this;
-        }
-        var newOp = { retain: length };
-        if (attributes != null &&
-            typeof attributes === 'object' &&
-            Object.keys(attributes).length > 0) {
-            newOp.attributes = attributes;
-        }
-        return this.push(newOp);
-    };
-    Delta.prototype.push = function (newOp) {
-        var index = this.ops.length;
-        var lastOp = this.ops[index - 1];
-        newOp = lodash_clonedeep_1.default(newOp);
-        if (typeof lastOp === 'object') {
-            if (typeof newOp.delete === 'number' &&
-                typeof lastOp.delete === 'number') {
-                this.ops[index - 1] = { delete: lastOp.delete + newOp.delete };
-                return this;
-            }
-            // Since it does not matter if we insert before or after deleting at the same index,
-            // always prefer to insert first
-            if (typeof lastOp.delete === 'number' && newOp.insert != null) {
-                index -= 1;
-                lastOp = this.ops[index - 1];
-                if (typeof lastOp !== 'object') {
-                    this.ops.unshift(newOp);
-                    return this;
-                }
-            }
-            if (lodash_isequal_1.default(newOp.attributes, lastOp.attributes)) {
-                if (typeof newOp.insert === 'string' &&
-                    typeof lastOp.insert === 'string') {
-                    this.ops[index - 1] = { insert: lastOp.insert + newOp.insert };
-                    if (typeof newOp.attributes === 'object') {
-                        this.ops[index - 1].attributes = newOp.attributes;
-                    }
-                    return this;
-                }
-                else if (typeof newOp.retain === 'number' &&
-                    typeof lastOp.retain === 'number') {
-                    this.ops[index - 1] = { retain: lastOp.retain + newOp.retain };
-                    if (typeof newOp.attributes === 'object') {
-                        this.ops[index - 1].attributes = newOp.attributes;
-                    }
-                    return this;
-                }
-            }
-        }
-        if (index === this.ops.length) {
-            this.ops.push(newOp);
-        }
-        else {
-            this.ops.splice(index, 0, newOp);
-        }
-        return this;
-    };
-    Delta.prototype.chop = function () {
-        var lastOp = this.ops[this.ops.length - 1];
-        if (lastOp && lastOp.retain && !lastOp.attributes) {
-            this.ops.pop();
-        }
-        return this;
-    };
-    Delta.prototype.filter = function (predicate) {
-        return this.ops.filter(predicate);
-    };
-    Delta.prototype.forEach = function (predicate) {
-        this.ops.forEach(predicate);
-    };
-    Delta.prototype.map = function (predicate) {
-        return this.ops.map(predicate);
-    };
-    Delta.prototype.partition = function (predicate) {
-        var passed = [];
-        var failed = [];
-        this.forEach(function (op) {
-            var target = predicate(op) ? passed : failed;
-            target.push(op);
-        });
-        return [passed, failed];
-    };
-    Delta.prototype.reduce = function (predicate, initialValue) {
-        return this.ops.reduce(predicate, initialValue);
-    };
-    Delta.prototype.changeLength = function () {
-        return this.reduce(function (length, elem) {
-            if (elem.insert) {
-                return length + Op_1.default.length(elem);
-            }
-            else if (elem.delete) {
-                return length - elem.delete;
-            }
-            return length;
-        }, 0);
-    };
-    Delta.prototype.length = function () {
-        return this.reduce(function (length, elem) {
-            return length + Op_1.default.length(elem);
-        }, 0);
-    };
-    Delta.prototype.slice = function (start, end) {
-        if (start === void 0) { start = 0; }
-        if (end === void 0) { end = Infinity; }
-        var ops = [];
-        var iter = Op_1.default.iterator(this.ops);
-        var index = 0;
-        while (index < end && iter.hasNext()) {
-            var nextOp = void 0;
-            if (index < start) {
-                nextOp = iter.next(start - index);
-            }
-            else {
-                nextOp = iter.next(end - index);
-                ops.push(nextOp);
-            }
-            index += Op_1.default.length(nextOp);
-        }
-        return new Delta(ops);
-    };
-    Delta.prototype.compose = function (other) {
-        var thisIter = Op_1.default.iterator(this.ops);
-        var otherIter = Op_1.default.iterator(other.ops);
-        var ops = [];
-        var firstOther = otherIter.peek();
-        if (firstOther != null &&
-            typeof firstOther.retain === 'number' &&
-            firstOther.attributes == null) {
-            var firstLeft = firstOther.retain;
-            while (thisIter.peekType() === 'insert' &&
-                thisIter.peekLength() <= firstLeft) {
-                firstLeft -= thisIter.peekLength();
-                ops.push(thisIter.next());
-            }
-            if (firstOther.retain - firstLeft > 0) {
-                otherIter.next(firstOther.retain - firstLeft);
-            }
-        }
-        var delta = new Delta(ops);
-        while (thisIter.hasNext() || otherIter.hasNext()) {
-            if (otherIter.peekType() === 'insert') {
-                delta.push(otherIter.next());
-            }
-            else if (thisIter.peekType() === 'delete') {
-                delta.push(thisIter.next());
-            }
-            else {
-                var length_1 = Math.min(thisIter.peekLength(), otherIter.peekLength());
-                var thisOp = thisIter.next(length_1);
-                var otherOp = otherIter.next(length_1);
-                if (typeof otherOp.retain === 'number') {
-                    var newOp = {};
-                    if (typeof thisOp.retain === 'number') {
-                        newOp.retain = length_1;
-                    }
-                    else {
-                        newOp.insert = thisOp.insert;
-                    }
-                    // Preserve null when composing with a retain, otherwise remove it for inserts
-                    var attributes = AttributeMap_1.default.compose(thisOp.attributes, otherOp.attributes, typeof thisOp.retain === 'number');
-                    if (attributes) {
-                        newOp.attributes = attributes;
-                    }
-                    delta.push(newOp);
-                    // Optimization if rest of other is just retain
-                    if (!otherIter.hasNext() &&
-                        lodash_isequal_1.default(delta.ops[delta.ops.length - 1], newOp)) {
-                        var rest = new Delta(thisIter.rest());
-                        return delta.concat(rest).chop();
-                    }
-                    // Other op should be delete, we could be an insert or retain
-                    // Insert + delete cancels out
-                }
-                else if (typeof otherOp.delete === 'number' &&
-                    typeof thisOp.retain === 'number') {
-                    delta.push(otherOp);
-                }
-            }
-        }
-        return delta.chop();
-    };
-    Delta.prototype.concat = function (other) {
-        var delta = new Delta(this.ops.slice());
-        if (other.ops.length > 0) {
-            delta.push(other.ops[0]);
-            delta.ops = delta.ops.concat(other.ops.slice(1));
-        }
-        return delta;
-    };
-    Delta.prototype.diff = function (other, cursor) {
-        if (this.ops === other.ops) {
-            return new Delta();
-        }
-        var strings = [this, other].map(function (delta) {
-            return delta
-                .map(function (op) {
-                if (op.insert != null) {
-                    return typeof op.insert === 'string' ? op.insert : NULL_CHARACTER;
-                }
-                var prep = delta === other ? 'on' : 'with';
-                throw new Error('diff() called ' + prep + ' non-document');
-            })
-                .join('');
-        });
-        var retDelta = new Delta();
-        var diffResult = fast_diff_1.default(strings[0], strings[1], cursor);
-        var thisIter = Op_1.default.iterator(this.ops);
-        var otherIter = Op_1.default.iterator(other.ops);
-        diffResult.forEach(function (component) {
-            var length = component[1].length;
-            while (length > 0) {
-                var opLength = 0;
-                switch (component[0]) {
-                    case fast_diff_1.default.INSERT:
-                        opLength = Math.min(otherIter.peekLength(), length);
-                        retDelta.push(otherIter.next(opLength));
-                        break;
-                    case fast_diff_1.default.DELETE:
-                        opLength = Math.min(length, thisIter.peekLength());
-                        thisIter.next(opLength);
-                        retDelta.delete(opLength);
-                        break;
-                    case fast_diff_1.default.EQUAL:
-                        opLength = Math.min(thisIter.peekLength(), otherIter.peekLength(), length);
-                        var thisOp = thisIter.next(opLength);
-                        var otherOp = otherIter.next(opLength);
-                        if (lodash_isequal_1.default(thisOp.insert, otherOp.insert)) {
-                            retDelta.retain(opLength, AttributeMap_1.default.diff(thisOp.attributes, otherOp.attributes));
-                        }
-                        else {
-                            retDelta.push(otherOp).delete(opLength);
-                        }
-                        break;
-                }
-                length -= opLength;
-            }
-        });
-        return retDelta.chop();
-    };
-    Delta.prototype.eachLine = function (predicate, newline) {
-        if (newline === void 0) { newline = '\n'; }
-        var iter = Op_1.default.iterator(this.ops);
-        var line = new Delta();
-        var i = 0;
-        while (iter.hasNext()) {
-            if (iter.peekType() !== 'insert') {
-                return;
-            }
-            var thisOp = iter.peek();
-            var start = Op_1.default.length(thisOp) - iter.peekLength();
-            var index = typeof thisOp.insert === 'string'
-                ? thisOp.insert.indexOf(newline, start) - start
-                : -1;
-            if (index < 0) {
-                line.push(iter.next());
-            }
-            else if (index > 0) {
-                line.push(iter.next(index));
-            }
-            else {
-                if (predicate(line, iter.next(1).attributes || {}, i) === false) {
-                    return;
-                }
-                i += 1;
-                line = new Delta();
-            }
-        }
-        if (line.length() > 0) {
-            predicate(line, {}, i);
-        }
-    };
-    Delta.prototype.invert = function (base) {
-        var inverted = new Delta();
-        this.reduce(function (baseIndex, op) {
-            if (op.insert) {
-                inverted.delete(Op_1.default.length(op));
-            }
-            else if (op.retain && op.attributes == null) {
-                inverted.retain(op.retain);
-                return baseIndex + op.retain;
-            }
-            else if (op.delete || (op.retain && op.attributes)) {
-                var length_2 = (op.delete || op.retain);
-                var slice = base.slice(baseIndex, baseIndex + length_2);
-                slice.forEach(function (baseOp) {
-                    if (op.delete) {
-                        inverted.push(baseOp);
-                    }
-                    else if (op.retain && op.attributes) {
-                        inverted.retain(Op_1.default.length(baseOp), AttributeMap_1.default.invert(op.attributes, baseOp.attributes));
-                    }
-                });
-                return baseIndex + length_2;
-            }
-            return baseIndex;
-        }, 0);
-        return inverted.chop();
-    };
-    Delta.prototype.transform = function (arg, priority) {
-        if (priority === void 0) { priority = false; }
-        priority = !!priority;
-        if (typeof arg === 'number') {
-            return this.transformPosition(arg, priority);
-        }
-        var other = arg;
-        var thisIter = Op_1.default.iterator(this.ops);
-        var otherIter = Op_1.default.iterator(other.ops);
-        var delta = new Delta();
-        while (thisIter.hasNext() || otherIter.hasNext()) {
-            if (thisIter.peekType() === 'insert' &&
-                (priority || otherIter.peekType() !== 'insert')) {
-                delta.retain(Op_1.default.length(thisIter.next()));
-            }
-            else if (otherIter.peekType() === 'insert') {
-                delta.push(otherIter.next());
-            }
-            else {
-                var length_3 = Math.min(thisIter.peekLength(), otherIter.peekLength());
-                var thisOp = thisIter.next(length_3);
-                var otherOp = otherIter.next(length_3);
-                if (thisOp.delete) {
-                    // Our delete either makes their delete redundant or removes their retain
-                    continue;
-                }
-                else if (otherOp.delete) {
-                    delta.push(otherOp);
-                }
-                else {
-                    // We retain either their retain or insert
-                    delta.retain(length_3, AttributeMap_1.default.transform(thisOp.attributes, otherOp.attributes, priority));
-                }
-            }
-        }
-        return delta.chop();
-    };
-    Delta.prototype.transformPosition = function (index, priority) {
-        if (priority === void 0) { priority = false; }
-        priority = !!priority;
-        var thisIter = Op_1.default.iterator(this.ops);
-        var offset = 0;
-        while (thisIter.hasNext() && offset <= index) {
-            var length_4 = thisIter.peekLength();
-            var nextType = thisIter.peekType();
-            thisIter.next();
-            if (nextType === 'delete') {
-                index -= Math.min(length_4, index - offset);
-                continue;
-            }
-            else if (nextType === 'insert' && (offset < index || !priority)) {
-                index += length_4;
-            }
-            offset += length_4;
-        }
-        return index;
-    };
-    Delta.Op = Op_1.default;
-    Delta.AttributeMap = AttributeMap_1.default;
-    return Delta;
-}());
-module.exports = Delta;
-//# sourceMappingURL=Delta.js.map
-
-/***/ }),
-
-/***/ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Iterator.js":
-/*!*********************************************************************************!*\
-  !*** ./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Iterator.js ***!
-  \*********************************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-var Op_1 = __importDefault(__webpack_require__(/*! ./Op */ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Op.js"));
-var Iterator = /** @class */ (function () {
-    function Iterator(ops) {
-        this.ops = ops;
-        this.index = 0;
-        this.offset = 0;
-    }
-    Iterator.prototype.hasNext = function () {
-        return this.peekLength() < Infinity;
-    };
-    Iterator.prototype.next = function (length) {
-        if (!length) {
-            length = Infinity;
-        }
-        var nextOp = this.ops[this.index];
-        if (nextOp) {
-            var offset = this.offset;
-            var opLength = Op_1.default.length(nextOp);
-            if (length >= opLength - offset) {
-                length = opLength - offset;
-                this.index += 1;
-                this.offset = 0;
-            }
-            else {
-                this.offset += length;
-            }
-            if (typeof nextOp.delete === 'number') {
-                return { delete: length };
-            }
-            else {
-                var retOp = {};
-                if (nextOp.attributes) {
-                    retOp.attributes = nextOp.attributes;
-                }
-                if (typeof nextOp.retain === 'number') {
-                    retOp.retain = length;
-                }
-                else if (typeof nextOp.insert === 'string') {
-                    retOp.insert = nextOp.insert.substr(offset, length);
-                }
-                else {
-                    // offset should === 0, length should === 1
-                    retOp.insert = nextOp.insert;
-                }
-                return retOp;
-            }
-        }
-        else {
-            return { retain: Infinity };
-        }
-    };
-    Iterator.prototype.peek = function () {
-        return this.ops[this.index];
-    };
-    Iterator.prototype.peekLength = function () {
-        if (this.ops[this.index]) {
-            // Should never return 0 if our index is being managed correctly
-            return Op_1.default.length(this.ops[this.index]) - this.offset;
-        }
-        else {
-            return Infinity;
-        }
-    };
-    Iterator.prototype.peekType = function () {
-        if (this.ops[this.index]) {
-            if (typeof this.ops[this.index].delete === 'number') {
-                return 'delete';
-            }
-            else if (typeof this.ops[this.index].retain === 'number') {
-                return 'retain';
-            }
-            else {
-                return 'insert';
-            }
-        }
-        return 'retain';
-    };
-    Iterator.prototype.rest = function () {
-        if (!this.hasNext()) {
-            return [];
-        }
-        else if (this.offset === 0) {
-            return this.ops.slice(this.index);
-        }
-        else {
-            var offset = this.offset;
-            var index = this.index;
-            var next = this.next();
-            var rest = this.ops.slice(this.index);
-            this.offset = offset;
-            this.index = index;
-            return [next].concat(rest);
-        }
-    };
-    return Iterator;
-}());
-exports["default"] = Iterator;
-//# sourceMappingURL=Iterator.js.map
-
-/***/ }),
-
-/***/ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Op.js":
-/*!***************************************************************************!*\
-  !*** ./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Op.js ***!
-  \***************************************************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-var Iterator_1 = __importDefault(__webpack_require__(/*! ./Iterator */ "./node_modules/@vueup/vue-quill/node_modules/quill-delta/dist/Iterator.js"));
-var Op;
-(function (Op) {
-    function iterator(ops) {
-        return new Iterator_1.default(ops);
-    }
-    Op.iterator = iterator;
-    function length(op) {
-        if (typeof op.delete === 'number') {
-            return op.delete;
-        }
-        else if (typeof op.retain === 'number') {
-            return op.retain;
-        }
-        else {
-            return typeof op.insert === 'string' ? op.insert.length : 1;
-        }
-    }
-    Op.length = length;
-})(Op || (Op = {}));
-exports["default"] = Op;
-//# sourceMappingURL=Op.js.map
-
-/***/ }),
-
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Devis.vue?vue&type=script&lang=js":
 /*!******************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/dist/index.js??ruleSet[0].use[0]!./resources/js/Pages/Devis.vue?vue&type=script&lang=js ***!
@@ -4032,29 +2633,27 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              console.log('this.$route.params', _this.$route.params);
               _this.state.isLoaded = true;
-              _context.prev = 2;
+              _context.prev = 1;
               slugDevis = _this.$route.params.slugDevis;
-              _context.next = 6;
+              _context.next = 5;
               return _services_leadService__WEBPACK_IMPORTED_MODULE_4__["default"].getLeadBySlug(slugDevis);
 
-            case 6:
+            case 5:
               responseDevis = _context.sent;
               if (responseDevis.status === 200) _this.state.devis = responseDevis.data;
-              _context.next = 10;
+              _context.next = 9;
               return _services_featureService__WEBPACK_IMPORTED_MODULE_5__["default"].getFeaturesByLeadId(_this.state.devis.id);
 
-            case 10:
+            case 9:
               responseFeatures = _context.sent;
               if (responseFeatures.status === 200) _this.state.features = responseFeatures.data;
-              console.log(_this.state.devis, _this.state.features);
-              _context.next = 18;
+              _context.next = 16;
               break;
 
-            case 15:
-              _context.prev = 15;
-              _context.t0 = _context["catch"](2);
+            case 13:
+              _context.prev = 13;
+              _context.t0 = _context["catch"](1);
 
               if (_context.t0.response.status === 401) {
                 _this.$store.commit('SET_USER', null);
@@ -4064,17 +2663,17 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 window.location.href = '/login';
               }
 
-            case 18:
-              _context.prev = 18;
+            case 16:
+              _context.prev = 16;
               _this.state.isLoaded = false;
-              return _context.finish(18);
+              return _context.finish(16);
 
-            case 21:
+            case 19:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[2, 15, 18, 21]]);
+      }, _callee, null, [[1, 13, 16, 19]]);
     }))();
   }
 });
@@ -4149,26 +2748,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 4:
               response = _context.sent;
-              console.log('response', response.data.length);
 
               if (response.data.length > 0) {
                 _this.state.notification += 1;
               }
 
-              _context.next = 12;
+              _context.next = 11;
               break;
 
-            case 9:
-              _context.prev = 9;
+            case 8:
+              _context.prev = 8;
               _context.t0 = _context["catch"](1);
-              console.log(_context.t0);
+              console.error(_context.t0);
 
-            case 12:
+            case 11:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[1, 9]]);
+      }, _callee, null, [[1, 8]]);
     }))();
   },
   methods: {
@@ -4279,7 +2877,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   },
   computed: {
     test: function test() {
-      return "".concat("http://paybystep2.test", "/invite/").concat(this.devis.project_id, "/").concat(this.devis.user_id);
+      return "".concat("http://localhost:8000", "/invite/").concat(this.devis.project_id, "/").concat(this.devis.user_id);
     }
   },
   methods: {
@@ -4317,7 +2915,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 7:
                 _context.prev = 7;
                 _context.t0 = _context["catch"](0);
-                console.log(_context.t0);
+                console.error(_context.t0);
 
               case 10:
               case "end":
@@ -4353,7 +2951,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 7:
                 _context2.prev = 7;
                 _context2.t0 = _context2["catch"](0);
-                console.log(_context2.t0);
+                console.error(_context2.t0);
 
               case 10:
               case "end":
@@ -4430,7 +3028,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 7:
                 _context3.prev = 7;
                 _context3.t0 = _context3["catch"](0);
-                console.log(_context3.t0);
+                console.error(_context3.t0);
 
               case 10:
               case "end":
@@ -4449,32 +3047,31 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                console.log('icicicic');
-                _context4.prev = 1;
-                _context4.next = 4;
+                _context4.prev = 0;
+                _context4.next = 3;
                 return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepThree(_this3.state.currentFeature);
 
-              case 4:
+              case 3:
                 response = _context4.sent;
 
                 if (response.status === 200) {
                   location.reload();
                 }
 
-                _context4.next = 11;
+                _context4.next = 10;
                 break;
 
-              case 8:
-                _context4.prev = 8;
-                _context4.t0 = _context4["catch"](1);
-                console.log(_context4.t0);
+              case 7:
+                _context4.prev = 7;
+                _context4.t0 = _context4["catch"](0);
+                console.error(_context4.t0);
 
-              case 11:
+              case 10:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, null, [[1, 8]]);
+        }, _callee4, null, [[0, 7]]);
       }))();
     },
     handlePFeatureClick: function handlePFeatureClick() {
@@ -4519,7 +3116,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 11:
                 _context5.prev = 11;
                 _context5.t0 = _context5["catch"](3);
-                console.log(_context5.t0);
+                console.error(_context5.t0);
 
               case 14:
                 _context5.prev = 14;
@@ -4574,7 +3171,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _context6.prev = 14;
                 _context6.t0 = _context6["catch"](7);
                 _this5.state.isSendEmailErrorCatch = true;
-                console.log(_context6.t0);
+                console.error(_context6.t0);
 
               case 18:
                 _context6.prev = 18;
@@ -5277,7 +3874,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[12] || (_cache[12] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, "X"), _hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div class=\"project-list__form\">\r\n                    <div class=\"form-control w-full\">\r\n                        <label class=\"label\">Inviter via le lien</label>\r\n                        <div class=\"input-group\">\r\n                            <input type=\"text\" disabled=\"true\" class=\"w-full input\" :value=\"test\" />\r\n                            <button class=\"btn btn-square px-10\">Copier</button>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n                <div class=\"divider\">OU</div> "), $setup.state.isSendEmail ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_47, _hoisted_49)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_50, _hoisted_52)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailErrorCatch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_53, _hoisted_55)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_57, [_hoisted_58, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, "X"), _hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div class=\"project-list__form\">\n                    <div class=\"form-control w-full\">\n                        <label class=\"label\">Inviter via le lien</label>\n                        <div class=\"input-group\">\n                            <input type=\"text\" disabled=\"true\" class=\"w-full input\" :value=\"test\" />\n                            <button class=\"btn btn-square px-10\">Copier</button>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"divider\">OU</div> "), $setup.state.isSendEmail ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_47, _hoisted_49)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_50, _hoisted_52)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailErrorCatch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_53, _hoisted_55)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_56, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_57, [_hoisted_58, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "email",
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
           'input-error': $setup.vEmail$.email.$error
@@ -5406,7 +4003,7 @@ var APISettings = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }),
-  baseURL: "".concat("http://paybystep2.test", "/api")
+  baseURL: "".concat("http://localhost:8000", "/api")
 };
 
 /***/ }),
@@ -8258,9 +6855,793 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".ql-container {\n  box-sizing: border-box;\n  font-family: Helvetica, Arial, sans-serif;\n  font-size: 13px;\n  height: 100%;\n  margin: 0px;\n  position: relative;\n}\n.ql-container.ql-disabled .ql-tooltip {\n  visibility: hidden;\n}\n.ql-container.ql-disabled .ql-editor ul[data-checked] > li::before {\n  pointer-events: none;\n}\n.ql-clipboard {\n  left: -100000px;\n  height: 1px;\n  overflow-y: hidden;\n  position: absolute;\n  top: 50%;\n}\n.ql-clipboard p {\n  margin: 0;\n  padding: 0;\n}\n.ql-editor {\n  box-sizing: border-box;\n  line-height: 1.42;\n  height: 100%;\n  outline: none;\n  overflow-y: auto;\n  padding: 12px 15px;\n  -o-tab-size: 4;\n     tab-size: 4;\n  -moz-tab-size: 4;\n  text-align: left;\n  white-space: pre-wrap;\n  word-wrap: break-word;\n}\n.ql-editor > * {\n  cursor: text;\n}\n.ql-editor p,\n.ql-editor ol,\n.ql-editor ul,\n.ql-editor pre,\n.ql-editor blockquote,\n.ql-editor h1,\n.ql-editor h2,\n.ql-editor h3,\n.ql-editor h4,\n.ql-editor h5,\n.ql-editor h6 {\n  margin: 0;\n  padding: 0;\n  counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol,\n.ql-editor ul {\n  padding-left: 1.5em;\n}\n.ql-editor ol > li,\n.ql-editor ul > li {\n  list-style-type: none;\n}\n.ql-editor ul > li::before {\n  content: '\\2022';\n}\n.ql-editor ul[data-checked=true],\n.ql-editor ul[data-checked=false] {\n  pointer-events: none;\n}\n.ql-editor ul[data-checked=true] > li *,\n.ql-editor ul[data-checked=false] > li * {\n  pointer-events: all;\n}\n.ql-editor ul[data-checked=true] > li::before,\n.ql-editor ul[data-checked=false] > li::before {\n  color: #777;\n  cursor: pointer;\n  pointer-events: all;\n}\n.ql-editor ul[data-checked=true] > li::before {\n  content: '\\2611';\n}\n.ql-editor ul[data-checked=false] > li::before {\n  content: '\\2610';\n}\n.ql-editor li::before {\n  display: inline-block;\n  white-space: nowrap;\n  width: 1.2em;\n}\n.ql-editor li:not(.ql-direction-rtl)::before {\n  margin-left: -1.5em;\n  margin-right: 0.3em;\n  text-align: right;\n}\n.ql-editor li.ql-direction-rtl::before {\n  margin-left: 0.3em;\n  margin-right: -1.5em;\n}\n.ql-editor ol li:not(.ql-direction-rtl),\n.ql-editor ul li:not(.ql-direction-rtl) {\n  padding-left: 1.5em;\n}\n.ql-editor ol li.ql-direction-rtl,\n.ql-editor ul li.ql-direction-rtl {\n  padding-right: 1.5em;\n}\n.ql-editor ol li {\n  counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n  counter-increment: list-0;\n}\n.ql-editor ol li:before {\n  content: counter(list-0, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-1 {\n  counter-increment: list-1;\n}\n.ql-editor ol li.ql-indent-1:before {\n  content: counter(list-1, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-1 {\n  counter-reset: list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-2 {\n  counter-increment: list-2;\n}\n.ql-editor ol li.ql-indent-2:before {\n  content: counter(list-2, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-2 {\n  counter-reset: list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-3 {\n  counter-increment: list-3;\n}\n.ql-editor ol li.ql-indent-3:before {\n  content: counter(list-3, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-3 {\n  counter-reset: list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-4 {\n  counter-increment: list-4;\n}\n.ql-editor ol li.ql-indent-4:before {\n  content: counter(list-4, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-4 {\n  counter-reset: list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-5 {\n  counter-increment: list-5;\n}\n.ql-editor ol li.ql-indent-5:before {\n  content: counter(list-5, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-5 {\n  counter-reset: list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-6 {\n  counter-increment: list-6;\n}\n.ql-editor ol li.ql-indent-6:before {\n  content: counter(list-6, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-6 {\n  counter-reset: list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-7 {\n  counter-increment: list-7;\n}\n.ql-editor ol li.ql-indent-7:before {\n  content: counter(list-7, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-7 {\n  counter-reset: list-8 list-9;\n}\n.ql-editor ol li.ql-indent-8 {\n  counter-increment: list-8;\n}\n.ql-editor ol li.ql-indent-8:before {\n  content: counter(list-8, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-8 {\n  counter-reset: list-9;\n}\n.ql-editor ol li.ql-indent-9 {\n  counter-increment: list-9;\n}\n.ql-editor ol li.ql-indent-9:before {\n  content: counter(list-9, decimal) '. ';\n}\n.ql-editor .ql-indent-1:not(.ql-direction-rtl) {\n  padding-left: 3em;\n}\n.ql-editor li.ql-indent-1:not(.ql-direction-rtl) {\n  padding-left: 4.5em;\n}\n.ql-editor .ql-indent-1.ql-direction-rtl.ql-align-right {\n  padding-right: 3em;\n}\n.ql-editor li.ql-indent-1.ql-direction-rtl.ql-align-right {\n  padding-right: 4.5em;\n}\n.ql-editor .ql-indent-2:not(.ql-direction-rtl) {\n  padding-left: 6em;\n}\n.ql-editor li.ql-indent-2:not(.ql-direction-rtl) {\n  padding-left: 7.5em;\n}\n.ql-editor .ql-indent-2.ql-direction-rtl.ql-align-right {\n  padding-right: 6em;\n}\n.ql-editor li.ql-indent-2.ql-direction-rtl.ql-align-right {\n  padding-right: 7.5em;\n}\n.ql-editor .ql-indent-3:not(.ql-direction-rtl) {\n  padding-left: 9em;\n}\n.ql-editor li.ql-indent-3:not(.ql-direction-rtl) {\n  padding-left: 10.5em;\n}\n.ql-editor .ql-indent-3.ql-direction-rtl.ql-align-right {\n  padding-right: 9em;\n}\n.ql-editor li.ql-indent-3.ql-direction-rtl.ql-align-right {\n  padding-right: 10.5em;\n}\n.ql-editor .ql-indent-4:not(.ql-direction-rtl) {\n  padding-left: 12em;\n}\n.ql-editor li.ql-indent-4:not(.ql-direction-rtl) {\n  padding-left: 13.5em;\n}\n.ql-editor .ql-indent-4.ql-direction-rtl.ql-align-right {\n  padding-right: 12em;\n}\n.ql-editor li.ql-indent-4.ql-direction-rtl.ql-align-right {\n  padding-right: 13.5em;\n}\n.ql-editor .ql-indent-5:not(.ql-direction-rtl) {\n  padding-left: 15em;\n}\n.ql-editor li.ql-indent-5:not(.ql-direction-rtl) {\n  padding-left: 16.5em;\n}\n.ql-editor .ql-indent-5.ql-direction-rtl.ql-align-right {\n  padding-right: 15em;\n}\n.ql-editor li.ql-indent-5.ql-direction-rtl.ql-align-right {\n  padding-right: 16.5em;\n}\n.ql-editor .ql-indent-6:not(.ql-direction-rtl) {\n  padding-left: 18em;\n}\n.ql-editor li.ql-indent-6:not(.ql-direction-rtl) {\n  padding-left: 19.5em;\n}\n.ql-editor .ql-indent-6.ql-direction-rtl.ql-align-right {\n  padding-right: 18em;\n}\n.ql-editor li.ql-indent-6.ql-direction-rtl.ql-align-right {\n  padding-right: 19.5em;\n}\n.ql-editor .ql-indent-7:not(.ql-direction-rtl) {\n  padding-left: 21em;\n}\n.ql-editor li.ql-indent-7:not(.ql-direction-rtl) {\n  padding-left: 22.5em;\n}\n.ql-editor .ql-indent-7.ql-direction-rtl.ql-align-right {\n  padding-right: 21em;\n}\n.ql-editor li.ql-indent-7.ql-direction-rtl.ql-align-right {\n  padding-right: 22.5em;\n}\n.ql-editor .ql-indent-8:not(.ql-direction-rtl) {\n  padding-left: 24em;\n}\n.ql-editor li.ql-indent-8:not(.ql-direction-rtl) {\n  padding-left: 25.5em;\n}\n.ql-editor .ql-indent-8.ql-direction-rtl.ql-align-right {\n  padding-right: 24em;\n}\n.ql-editor li.ql-indent-8.ql-direction-rtl.ql-align-right {\n  padding-right: 25.5em;\n}\n.ql-editor .ql-indent-9:not(.ql-direction-rtl) {\n  padding-left: 27em;\n}\n.ql-editor li.ql-indent-9:not(.ql-direction-rtl) {\n  padding-left: 28.5em;\n}\n.ql-editor .ql-indent-9.ql-direction-rtl.ql-align-right {\n  padding-right: 27em;\n}\n.ql-editor li.ql-indent-9.ql-direction-rtl.ql-align-right {\n  padding-right: 28.5em;\n}\n.ql-editor .ql-video {\n  display: block;\n  max-width: 100%;\n}\n.ql-editor .ql-video.ql-align-center {\n  margin: 0 auto;\n}\n.ql-editor .ql-video.ql-align-right {\n  margin: 0 0 0 auto;\n}\n.ql-editor .ql-bg-black {\n  background-color: #000;\n}\n.ql-editor .ql-bg-red {\n  background-color: #e60000;\n}\n.ql-editor .ql-bg-orange {\n  background-color: #f90;\n}\n.ql-editor .ql-bg-yellow {\n  background-color: #ff0;\n}\n.ql-editor .ql-bg-green {\n  background-color: #008a00;\n}\n.ql-editor .ql-bg-blue {\n  background-color: #06c;\n}\n.ql-editor .ql-bg-purple {\n  background-color: #93f;\n}\n.ql-editor .ql-color-white {\n  color: #fff;\n}\n.ql-editor .ql-color-red {\n  color: #e60000;\n}\n.ql-editor .ql-color-orange {\n  color: #f90;\n}\n.ql-editor .ql-color-yellow {\n  color: #ff0;\n}\n.ql-editor .ql-color-green {\n  color: #008a00;\n}\n.ql-editor .ql-color-blue {\n  color: #06c;\n}\n.ql-editor .ql-color-purple {\n  color: #93f;\n}\n.ql-editor .ql-font-serif {\n  font-family: Georgia, Times New Roman, serif;\n}\n.ql-editor .ql-font-monospace {\n  font-family: Monaco, Courier New, monospace;\n}\n.ql-editor .ql-size-small {\n  font-size: 0.75em;\n}\n.ql-editor .ql-size-large {\n  font-size: 1.5em;\n}\n.ql-editor .ql-size-huge {\n  font-size: 2.5em;\n}\n.ql-editor .ql-direction-rtl {\n  direction: rtl;\n  text-align: inherit;\n}\n.ql-editor .ql-align-center {\n  text-align: center;\n}\n.ql-editor .ql-align-justify {\n  text-align: justify;\n}\n.ql-editor .ql-align-right {\n  text-align: right;\n}\n.ql-editor.ql-blank::before {\n  color: rgba(0,0,0,0.6);\n  content: attr(data-placeholder);\n  font-style: italic;\n  left: 15px;\n  pointer-events: none;\n  position: absolute;\n  right: 15px;\n}\n.ql-snow.ql-toolbar:after,\n.ql-snow .ql-toolbar:after {\n  clear: both;\n  content: '';\n  display: table;\n}\n.ql-snow.ql-toolbar button,\n.ql-snow .ql-toolbar button {\n  background: none;\n  border: none;\n  cursor: pointer;\n  display: inline-block;\n  float: left;\n  height: 24px;\n  padding: 3px 5px;\n  width: 28px;\n  margin-left: 1px;\n  margin-right: 1px;\n}\n.ql-snow.ql-toolbar button svg,\n.ql-snow .ql-toolbar button svg {\n  float: left;\n  height: 100%;\n}\n.ql-snow.ql-toolbar button:active:hover,\n.ql-snow .ql-toolbar button:active:hover {\n  outline: none;\n}\n.ql-snow.ql-toolbar input.ql-image[type=file],\n.ql-snow .ql-toolbar input.ql-image[type=file] {\n  display: none;\n}\n.ql-snow.ql-toolbar button:hover,\n.ql-snow .ql-toolbar button:hover,\n.ql-snow.ql-toolbar button:focus,\n.ql-snow .ql-toolbar button:focus,\n.ql-snow.ql-toolbar .ql-picker-label:hover,\n.ql-snow .ql-toolbar .ql-picker-label:hover,\n.ql-snow.ql-toolbar .ql-picker-item:hover,\n.ql-snow .ql-toolbar .ql-picker-item:hover {\n  background-color: #f3f4f6;\n}\n.ql-snow.ql-toolbar button.ql-active,\n.ql-snow .ql-toolbar button.ql-active,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected {\n  background-color: #dbeafe;\n  color: #2563eb;\n}\n.ql-snow.ql-toolbar button.ql-active .ql-fill,\n.ql-snow .ql-toolbar button.ql-active .ql-fill,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill,\n.ql-snow.ql-toolbar button.ql-active .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke.ql-fill,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill {\n  fill: #2563eb;\n}\n.ql-snow.ql-toolbar button.ql-active .ql-stroke,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,\n.ql-snow.ql-toolbar button.ql-active .ql-stroke-miter,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke-miter,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {\n  stroke: #2563eb;\n}\n@media (pointer: coarse) {\n  .ql-snow.ql-toolbar button:hover:not(.ql-active),\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) {\n    color: #4b5563;\n  }\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {\n    fill: #4b5563;\n  }\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {\n    stroke: #4b5563;\n  }\n}\n.ql-snow {\n  box-sizing: border-box;\n}\n.ql-snow * {\n  box-sizing: border-box;\n}\n.ql-snow .ql-hidden {\n  display: none;\n}\n.ql-snow .ql-out-bottom,\n.ql-snow .ql-out-top {\n  visibility: hidden;\n}\n.ql-snow .ql-tooltip {\n  position: absolute;\n  transform: translateY(10px);\n}\n.ql-snow .ql-tooltip a {\n  cursor: pointer;\n  text-decoration: none;\n}\n.ql-snow .ql-tooltip.ql-flip {\n  transform: translateY(-10px);\n}\n.ql-snow .ql-formats {\n  display: inline-block;\n  vertical-align: middle;\n}\n.ql-snow .ql-formats:after {\n  clear: both;\n  content: '';\n  display: table;\n}\n.ql-snow .ql-stroke {\n  fill: none;\n  stroke: #4b5563;\n  stroke-linecap: round;\n  stroke-linejoin: round;\n  stroke-width: 2;\n}\n.ql-snow .ql-stroke-miter {\n  fill: none;\n  stroke: #4b5563;\n  stroke-miterlimit: 10;\n  stroke-width: 2;\n}\n.ql-snow .ql-fill,\n.ql-snow .ql-stroke.ql-fill {\n  fill: #4b5563;\n}\n.ql-snow .ql-empty {\n  fill: none;\n}\n.ql-snow .ql-even {\n  fill-rule: evenodd;\n}\n.ql-snow .ql-thin,\n.ql-snow .ql-stroke.ql-thin {\n  stroke-width: 1;\n}\n.ql-snow .ql-transparent {\n  opacity: 0.4;\n}\n.ql-snow .ql-direction svg:last-child {\n  display: none;\n}\n.ql-snow .ql-direction.ql-active svg:last-child {\n  display: inline;\n}\n.ql-snow .ql-direction.ql-active svg:first-child {\n  display: none;\n}\n.ql-snow .ql-editor h1 {\n  font-size: 2em;\n}\n.ql-snow .ql-editor h2 {\n  font-size: 1.5em;\n}\n.ql-snow .ql-editor h3 {\n  font-size: 1.17em;\n}\n.ql-snow .ql-editor h4 {\n  font-size: 1em;\n}\n.ql-snow .ql-editor h5 {\n  font-size: 0.83em;\n}\n.ql-snow .ql-editor h6 {\n  font-size: 0.67em;\n}\n.ql-snow .ql-editor a {\n  text-decoration: underline;\n}\n.ql-snow .ql-editor blockquote {\n  border-left: 4px solid #ccc;\n  margin-bottom: 5px;\n  margin-top: 5px;\n  padding-left: 16px;\n}\n.ql-snow .ql-editor code,\n.ql-snow .ql-editor pre {\n  background-color: #f0f0f0;\n  border-radius: 3px;\n}\n.ql-snow .ql-editor pre {\n  white-space: pre-wrap;\n  margin-bottom: 5px;\n  margin-top: 5px;\n  padding: 5px 10px;\n}\n.ql-snow .ql-editor code {\n  font-size: 85%;\n  padding: 2px 4px;\n}\n.ql-snow .ql-editor pre.ql-syntax {\n  background-color: #23241f;\n  color: #f8f8f2;\n  overflow: visible;\n}\n.ql-snow .ql-editor img {\n  max-width: 100%;\n}\n.ql-snow .ql-picker {\n  color: #4b5563;\n  display: inline-block;\n  float: left;\n  font-size: 14px;\n  font-weight: 500;\n  height: 24px;\n  position: relative;\n  vertical-align: middle;\n  margin-right: 1px;\n  margin-left: 1px;\n}\n.ql-snow .ql-picker-label {\n  cursor: pointer;\n  display: inline-block;\n  height: 100%;\n  padding-left: 8px;\n  padding-right: 2px;\n  position: relative;\n  width: 100%;\n}\n.ql-snow .ql-picker-label::before {\n  display: inline-block;\n  line-height: 22px;\n}\n.ql-snow .ql-picker-options {\n  background-color: #fff;\n  display: none;\n  min-width: 100%;\n  position: absolute;\n  white-space: nowrap;\n}\n.ql-snow .ql-picker-options .ql-picker-item {\n  cursor: pointer;\n  display: block;\n  padding: 5px 8px;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label {\n  color: #d1d5db;\n  z-index: 2;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {\n  fill: #d1d5db;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {\n  stroke: #d1d5db;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-options {\n  display: block;\n  margin-top: -1px;\n  top: 100%;\n  z-index: 1;\n}\n.ql-snow .ql-color-picker,\n.ql-snow .ql-icon-picker {\n  width: 28px;\n}\n.ql-snow .ql-color-picker .ql-picker-label,\n.ql-snow .ql-icon-picker .ql-picker-label {\n  padding: 2px 4px;\n}\n.ql-snow .ql-color-picker .ql-picker-label svg,\n.ql-snow .ql-icon-picker .ql-picker-label svg {\n  right: 4px;\n}\n.ql-snow .ql-icon-picker .ql-picker-options {\n  padding: 3px;\n}\n.ql-snow .ql-icon-picker .ql-picker-item {\n  height: 24px;\n  width: 24px;\n  padding: 2px 4px;\n  margin: 2px;\n}\n.ql-snow .ql-color-picker .ql-picker-options {\n  padding: 3px 5px;\n  width: 152px;\n}\n.ql-snow .ql-color-picker .ql-picker-item {\n  border: 1px solid transparent;\n  float: left;\n  height: 16px;\n  margin: 2px;\n  padding: 0px;\n  width: 16px;\n}\n.ql-snow .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg {\n  position: absolute;\n  margin-top: -9px;\n  right: 0;\n  top: 50%;\n  width: 18px;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=''])::before {\n  content: attr(data-label);\n}\n.ql-snow .ql-picker.ql-header {\n  width: 98px;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item::before {\n  content: 'Normal';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"1\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"1\"]::before {\n  content: 'Heading 1';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"2\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"2\"]::before {\n  content: 'Heading 2';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"3\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"3\"]::before {\n  content: 'Heading 3';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"4\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"4\"]::before {\n  content: 'Heading 4';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"5\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"5\"]::before {\n  content: 'Heading 5';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"6\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"6\"]::before {\n  content: 'Heading 6';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"1\"]::before {\n  font-size: 2em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"2\"]::before {\n  font-size: 1.5em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"3\"]::before {\n  font-size: 1.17em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"4\"]::before {\n  font-size: 1em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"5\"]::before {\n  font-size: 0.83em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"6\"]::before {\n  font-size: 0.67em;\n}\n.ql-snow .ql-picker.ql-font {\n  width: 108px;\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item::before {\n  content: 'Sans Serif';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {\n  content: 'Serif';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {\n  content: 'Monospace';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {\n  font-family: Georgia, Times New Roman, serif;\n}\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {\n  font-family: Monaco, Courier New, monospace;\n}\n.ql-snow .ql-picker.ql-size {\n  width: 98px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item::before {\n  content: 'Normal';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {\n  content: 'Small';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {\n  content: 'Large';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {\n  content: 'Huge';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {\n  font-size: 10px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {\n  font-size: 18px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {\n  font-size: 32px;\n}\n.ql-snow .ql-color-picker.ql-background .ql-picker-item {\n  background-color: #fff;\n}\n.ql-snow .ql-color-picker.ql-color .ql-picker-item {\n  background-color: #000;\n}\n.ql-toolbar.ql-snow {\n  border: 1px solid #d1d5db;\n  box-sizing: border-box;\n  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;\n  padding: 8px;\n}\n.ql-toolbar.ql-snow .ql-formats {\n  margin-right: 15px;\n}\n.ql-toolbar.ql-snow .ql-picker-label {\n  border: 1px solid transparent;\n}\n.ql-toolbar.ql-snow .ql-picker-options {\n  border: 1px solid transparent;\n  box-shadow: rgba(0,0,0,0.2) 0 2px 8px;\n}\n.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {\n  border-color: #d1d5db;\n}\n.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options {\n  border-color: #d1d5db;\n}\n.ql-toolbar.ql-snow .ql-color-picker .ql-picker-item.ql-selected,\n.ql-toolbar.ql-snow .ql-color-picker .ql-picker-item:hover {\n  border-color: #000;\n}\n.ql-toolbar.ql-snow + .ql-container.ql-snow {\n  border-top: 0px;\n}\n.ql-snow .ql-tooltip {\n  background-color: #fff;\n  border: 1px solid #d1d5db;\n  box-shadow: 0px 0px 5px #d1d5db;\n  color: #4b5563;\n  padding: 5px 12px;\n  white-space: nowrap;\n}\n.ql-snow .ql-tooltip::before {\n  content: \"Visit URL:\";\n  line-height: 26px;\n  margin-right: 8px;\n}\n.ql-snow .ql-tooltip input[type=text] {\n  display: none;\n  border: 1px solid #d1d5db;\n  font-size: 13px;\n  height: 26px;\n  margin: 0px;\n  padding: 3px 5px;\n  width: 170px;\n}\n.ql-snow .ql-tooltip a.ql-preview {\n  display: inline-block;\n  max-width: 200px;\n  overflow-x: hidden;\n  text-overflow: ellipsis;\n  vertical-align: top;\n}\n.ql-snow .ql-tooltip a.ql-action::after {\n  border-right: 1px solid #d1d5db;\n  content: 'Edit';\n  margin-left: 16px;\n  padding-right: 8px;\n}\n.ql-snow .ql-tooltip a.ql-remove::before {\n  content: 'Remove';\n  margin-left: 8px;\n}\n.ql-snow .ql-tooltip a {\n  line-height: 26px;\n}\n.ql-snow .ql-tooltip.ql-editing a.ql-preview,\n.ql-snow .ql-tooltip.ql-editing a.ql-remove {\n  display: none;\n}\n.ql-snow .ql-tooltip.ql-editing input[type=text] {\n  display: inline-block;\n}\n.ql-snow .ql-tooltip.ql-editing a.ql-action::after {\n  border-right: 0px;\n  content: 'Save';\n  padding-right: 0px;\n}\n.ql-snow .ql-tooltip[data-mode=link]::before {\n  content: \"Enter link:\";\n}\n.ql-snow .ql-tooltip[data-mode=formula]::before {\n  content: \"Enter formula:\";\n}\n.ql-snow .ql-tooltip[data-mode=video]::before {\n  content: \"Enter video:\";\n}\n.ql-snow a {\n  color: #2563eb;\n}\n.ql-container.ql-snow {\n  border: 1px solid #d1d5db;\n}\n", ""]);
+___CSS_LOADER_EXPORT___.push([module.id, ".ql-container {\n  box-sizing: border-box;\n  font-family: Helvetica, Arial, sans-serif;\n  font-size: 13px;\n  height: 100%;\n  margin: 0px;\n  position: relative;\n}\n.ql-container.ql-disabled .ql-tooltip {\n  visibility: hidden;\n}\n.ql-container.ql-disabled .ql-editor ul[data-checked] > li::before {\n  pointer-events: none;\n}\n.ql-clipboard {\n  left: -100000px;\n  height: 1px;\n  overflow-y: hidden;\n  position: absolute;\n  top: 50%;\n}\n.ql-clipboard p {\n  margin: 0;\n  padding: 0;\n}\n.ql-editor {\n  box-sizing: border-box;\n  line-height: 1.42;\n  height: 100%;\n  outline: none;\n  overflow-y: auto;\n  padding: 12px 15px;\n  -o-tab-size: 4;\n     tab-size: 4;\n  -moz-tab-size: 4;\n  text-align: left;\n  white-space: pre-wrap;\n  word-wrap: break-word;\n}\n.ql-editor > * {\n  cursor: text;\n}\n.ql-editor p,\n.ql-editor ol,\n.ql-editor ul,\n.ql-editor pre,\n.ql-editor blockquote,\n.ql-editor h1,\n.ql-editor h2,\n.ql-editor h3,\n.ql-editor h4,\n.ql-editor h5,\n.ql-editor h6 {\n  margin: 0;\n  padding: 0;\n  counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol,\n.ql-editor ul {\n  padding-left: 1.5em;\n}\n.ql-editor ol > li,\n.ql-editor ul > li {\n  list-style-type: none;\n}\n.ql-editor ul > li::before {\n  content: '\\2022';\n}\n.ql-editor ul[data-checked=true],\n.ql-editor ul[data-checked=false] {\n  pointer-events: none;\n}\n.ql-editor ul[data-checked=true] > li *,\n.ql-editor ul[data-checked=false] > li * {\n  pointer-events: all;\n}\n.ql-editor ul[data-checked=true] > li::before,\n.ql-editor ul[data-checked=false] > li::before {\n  color: #777;\n  cursor: pointer;\n  pointer-events: all;\n}\n.ql-editor ul[data-checked=true] > li::before {\n  content: '\\2611';\n}\n.ql-editor ul[data-checked=false] > li::before {\n  content: '\\2610';\n}\n.ql-editor li::before {\n  display: inline-block;\n  white-space: nowrap;\n  width: 1.2em;\n}\n.ql-editor li:not(.ql-direction-rtl)::before {\n  margin-left: -1.5em;\n  margin-right: 0.3em;\n  text-align: right;\n}\n.ql-editor li.ql-direction-rtl::before {\n  margin-left: 0.3em;\n  margin-right: -1.5em;\n}\n.ql-editor ol li:not(.ql-direction-rtl),\n.ql-editor ul li:not(.ql-direction-rtl) {\n  padding-left: 1.5em;\n}\n.ql-editor ol li.ql-direction-rtl,\n.ql-editor ul li.ql-direction-rtl {\n  padding-right: 1.5em;\n}\n.ql-editor ol li {\n  counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n  counter-increment: list-0;\n}\n.ql-editor ol li:before {\n  content: counter(list-0, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-1 {\n  counter-increment: list-1;\n}\n.ql-editor ol li.ql-indent-1:before {\n  content: counter(list-1, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-1 {\n  counter-reset: list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-2 {\n  counter-increment: list-2;\n}\n.ql-editor ol li.ql-indent-2:before {\n  content: counter(list-2, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-2 {\n  counter-reset: list-3 list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-3 {\n  counter-increment: list-3;\n}\n.ql-editor ol li.ql-indent-3:before {\n  content: counter(list-3, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-3 {\n  counter-reset: list-4 list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-4 {\n  counter-increment: list-4;\n}\n.ql-editor ol li.ql-indent-4:before {\n  content: counter(list-4, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-4 {\n  counter-reset: list-5 list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-5 {\n  counter-increment: list-5;\n}\n.ql-editor ol li.ql-indent-5:before {\n  content: counter(list-5, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-5 {\n  counter-reset: list-6 list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-6 {\n  counter-increment: list-6;\n}\n.ql-editor ol li.ql-indent-6:before {\n  content: counter(list-6, decimal) '. ';\n}\n.ql-editor ol li.ql-indent-6 {\n  counter-reset: list-7 list-8 list-9;\n}\n.ql-editor ol li.ql-indent-7 {\n  counter-increment: list-7;\n}\n.ql-editor ol li.ql-indent-7:before {\n  content: counter(list-7, lower-alpha) '. ';\n}\n.ql-editor ol li.ql-indent-7 {\n  counter-reset: list-8 list-9;\n}\n.ql-editor ol li.ql-indent-8 {\n  counter-increment: list-8;\n}\n.ql-editor ol li.ql-indent-8:before {\n  content: counter(list-8, lower-roman) '. ';\n}\n.ql-editor ol li.ql-indent-8 {\n  counter-reset: list-9;\n}\n.ql-editor ol li.ql-indent-9 {\n  counter-increment: list-9;\n}\n.ql-editor ol li.ql-indent-9:before {\n  content: counter(list-9, decimal) '. ';\n}\n.ql-editor .ql-indent-1:not(.ql-direction-rtl) {\n  padding-left: 3em;\n}\n.ql-editor li.ql-indent-1:not(.ql-direction-rtl) {\n  padding-left: 4.5em;\n}\n.ql-editor .ql-indent-1.ql-direction-rtl.ql-align-right {\n  padding-right: 3em;\n}\n.ql-editor li.ql-indent-1.ql-direction-rtl.ql-align-right {\n  padding-right: 4.5em;\n}\n.ql-editor .ql-indent-2:not(.ql-direction-rtl) {\n  padding-left: 6em;\n}\n.ql-editor li.ql-indent-2:not(.ql-direction-rtl) {\n  padding-left: 7.5em;\n}\n.ql-editor .ql-indent-2.ql-direction-rtl.ql-align-right {\n  padding-right: 6em;\n}\n.ql-editor li.ql-indent-2.ql-direction-rtl.ql-align-right {\n  padding-right: 7.5em;\n}\n.ql-editor .ql-indent-3:not(.ql-direction-rtl) {\n  padding-left: 9em;\n}\n.ql-editor li.ql-indent-3:not(.ql-direction-rtl) {\n  padding-left: 10.5em;\n}\n.ql-editor .ql-indent-3.ql-direction-rtl.ql-align-right {\n  padding-right: 9em;\n}\n.ql-editor li.ql-indent-3.ql-direction-rtl.ql-align-right {\n  padding-right: 10.5em;\n}\n.ql-editor .ql-indent-4:not(.ql-direction-rtl) {\n  padding-left: 12em;\n}\n.ql-editor li.ql-indent-4:not(.ql-direction-rtl) {\n  padding-left: 13.5em;\n}\n.ql-editor .ql-indent-4.ql-direction-rtl.ql-align-right {\n  padding-right: 12em;\n}\n.ql-editor li.ql-indent-4.ql-direction-rtl.ql-align-right {\n  padding-right: 13.5em;\n}\n.ql-editor .ql-indent-5:not(.ql-direction-rtl) {\n  padding-left: 15em;\n}\n.ql-editor li.ql-indent-5:not(.ql-direction-rtl) {\n  padding-left: 16.5em;\n}\n.ql-editor .ql-indent-5.ql-direction-rtl.ql-align-right {\n  padding-right: 15em;\n}\n.ql-editor li.ql-indent-5.ql-direction-rtl.ql-align-right {\n  padding-right: 16.5em;\n}\n.ql-editor .ql-indent-6:not(.ql-direction-rtl) {\n  padding-left: 18em;\n}\n.ql-editor li.ql-indent-6:not(.ql-direction-rtl) {\n  padding-left: 19.5em;\n}\n.ql-editor .ql-indent-6.ql-direction-rtl.ql-align-right {\n  padding-right: 18em;\n}\n.ql-editor li.ql-indent-6.ql-direction-rtl.ql-align-right {\n  padding-right: 19.5em;\n}\n.ql-editor .ql-indent-7:not(.ql-direction-rtl) {\n  padding-left: 21em;\n}\n.ql-editor li.ql-indent-7:not(.ql-direction-rtl) {\n  padding-left: 22.5em;\n}\n.ql-editor .ql-indent-7.ql-direction-rtl.ql-align-right {\n  padding-right: 21em;\n}\n.ql-editor li.ql-indent-7.ql-direction-rtl.ql-align-right {\n  padding-right: 22.5em;\n}\n.ql-editor .ql-indent-8:not(.ql-direction-rtl) {\n  padding-left: 24em;\n}\n.ql-editor li.ql-indent-8:not(.ql-direction-rtl) {\n  padding-left: 25.5em;\n}\n.ql-editor .ql-indent-8.ql-direction-rtl.ql-align-right {\n  padding-right: 24em;\n}\n.ql-editor li.ql-indent-8.ql-direction-rtl.ql-align-right {\n  padding-right: 25.5em;\n}\n.ql-editor .ql-indent-9:not(.ql-direction-rtl) {\n  padding-left: 27em;\n}\n.ql-editor li.ql-indent-9:not(.ql-direction-rtl) {\n  padding-left: 28.5em;\n}\n.ql-editor .ql-indent-9.ql-direction-rtl.ql-align-right {\n  padding-right: 27em;\n}\n.ql-editor li.ql-indent-9.ql-direction-rtl.ql-align-right {\n  padding-right: 28.5em;\n}\n.ql-editor .ql-video {\n  display: block;\n  max-width: 100%;\n}\n.ql-editor .ql-video.ql-align-center {\n  margin: 0 auto;\n}\n.ql-editor .ql-video.ql-align-right {\n  margin: 0 0 0 auto;\n}\n.ql-editor .ql-bg-black {\n  background-color: #000;\n}\n.ql-editor .ql-bg-red {\n  background-color: #e60000;\n}\n.ql-editor .ql-bg-orange {\n  background-color: #f90;\n}\n.ql-editor .ql-bg-yellow {\n  background-color: #ff0;\n}\n.ql-editor .ql-bg-green {\n  background-color: #008a00;\n}\n.ql-editor .ql-bg-blue {\n  background-color: #06c;\n}\n.ql-editor .ql-bg-purple {\n  background-color: #93f;\n}\n.ql-editor .ql-color-white {\n  color: #fff;\n}\n.ql-editor .ql-color-red {\n  color: #e60000;\n}\n.ql-editor .ql-color-orange {\n  color: #f90;\n}\n.ql-editor .ql-color-yellow {\n  color: #ff0;\n}\n.ql-editor .ql-color-green {\n  color: #008a00;\n}\n.ql-editor .ql-color-blue {\n  color: #06c;\n}\n.ql-editor .ql-color-purple {\n  color: #93f;\n}\n.ql-editor .ql-font-serif {\n  font-family: Georgia, Times New Roman, serif;\n}\n.ql-editor .ql-font-monospace {\n  font-family: Monaco, Courier New, monospace;\n}\n.ql-editor .ql-size-small {\n  font-size: 0.75em;\n}\n.ql-editor .ql-size-large {\n  font-size: 1.5em;\n}\n.ql-editor .ql-size-huge {\n  font-size: 2.5em;\n}\n.ql-editor .ql-direction-rtl {\n  direction: rtl;\n  text-align: inherit;\n}\n.ql-editor .ql-align-center {\n  text-align: center;\n}\n.ql-editor .ql-align-justify {\n  text-align: justify;\n}\n.ql-editor .ql-align-right {\n  text-align: right;\n}\n.ql-editor.ql-blank::before {\n  color: rgba(0,0,0,0.6);\n  content: attr(data-placeholder);\n  font-style: italic;\n  left: 15px;\n  pointer-events: none;\n  position: absolute;\n  right: 15px;\n}\n.ql-snow.ql-toolbar:after,\n.ql-snow .ql-toolbar:after {\n  clear: both;\n  content: '';\n  display: table;\n}\n.ql-snow.ql-toolbar button,\n.ql-snow .ql-toolbar button {\n  background: none;\n  border: none;\n  cursor: pointer;\n  display: inline-block;\n  float: left;\n  height: 24px;\n  padding: 3px 5px;\n  width: 28px;\n  margin-left: 1px;\n  margin-right: 1px;\n}\n.ql-snow.ql-toolbar button svg,\n.ql-snow .ql-toolbar button svg {\n  float: left;\n  height: 100%;\n}\n.ql-snow.ql-toolbar button:active:hover,\n.ql-snow .ql-toolbar button:active:hover {\n  outline: none;\n}\n.ql-snow.ql-toolbar input.ql-image[type=file],\n.ql-snow .ql-toolbar input.ql-image[type=file] {\n  display: none;\n}\n.ql-snow.ql-toolbar button:hover,\n.ql-snow .ql-toolbar button:hover,\n.ql-snow.ql-toolbar button:focus,\n.ql-snow .ql-toolbar button:focus,\n.ql-snow.ql-toolbar .ql-picker-label:hover,\n.ql-snow .ql-toolbar .ql-picker-label:hover,\n.ql-snow.ql-toolbar .ql-picker-item:hover,\n.ql-snow .ql-toolbar .ql-picker-item:hover {\n  background-color: #f3f4f6;\n}\n.ql-snow.ql-toolbar button.ql-active,\n.ql-snow .ql-toolbar button.ql-active,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected {\n  background-color: #dbeafe;\n  color: #2563eb;\n}\n.ql-snow.ql-toolbar button.ql-active .ql-fill,\n.ql-snow .ql-toolbar button.ql-active .ql-fill,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill,\n.ql-snow.ql-toolbar button.ql-active .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke.ql-fill,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill {\n  fill: #2563eb;\n}\n.ql-snow.ql-toolbar button.ql-active .ql-stroke,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,\n.ql-snow.ql-toolbar button.ql-active .ql-stroke-miter,\n.ql-snow .ql-toolbar button.ql-active .ql-stroke-miter,\n.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,\n.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,\n.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,\n.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {\n  stroke: #2563eb;\n}\n@media (pointer: coarse) {\n  .ql-snow.ql-toolbar button:hover:not(.ql-active),\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) {\n    color: #4b5563;\n  }\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-fill,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-fill,\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke.ql-fill {\n    fill: #4b5563;\n  }\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke,\n  .ql-snow.ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter,\n  .ql-snow .ql-toolbar button:hover:not(.ql-active) .ql-stroke-miter {\n    stroke: #4b5563;\n  }\n}\n.ql-snow {\n  box-sizing: border-box;\n}\n.ql-snow * {\n  box-sizing: border-box;\n}\n.ql-snow .ql-hidden {\n  display: none;\n}\n.ql-snow .ql-out-bottom,\n.ql-snow .ql-out-top {\n  visibility: hidden;\n}\n.ql-snow .ql-tooltip {\n  position: absolute;\n  transform: translateY(10px);\n}\n.ql-snow .ql-tooltip a {\n  cursor: pointer;\n  text-decoration: none;\n}\n.ql-snow .ql-tooltip.ql-flip {\n  transform: translateY(-10px);\n}\n.ql-snow .ql-formats {\n  display: inline-block;\n  vertical-align: middle;\n}\n.ql-snow .ql-formats:after {\n  clear: both;\n  content: '';\n  display: table;\n}\n.ql-snow .ql-stroke {\n  fill: none;\n  stroke: #4b5563;\n  stroke-linecap: round;\n  stroke-linejoin: round;\n  stroke-width: 2;\n}\n.ql-snow .ql-stroke-miter {\n  fill: none;\n  stroke: #4b5563;\n  stroke-miterlimit: 10;\n  stroke-width: 2;\n}\n.ql-snow .ql-fill,\n.ql-snow .ql-stroke.ql-fill {\n  fill: #4b5563;\n}\n.ql-snow .ql-empty {\n  fill: none;\n}\n.ql-snow .ql-even {\n  fill-rule: evenodd;\n}\n.ql-snow .ql-thin,\n.ql-snow .ql-stroke.ql-thin {\n  stroke-width: 1;\n}\n.ql-snow .ql-transparent {\n  opacity: 0.4;\n}\n.ql-snow .ql-direction svg:last-child {\n  display: none;\n}\n.ql-snow .ql-direction.ql-active svg:last-child {\n  display: inline;\n}\n.ql-snow .ql-direction.ql-active svg:first-child {\n  display: none;\n}\n.ql-snow .ql-editor h1 {\n  font-size: 2em;\n}\n.ql-snow .ql-editor h2 {\n  font-size: 1.5em;\n}\n.ql-snow .ql-editor h3 {\n  font-size: 1.17em;\n}\n.ql-snow .ql-editor h4 {\n  font-size: 1em;\n}\n.ql-snow .ql-editor h5 {\n  font-size: 0.83em;\n}\n.ql-snow .ql-editor h6 {\n  font-size: 0.67em;\n}\n.ql-snow .ql-editor a {\n  text-decoration: underline;\n}\n.ql-snow .ql-editor blockquote {\n  border-left: 4px solid #ccc;\n  margin-bottom: 5px;\n  margin-top: 5px;\n  padding-left: 16px;\n}\n.ql-snow .ql-editor code,\n.ql-snow .ql-editor pre {\n  background-color: #f0f0f0;\n  border-radius: 3px;\n}\n.ql-snow .ql-editor pre {\n  white-space: pre-wrap;\n  margin-bottom: 5px;\n  margin-top: 5px;\n  padding: 5px 10px;\n}\n.ql-snow .ql-editor code {\n  font-size: 85%;\n  padding: 2px 4px;\n}\n.ql-snow .ql-editor pre.ql-syntax {\n  background-color: #23241f;\n  color: #f8f8f2;\n  overflow: visible;\n}\n.ql-snow .ql-editor img {\n  max-width: 100%;\n}\n.ql-snow .ql-picker {\n  color: #4b5563;\n  display: inline-block;\n  float: left;\n  font-size: 14px;\n  font-weight: 500;\n  height: 24px;\n  position: relative;\n  vertical-align: middle;\n  margin-right: 1px;\n  margin-left: 1px;\n}\n.ql-snow .ql-picker-label {\n  cursor: pointer;\n  display: flex;\n  height: 100%;\n  padding-left: 8px;\n  padding-right: 2px;\n  position: relative;\n  width: 100%;\n}\n.ql-snow .ql-picker-label::before {\n  display: inline-block;\n  line-height: 22px;\n}\n.ql-snow .ql-picker-options {\n  background-color: #fff;\n  display: none;\n  min-width: 100%;\n  position: absolute;\n  white-space: nowrap;\n}\n.ql-snow .ql-picker-options .ql-picker-item {\n  cursor: pointer;\n  display: block;\n  padding: 5px 8px;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label {\n  color: #d1d5db;\n  z-index: 2;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {\n  fill: #d1d5db;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {\n  stroke: #d1d5db;\n}\n.ql-snow .ql-picker.ql-expanded .ql-picker-options {\n  display: block;\n  margin-top: -1px;\n  top: 100%;\n  z-index: 1;\n}\n.ql-snow .ql-color-picker,\n.ql-snow .ql-icon-picker {\n  width: 28px;\n}\n.ql-snow .ql-color-picker .ql-picker-label,\n.ql-snow .ql-icon-picker .ql-picker-label {\n  padding: 2px 4px;\n}\n.ql-snow .ql-color-picker .ql-picker-label svg,\n.ql-snow .ql-icon-picker .ql-picker-label svg {\n  right: 4px;\n}\n.ql-snow .ql-icon-picker .ql-picker-options {\n  padding: 3px;\n}\n.ql-snow .ql-icon-picker .ql-picker-item {\n  height: 24px;\n  width: 24px;\n  padding: 2px 4px;\n  margin: 2px;\n}\n.ql-snow .ql-color-picker .ql-picker-options {\n  padding: 3px 5px;\n  width: 152px;\n}\n.ql-snow .ql-color-picker .ql-picker-item {\n  border: 1px solid transparent;\n  float: left;\n  height: 16px;\n  margin: 2px;\n  padding: 0px;\n  width: 16px;\n}\n.ql-snow .ql-picker:not(.ql-color-picker):not(.ql-icon-picker) svg {\n  position: absolute;\n  margin-top: -9px;\n  right: 0;\n  top: 50%;\n  width: 18px;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-label]:not([data-label=''])::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-label]:not([data-label=''])::before {\n  content: attr(data-label);\n}\n.ql-snow .ql-picker.ql-header {\n  width: 98px;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item::before {\n  content: 'Normal';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"1\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"1\"]::before {\n  content: 'Heading 1';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"2\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"2\"]::before {\n  content: 'Heading 2';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"3\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"3\"]::before {\n  content: 'Heading 3';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"4\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"4\"]::before {\n  content: 'Heading 4';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"5\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"5\"]::before {\n  content: 'Heading 5';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-label[data-value=\"6\"]::before,\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"6\"]::before {\n  content: 'Heading 6';\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"1\"]::before {\n  font-size: 2em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"2\"]::before {\n  font-size: 1.5em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"3\"]::before {\n  font-size: 1.17em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"4\"]::before {\n  font-size: 1em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"5\"]::before {\n  font-size: 0.83em;\n}\n.ql-snow .ql-picker.ql-header .ql-picker-item[data-value=\"6\"]::before {\n  font-size: 0.67em;\n}\n.ql-snow .ql-picker.ql-font {\n  width: 108px;\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item::before {\n  content: 'Sans Serif';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=serif]::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {\n  content: 'Serif';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=monospace]::before,\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {\n  content: 'Monospace';\n}\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=serif]::before {\n  font-family: Georgia, Times New Roman, serif;\n}\n.ql-snow .ql-picker.ql-font .ql-picker-item[data-value=monospace]::before {\n  font-family: Monaco, Courier New, monospace;\n}\n.ql-snow .ql-picker.ql-size {\n  width: 98px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item::before {\n  content: 'Normal';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=small]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {\n  content: 'Small';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=large]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {\n  content: 'Large';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-label[data-value=huge]::before,\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {\n  content: 'Huge';\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=small]::before {\n  font-size: 10px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=large]::before {\n  font-size: 18px;\n}\n.ql-snow .ql-picker.ql-size .ql-picker-item[data-value=huge]::before {\n  font-size: 32px;\n}\n.ql-snow .ql-color-picker.ql-background .ql-picker-item {\n  background-color: #fff;\n}\n.ql-snow .ql-color-picker.ql-color .ql-picker-item {\n  background-color: #000;\n}\n.ql-toolbar.ql-snow {\n  border: 1px solid #d1d5db;\n  box-sizing: border-box;\n  font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;\n  padding: 8px;\n}\n.ql-toolbar.ql-snow .ql-formats {\n  margin-right: 15px;\n}\n.ql-toolbar.ql-snow .ql-picker-label {\n  border: 1px solid transparent;\n}\n.ql-toolbar.ql-snow .ql-picker-options {\n  border: 1px solid transparent;\n  box-shadow: rgba(0,0,0,0.2) 0 2px 8px;\n}\n.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {\n  border-color: #d1d5db;\n}\n.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options {\n  border-color: #d1d5db;\n}\n.ql-toolbar.ql-snow .ql-color-picker .ql-picker-item.ql-selected,\n.ql-toolbar.ql-snow .ql-color-picker .ql-picker-item:hover {\n  border-color: #000;\n}\n.ql-toolbar.ql-snow + .ql-container.ql-snow {\n  border-top: 0px;\n}\n.ql-snow .ql-tooltip {\n  background-color: #fff;\n  border: 1px solid #d1d5db;\n  box-shadow: 0px 0px 5px #d1d5db;\n  color: #4b5563;\n  padding: 5px 12px;\n  white-space: nowrap;\n}\n.ql-snow .ql-tooltip::before {\n  content: \"Visit URL:\";\n  line-height: 26px;\n  margin-right: 8px;\n}\n.ql-snow .ql-tooltip input[type=text] {\n  display: none;\n  border: 1px solid #d1d5db;\n  font-size: 13px;\n  height: 26px;\n  margin: 0px;\n  padding: 3px 5px;\n  width: 170px;\n}\n.ql-snow .ql-tooltip a.ql-preview {\n  display: inline-block;\n  max-width: 200px;\n  overflow-x: hidden;\n  text-overflow: ellipsis;\n  vertical-align: top;\n}\n.ql-snow .ql-tooltip a.ql-action::after {\n  border-right: 1px solid #d1d5db;\n  content: 'Edit';\n  margin-left: 16px;\n  padding-right: 8px;\n}\n.ql-snow .ql-tooltip a.ql-remove::before {\n  content: 'Remove';\n  margin-left: 8px;\n}\n.ql-snow .ql-tooltip a {\n  line-height: 26px;\n}\n.ql-snow .ql-tooltip.ql-editing a.ql-preview,\n.ql-snow .ql-tooltip.ql-editing a.ql-remove {\n  display: none;\n}\n.ql-snow .ql-tooltip.ql-editing input[type=text] {\n  display: inline-block;\n}\n.ql-snow .ql-tooltip.ql-editing a.ql-action::after {\n  border-right: 0px;\n  content: 'Save';\n  padding-right: 0px;\n}\n.ql-snow .ql-tooltip[data-mode=link]::before {\n  content: \"Enter link:\";\n}\n.ql-snow .ql-tooltip[data-mode=formula]::before {\n  content: \"Enter formula:\";\n}\n.ql-snow .ql-tooltip[data-mode=video]::before {\n  content: \"Enter video:\";\n}\n.ql-snow a {\n  color: #2563eb;\n}\n.ql-container.ql-snow {\n  border: 1px solid #d1d5db;\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/fast-diff/diff.js":
+/*!****************************************!*\
+  !*** ./node_modules/fast-diff/diff.js ***!
+  \****************************************/
+/***/ ((module) => {
+
+/**
+ * This library modifies the diff-patch-match library by Neil Fraser
+ * by removing the patch and match functionality and certain advanced
+ * options in the diff function. The original license is as follows:
+ *
+ * ===
+ *
+ * Diff Match and Patch
+ *
+ * Copyright 2006 Google Inc.
+ * http://code.google.com/p/google-diff-match-patch/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
+ * The data structure representing a diff is an array of tuples:
+ * [[DIFF_DELETE, 'Hello'], [DIFF_INSERT, 'Goodbye'], [DIFF_EQUAL, ' world.']]
+ * which means: delete 'Hello', add 'Goodbye' and keep ' world.'
+ */
+var DIFF_DELETE = -1;
+var DIFF_INSERT = 1;
+var DIFF_EQUAL = 0;
+
+
+/**
+ * Find the differences between two texts.  Simplifies the problem by stripping
+ * any common prefix or suffix off the texts before diffing.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {Int|Object} [cursor_pos] Edit position in text1 or object with more info
+ * @return {Array} Array of diff tuples.
+ */
+function diff_main(text1, text2, cursor_pos, _fix_unicode) {
+  // Check for equality
+  if (text1 === text2) {
+    if (text1) {
+      return [[DIFF_EQUAL, text1]];
+    }
+    return [];
+  }
+
+  if (cursor_pos != null) {
+    var editdiff = find_cursor_edit_diff(text1, text2, cursor_pos);
+    if (editdiff) {
+      return editdiff;
+    }
+  }
+
+  // Trim off common prefix (speedup).
+  var commonlength = diff_commonPrefix(text1, text2);
+  var commonprefix = text1.substring(0, commonlength);
+  text1 = text1.substring(commonlength);
+  text2 = text2.substring(commonlength);
+
+  // Trim off common suffix (speedup).
+  commonlength = diff_commonSuffix(text1, text2);
+  var commonsuffix = text1.substring(text1.length - commonlength);
+  text1 = text1.substring(0, text1.length - commonlength);
+  text2 = text2.substring(0, text2.length - commonlength);
+
+  // Compute the diff on the middle block.
+  var diffs = diff_compute_(text1, text2);
+
+  // Restore the prefix and suffix.
+  if (commonprefix) {
+    diffs.unshift([DIFF_EQUAL, commonprefix]);
+  }
+  if (commonsuffix) {
+    diffs.push([DIFF_EQUAL, commonsuffix]);
+  }
+  diff_cleanupMerge(diffs, _fix_unicode);
+  return diffs;
+};
+
+
+/**
+ * Find the differences between two texts.  Assumes that the texts do not
+ * have any common prefix or suffix.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @return {Array} Array of diff tuples.
+ */
+function diff_compute_(text1, text2) {
+  var diffs;
+
+  if (!text1) {
+    // Just add some text (speedup).
+    return [[DIFF_INSERT, text2]];
+  }
+
+  if (!text2) {
+    // Just delete some text (speedup).
+    return [[DIFF_DELETE, text1]];
+  }
+
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  var i = longtext.indexOf(shorttext);
+  if (i !== -1) {
+    // Shorter text is inside the longer text (speedup).
+    diffs = [
+      [DIFF_INSERT, longtext.substring(0, i)],
+      [DIFF_EQUAL, shorttext],
+      [DIFF_INSERT, longtext.substring(i + shorttext.length)]
+    ];
+    // Swap insertions for deletions if diff is reversed.
+    if (text1.length > text2.length) {
+      diffs[0][0] = diffs[2][0] = DIFF_DELETE;
+    }
+    return diffs;
+  }
+
+  if (shorttext.length === 1) {
+    // Single character string.
+    // After the previous speedup, the character can't be an equality.
+    return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+  }
+
+  // Check to see if the problem can be split in two.
+  var hm = diff_halfMatch_(text1, text2);
+  if (hm) {
+    // A half-match was found, sort out the return data.
+    var text1_a = hm[0];
+    var text1_b = hm[1];
+    var text2_a = hm[2];
+    var text2_b = hm[3];
+    var mid_common = hm[4];
+    // Send both pairs off for separate processing.
+    var diffs_a = diff_main(text1_a, text2_a);
+    var diffs_b = diff_main(text1_b, text2_b);
+    // Merge the results.
+    return diffs_a.concat([[DIFF_EQUAL, mid_common]], diffs_b);
+  }
+
+  return diff_bisect_(text1, text2);
+};
+
+
+/**
+ * Find the 'middle snake' of a diff, split the problem in two
+ * and return the recursively constructed diff.
+ * See Myers 1986 paper: An O(ND) Difference Algorithm and Its Variations.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @return {Array} Array of diff tuples.
+ * @private
+ */
+function diff_bisect_(text1, text2) {
+  // Cache the text lengths to prevent multiple calls.
+  var text1_length = text1.length;
+  var text2_length = text2.length;
+  var max_d = Math.ceil((text1_length + text2_length) / 2);
+  var v_offset = max_d;
+  var v_length = 2 * max_d;
+  var v1 = new Array(v_length);
+  var v2 = new Array(v_length);
+  // Setting all elements to -1 is faster in Chrome & Firefox than mixing
+  // integers and undefined.
+  for (var x = 0; x < v_length; x++) {
+    v1[x] = -1;
+    v2[x] = -1;
+  }
+  v1[v_offset + 1] = 0;
+  v2[v_offset + 1] = 0;
+  var delta = text1_length - text2_length;
+  // If the total number of characters is odd, then the front path will collide
+  // with the reverse path.
+  var front = (delta % 2 !== 0);
+  // Offsets for start and end of k loop.
+  // Prevents mapping of space beyond the grid.
+  var k1start = 0;
+  var k1end = 0;
+  var k2start = 0;
+  var k2end = 0;
+  for (var d = 0; d < max_d; d++) {
+    // Walk the front path one step.
+    for (var k1 = -d + k1start; k1 <= d - k1end; k1 += 2) {
+      var k1_offset = v_offset + k1;
+      var x1;
+      if (k1 === -d || (k1 !== d && v1[k1_offset - 1] < v1[k1_offset + 1])) {
+        x1 = v1[k1_offset + 1];
+      } else {
+        x1 = v1[k1_offset - 1] + 1;
+      }
+      var y1 = x1 - k1;
+      while (
+        x1 < text1_length && y1 < text2_length &&
+        text1.charAt(x1) === text2.charAt(y1)
+      ) {
+        x1++;
+        y1++;
+      }
+      v1[k1_offset] = x1;
+      if (x1 > text1_length) {
+        // Ran off the right of the graph.
+        k1end += 2;
+      } else if (y1 > text2_length) {
+        // Ran off the bottom of the graph.
+        k1start += 2;
+      } else if (front) {
+        var k2_offset = v_offset + delta - k1;
+        if (k2_offset >= 0 && k2_offset < v_length && v2[k2_offset] !== -1) {
+          // Mirror x2 onto top-left coordinate system.
+          var x2 = text1_length - v2[k2_offset];
+          if (x1 >= x2) {
+            // Overlap detected.
+            return diff_bisectSplit_(text1, text2, x1, y1);
+          }
+        }
+      }
+    }
+
+    // Walk the reverse path one step.
+    for (var k2 = -d + k2start; k2 <= d - k2end; k2 += 2) {
+      var k2_offset = v_offset + k2;
+      var x2;
+      if (k2 === -d || (k2 !== d && v2[k2_offset - 1] < v2[k2_offset + 1])) {
+        x2 = v2[k2_offset + 1];
+      } else {
+        x2 = v2[k2_offset - 1] + 1;
+      }
+      var y2 = x2 - k2;
+      while (
+        x2 < text1_length && y2 < text2_length &&
+        text1.charAt(text1_length - x2 - 1) === text2.charAt(text2_length - y2 - 1)
+      ) {
+        x2++;
+        y2++;
+      }
+      v2[k2_offset] = x2;
+      if (x2 > text1_length) {
+        // Ran off the left of the graph.
+        k2end += 2;
+      } else if (y2 > text2_length) {
+        // Ran off the top of the graph.
+        k2start += 2;
+      } else if (!front) {
+        var k1_offset = v_offset + delta - k2;
+        if (k1_offset >= 0 && k1_offset < v_length && v1[k1_offset] !== -1) {
+          var x1 = v1[k1_offset];
+          var y1 = v_offset + x1 - k1_offset;
+          // Mirror x2 onto top-left coordinate system.
+          x2 = text1_length - x2;
+          if (x1 >= x2) {
+            // Overlap detected.
+            return diff_bisectSplit_(text1, text2, x1, y1);
+          }
+        }
+      }
+    }
+  }
+  // Diff took too long and hit the deadline or
+  // number of diffs equals number of characters, no commonality at all.
+  return [[DIFF_DELETE, text1], [DIFF_INSERT, text2]];
+};
+
+
+/**
+ * Given the location of the 'middle snake', split the diff in two parts
+ * and recurse.
+ * @param {string} text1 Old string to be diffed.
+ * @param {string} text2 New string to be diffed.
+ * @param {number} x Index of split point in text1.
+ * @param {number} y Index of split point in text2.
+ * @return {Array} Array of diff tuples.
+ */
+function diff_bisectSplit_(text1, text2, x, y) {
+  var text1a = text1.substring(0, x);
+  var text2a = text2.substring(0, y);
+  var text1b = text1.substring(x);
+  var text2b = text2.substring(y);
+
+  // Compute both diffs serially.
+  var diffs = diff_main(text1a, text2a);
+  var diffsb = diff_main(text1b, text2b);
+
+  return diffs.concat(diffsb);
+};
+
+
+/**
+ * Determine the common prefix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the start of each
+ *     string.
+ */
+function diff_commonPrefix(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 || text1.charAt(0) !== text2.charAt(0)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerstart = 0;
+  while (pointermin < pointermid) {
+    if (
+      text1.substring(pointerstart, pointermid) ==
+      text2.substring(pointerstart, pointermid)
+    ) {
+      pointermin = pointermid;
+      pointerstart = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+
+  if (is_surrogate_pair_start(text1.charCodeAt(pointermid - 1))) {
+    pointermid--;
+  }
+
+  return pointermid;
+};
+
+
+/**
+ * Determine the common suffix of two strings.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {number} The number of characters common to the end of each string.
+ */
+function diff_commonSuffix(text1, text2) {
+  // Quick check for common null cases.
+  if (!text1 || !text2 || text1.slice(-1) !== text2.slice(-1)) {
+    return 0;
+  }
+  // Binary search.
+  // Performance analysis: http://neil.fraser.name/news/2007/10/09/
+  var pointermin = 0;
+  var pointermax = Math.min(text1.length, text2.length);
+  var pointermid = pointermax;
+  var pointerend = 0;
+  while (pointermin < pointermid) {
+    if (
+      text1.substring(text1.length - pointermid, text1.length - pointerend) ==
+      text2.substring(text2.length - pointermid, text2.length - pointerend)
+    ) {
+      pointermin = pointermid;
+      pointerend = pointermin;
+    } else {
+      pointermax = pointermid;
+    }
+    pointermid = Math.floor((pointermax - pointermin) / 2 + pointermin);
+  }
+
+  if (is_surrogate_pair_end(text1.charCodeAt(text1.length - pointermid))) {
+    pointermid--;
+  }
+
+  return pointermid;
+};
+
+
+/**
+ * Do the two texts share a substring which is at least half the length of the
+ * longer text?
+ * This speedup can produce non-minimal diffs.
+ * @param {string} text1 First string.
+ * @param {string} text2 Second string.
+ * @return {Array.<string>} Five element Array, containing the prefix of
+ *     text1, the suffix of text1, the prefix of text2, the suffix of
+ *     text2 and the common middle.  Or null if there was no match.
+ */
+function diff_halfMatch_(text1, text2) {
+  var longtext = text1.length > text2.length ? text1 : text2;
+  var shorttext = text1.length > text2.length ? text2 : text1;
+  if (longtext.length < 4 || shorttext.length * 2 < longtext.length) {
+    return null;  // Pointless.
+  }
+
+  /**
+   * Does a substring of shorttext exist within longtext such that the substring
+   * is at least half the length of longtext?
+   * Closure, but does not reference any external variables.
+   * @param {string} longtext Longer string.
+   * @param {string} shorttext Shorter string.
+   * @param {number} i Start index of quarter length substring within longtext.
+   * @return {Array.<string>} Five element Array, containing the prefix of
+   *     longtext, the suffix of longtext, the prefix of shorttext, the suffix
+   *     of shorttext and the common middle.  Or null if there was no match.
+   * @private
+   */
+  function diff_halfMatchI_(longtext, shorttext, i) {
+    // Start with a 1/4 length substring at position i as a seed.
+    var seed = longtext.substring(i, i + Math.floor(longtext.length / 4));
+    var j = -1;
+    var best_common = '';
+    var best_longtext_a, best_longtext_b, best_shorttext_a, best_shorttext_b;
+    while ((j = shorttext.indexOf(seed, j + 1)) !== -1) {
+      var prefixLength = diff_commonPrefix(
+        longtext.substring(i), shorttext.substring(j));
+      var suffixLength = diff_commonSuffix(
+        longtext.substring(0, i), shorttext.substring(0, j));
+      if (best_common.length < suffixLength + prefixLength) {
+        best_common = shorttext.substring(
+          j - suffixLength, j) + shorttext.substring(j, j + prefixLength);
+        best_longtext_a = longtext.substring(0, i - suffixLength);
+        best_longtext_b = longtext.substring(i + prefixLength);
+        best_shorttext_a = shorttext.substring(0, j - suffixLength);
+        best_shorttext_b = shorttext.substring(j + prefixLength);
+      }
+    }
+    if (best_common.length * 2 >= longtext.length) {
+      return [
+        best_longtext_a, best_longtext_b,
+        best_shorttext_a, best_shorttext_b, best_common
+      ];
+    } else {
+      return null;
+    }
+  }
+
+  // First check if the second quarter is the seed for a half-match.
+  var hm1 = diff_halfMatchI_(longtext, shorttext, Math.ceil(longtext.length / 4));
+  // Check again based on the third quarter.
+  var hm2 = diff_halfMatchI_(longtext, shorttext, Math.ceil(longtext.length / 2));
+  var hm;
+  if (!hm1 && !hm2) {
+    return null;
+  } else if (!hm2) {
+    hm = hm1;
+  } else if (!hm1) {
+    hm = hm2;
+  } else {
+    // Both matched.  Select the longest.
+    hm = hm1[4].length > hm2[4].length ? hm1 : hm2;
+  }
+
+  // A half-match was found, sort out the return data.
+  var text1_a, text1_b, text2_a, text2_b;
+  if (text1.length > text2.length) {
+    text1_a = hm[0];
+    text1_b = hm[1];
+    text2_a = hm[2];
+    text2_b = hm[3];
+  } else {
+    text2_a = hm[0];
+    text2_b = hm[1];
+    text1_a = hm[2];
+    text1_b = hm[3];
+  }
+  var mid_common = hm[4];
+  return [text1_a, text1_b, text2_a, text2_b, mid_common];
+};
+
+
+/**
+ * Reorder and merge like edit sections.  Merge equalities.
+ * Any edit section can move as long as it doesn't cross an equality.
+ * @param {Array} diffs Array of diff tuples.
+ * @param {boolean} fix_unicode Whether to normalize to a unicode-correct diff
+ */
+function diff_cleanupMerge(diffs, fix_unicode) {
+  diffs.push([DIFF_EQUAL, '']);  // Add a dummy entry at the end.
+  var pointer = 0;
+  var count_delete = 0;
+  var count_insert = 0;
+  var text_delete = '';
+  var text_insert = '';
+  var commonlength;
+  while (pointer < diffs.length) {
+    if (pointer < diffs.length - 1 && !diffs[pointer][1]) {
+      diffs.splice(pointer, 1);
+      continue;
+    }
+    switch (diffs[pointer][0]) {
+      case DIFF_INSERT:
+
+        count_insert++;
+        text_insert += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_DELETE:
+        count_delete++;
+        text_delete += diffs[pointer][1];
+        pointer++;
+        break;
+      case DIFF_EQUAL:
+        var previous_equality = pointer - count_insert - count_delete - 1;
+        if (fix_unicode) {
+          // prevent splitting of unicode surrogate pairs.  when fix_unicode is true,
+          // we assume that the old and new text in the diff are complete and correct
+          // unicode-encoded JS strings, but the tuple boundaries may fall between
+          // surrogate pairs.  we fix this by shaving off stray surrogates from the end
+          // of the previous equality and the beginning of this equality.  this may create
+          // empty equalities or a common prefix or suffix.  for example, if AB and AC are
+          // emojis, `[[0, 'A'], [-1, 'BA'], [0, 'C']]` would turn into deleting 'ABAC' and
+          // inserting 'AC', and then the common suffix 'AC' will be eliminated.  in this
+          // particular case, both equalities go away, we absorb any previous inequalities,
+          // and we keep scanning for the next equality before rewriting the tuples.
+          if (previous_equality >= 0 && ends_with_pair_start(diffs[previous_equality][1])) {
+            var stray = diffs[previous_equality][1].slice(-1);
+            diffs[previous_equality][1] = diffs[previous_equality][1].slice(0, -1);
+            text_delete = stray + text_delete;
+            text_insert = stray + text_insert;
+            if (!diffs[previous_equality][1]) {
+              // emptied out previous equality, so delete it and include previous delete/insert
+              diffs.splice(previous_equality, 1);
+              pointer--;
+              var k = previous_equality - 1;
+              if (diffs[k] && diffs[k][0] === DIFF_INSERT) {
+                count_insert++;
+                text_insert = diffs[k][1] + text_insert;
+                k--;
+              }
+              if (diffs[k] && diffs[k][0] === DIFF_DELETE) {
+                count_delete++;
+                text_delete = diffs[k][1] + text_delete;
+                k--;
+              }
+              previous_equality = k;
+            }
+          }
+          if (starts_with_pair_end(diffs[pointer][1])) {
+            var stray = diffs[pointer][1].charAt(0);
+            diffs[pointer][1] = diffs[pointer][1].slice(1);
+            text_delete += stray;
+            text_insert += stray;
+          }
+        }
+        if (pointer < diffs.length - 1 && !diffs[pointer][1]) {
+          // for empty equality not at end, wait for next equality
+          diffs.splice(pointer, 1);
+          break;
+        }
+        if (text_delete.length > 0 || text_insert.length > 0) {
+          // note that diff_commonPrefix and diff_commonSuffix are unicode-aware
+          if (text_delete.length > 0 && text_insert.length > 0) {
+            // Factor out any common prefixes.
+            commonlength = diff_commonPrefix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              if (previous_equality >= 0) {
+                diffs[previous_equality][1] += text_insert.substring(0, commonlength);
+              } else {
+                diffs.splice(0, 0, [DIFF_EQUAL, text_insert.substring(0, commonlength)]);
+                pointer++;
+              }
+              text_insert = text_insert.substring(commonlength);
+              text_delete = text_delete.substring(commonlength);
+            }
+            // Factor out any common suffixes.
+            commonlength = diff_commonSuffix(text_insert, text_delete);
+            if (commonlength !== 0) {
+              diffs[pointer][1] =
+                text_insert.substring(text_insert.length - commonlength) + diffs[pointer][1];
+              text_insert = text_insert.substring(0, text_insert.length - commonlength);
+              text_delete = text_delete.substring(0, text_delete.length - commonlength);
+            }
+          }
+          // Delete the offending records and add the merged ones.
+          var n = count_insert + count_delete;
+          if (text_delete.length === 0 && text_insert.length === 0) {
+            diffs.splice(pointer - n, n);
+            pointer = pointer - n;
+          } else if (text_delete.length === 0) {
+            diffs.splice(pointer - n, n, [DIFF_INSERT, text_insert]);
+            pointer = pointer - n + 1;
+          } else if (text_insert.length === 0) {
+            diffs.splice(pointer - n, n, [DIFF_DELETE, text_delete]);
+            pointer = pointer - n + 1;
+          } else {
+            diffs.splice(pointer - n, n, [DIFF_DELETE, text_delete], [DIFF_INSERT, text_insert]);
+            pointer = pointer - n + 2;
+          }
+        }
+        if (pointer !== 0 && diffs[pointer - 1][0] === DIFF_EQUAL) {
+          // Merge this equality with the previous one.
+          diffs[pointer - 1][1] += diffs[pointer][1];
+          diffs.splice(pointer, 1);
+        } else {
+          pointer++;
+        }
+        count_insert = 0;
+        count_delete = 0;
+        text_delete = '';
+        text_insert = '';
+        break;
+    }
+  }
+  if (diffs[diffs.length - 1][1] === '') {
+    diffs.pop();  // Remove the dummy entry at the end.
+  }
+
+  // Second pass: look for single edits surrounded on both sides by equalities
+  // which can be shifted sideways to eliminate an equality.
+  // e.g: A<ins>BA</ins>C -> <ins>AB</ins>AC
+  var changes = false;
+  pointer = 1;
+  // Intentionally ignore the first and last element (don't need checking).
+  while (pointer < diffs.length - 1) {
+    if (diffs[pointer - 1][0] === DIFF_EQUAL &&
+      diffs[pointer + 1][0] === DIFF_EQUAL) {
+      // This is a single edit surrounded by equalities.
+      if (diffs[pointer][1].substring(diffs[pointer][1].length -
+        diffs[pointer - 1][1].length) === diffs[pointer - 1][1]) {
+        // Shift the edit over the previous equality.
+        diffs[pointer][1] = diffs[pointer - 1][1] +
+          diffs[pointer][1].substring(0, diffs[pointer][1].length -
+            diffs[pointer - 1][1].length);
+        diffs[pointer + 1][1] = diffs[pointer - 1][1] + diffs[pointer + 1][1];
+        diffs.splice(pointer - 1, 1);
+        changes = true;
+      } else if (diffs[pointer][1].substring(0, diffs[pointer + 1][1].length) ==
+        diffs[pointer + 1][1]) {
+        // Shift the edit over the next equality.
+        diffs[pointer - 1][1] += diffs[pointer + 1][1];
+        diffs[pointer][1] =
+          diffs[pointer][1].substring(diffs[pointer + 1][1].length) +
+          diffs[pointer + 1][1];
+        diffs.splice(pointer + 1, 1);
+        changes = true;
+      }
+    }
+    pointer++;
+  }
+  // If shifts were made, the diff needs reordering and another shift sweep.
+  if (changes) {
+    diff_cleanupMerge(diffs, fix_unicode);
+  }
+};
+
+function is_surrogate_pair_start(charCode) {
+  return charCode >= 0xD800 && charCode <= 0xDBFF;
+}
+
+function is_surrogate_pair_end(charCode) {
+  return charCode >= 0xDC00 && charCode <= 0xDFFF;
+}
+
+function starts_with_pair_end(str) {
+  return is_surrogate_pair_end(str.charCodeAt(0));
+}
+
+function ends_with_pair_start(str) {
+  return is_surrogate_pair_start(str.charCodeAt(str.length - 1));
+}
+
+function remove_empty_tuples(tuples) {
+  var ret = [];
+  for (var i = 0; i < tuples.length; i++) {
+    if (tuples[i][1].length > 0) {
+      ret.push(tuples[i]);
+    }
+  }
+  return ret;
+}
+
+function make_edit_splice(before, oldMiddle, newMiddle, after) {
+  if (ends_with_pair_start(before) || starts_with_pair_end(after)) {
+    return null;
+  }
+  return remove_empty_tuples([
+    [DIFF_EQUAL, before],
+    [DIFF_DELETE, oldMiddle],
+    [DIFF_INSERT, newMiddle],
+    [DIFF_EQUAL, after]
+  ]);
+}
+
+function find_cursor_edit_diff(oldText, newText, cursor_pos) {
+  // note: this runs after equality check has ruled out exact equality
+  var oldRange = typeof cursor_pos === 'number' ?
+    { index: cursor_pos, length: 0 } : cursor_pos.oldRange;
+  var newRange = typeof cursor_pos === 'number' ?
+    null : cursor_pos.newRange;
+  // take into account the old and new selection to generate the best diff
+  // possible for a text edit.  for example, a text change from "xxx" to "xx"
+  // could be a delete or forwards-delete of any one of the x's, or the
+  // result of selecting two of the x's and typing "x".
+  var oldLength = oldText.length;
+  var newLength = newText.length;
+  if (oldRange.length === 0 && (newRange === null || newRange.length === 0)) {
+    // see if we have an insert or delete before or after cursor
+    var oldCursor = oldRange.index;
+    var oldBefore = oldText.slice(0, oldCursor);
+    var oldAfter = oldText.slice(oldCursor);
+    var maybeNewCursor = newRange ? newRange.index : null;
+    editBefore: {
+      // is this an insert or delete right before oldCursor?
+      var newCursor = oldCursor + newLength - oldLength;
+      if (maybeNewCursor !== null && maybeNewCursor !== newCursor) {
+        break editBefore;
+      }
+      if (newCursor < 0 || newCursor > newLength) {
+        break editBefore;
+      }
+      var newBefore = newText.slice(0, newCursor);
+      var newAfter = newText.slice(newCursor);
+      if (newAfter !== oldAfter) {
+        break editBefore;
+      }
+      var prefixLength = Math.min(oldCursor, newCursor);
+      var oldPrefix = oldBefore.slice(0, prefixLength);
+      var newPrefix = newBefore.slice(0, prefixLength);
+      if (oldPrefix !== newPrefix) {
+        break editBefore;
+      }
+      var oldMiddle = oldBefore.slice(prefixLength);
+      var newMiddle = newBefore.slice(prefixLength);
+      return make_edit_splice(oldPrefix, oldMiddle, newMiddle, oldAfter);
+    }
+    editAfter: {
+      // is this an insert or delete right after oldCursor?
+      if (maybeNewCursor !== null && maybeNewCursor !== oldCursor) {
+        break editAfter;
+      }
+      var cursor = oldCursor;
+      var newBefore = newText.slice(0, cursor);
+      var newAfter = newText.slice(cursor);
+      if (newBefore !== oldBefore) {
+        break editAfter;
+      }
+      var suffixLength = Math.min(oldLength - cursor, newLength - cursor);
+      var oldSuffix = oldAfter.slice(oldAfter.length - suffixLength);
+      var newSuffix = newAfter.slice(newAfter.length - suffixLength);
+      if (oldSuffix !== newSuffix) {
+        break editAfter;
+      }
+      var oldMiddle = oldAfter.slice(0, oldAfter.length - suffixLength);
+      var newMiddle = newAfter.slice(0, newAfter.length - suffixLength);
+      return make_edit_splice(oldBefore, oldMiddle, newMiddle, oldSuffix);
+    }
+  }
+  if (oldRange.length > 0 && newRange && newRange.length === 0) {
+    replaceRange: {
+      // see if diff could be a splice of the old selection range
+      var oldPrefix = oldText.slice(0, oldRange.index);
+      var oldSuffix = oldText.slice(oldRange.index + oldRange.length);
+      var prefixLength = oldPrefix.length;
+      var suffixLength = oldSuffix.length;
+      if (newLength < prefixLength + suffixLength) {
+        break replaceRange;
+      }
+      var newPrefix = newText.slice(0, prefixLength);
+      var newSuffix = newText.slice(newLength - suffixLength);
+      if (oldPrefix !== newPrefix || oldSuffix !== newSuffix) {
+        break replaceRange;
+      }
+      var oldMiddle = oldText.slice(prefixLength, oldLength - suffixLength);
+      var newMiddle = newText.slice(prefixLength, newLength - suffixLength);
+      return make_edit_splice(oldPrefix, oldMiddle, newMiddle, oldSuffix);
+    }
+  }
+
+  return null;
+}
+
+function diff(text1, text2, cursor_pos) {
+  // only pass fix_unicode=true at the top level, not when diff_main is
+  // recursively invoked
+  return diff_main(text1, text2, cursor_pos, true);
+}
+
+diff.INSERT = DIFF_INSERT;
+diff.DELETE = DIFF_DELETE;
+diff.EQUAL = DIFF_EQUAL;
+
+module.exports = diff;
 
 
 /***/ }),
@@ -11990,6 +11371,677 @@ function stubFalse() {
 
 module.exports = isEqual;
 
+
+/***/ }),
+
+/***/ "./node_modules/quill-delta/dist/AttributeMap.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/quill-delta/dist/AttributeMap.js ***!
+  \*******************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+var lodash_clonedeep_1 = __importDefault(__webpack_require__(/*! lodash.clonedeep */ "./node_modules/lodash.clonedeep/index.js"));
+var lodash_isequal_1 = __importDefault(__webpack_require__(/*! lodash.isequal */ "./node_modules/lodash.isequal/index.js"));
+var AttributeMap;
+(function (AttributeMap) {
+    function compose(a, b, keepNull) {
+        if (a === void 0) { a = {}; }
+        if (b === void 0) { b = {}; }
+        if (typeof a !== 'object') {
+            a = {};
+        }
+        if (typeof b !== 'object') {
+            b = {};
+        }
+        var attributes = lodash_clonedeep_1.default(b);
+        if (!keepNull) {
+            attributes = Object.keys(attributes).reduce(function (copy, key) {
+                if (attributes[key] != null) {
+                    copy[key] = attributes[key];
+                }
+                return copy;
+            }, {});
+        }
+        for (var key in a) {
+            if (a[key] !== undefined && b[key] === undefined) {
+                attributes[key] = a[key];
+            }
+        }
+        return Object.keys(attributes).length > 0 ? attributes : undefined;
+    }
+    AttributeMap.compose = compose;
+    function diff(a, b) {
+        if (a === void 0) { a = {}; }
+        if (b === void 0) { b = {}; }
+        if (typeof a !== 'object') {
+            a = {};
+        }
+        if (typeof b !== 'object') {
+            b = {};
+        }
+        var attributes = Object.keys(a)
+            .concat(Object.keys(b))
+            .reduce(function (attrs, key) {
+            if (!lodash_isequal_1.default(a[key], b[key])) {
+                attrs[key] = b[key] === undefined ? null : b[key];
+            }
+            return attrs;
+        }, {});
+        return Object.keys(attributes).length > 0 ? attributes : undefined;
+    }
+    AttributeMap.diff = diff;
+    function invert(attr, base) {
+        if (attr === void 0) { attr = {}; }
+        if (base === void 0) { base = {}; }
+        attr = attr || {};
+        var baseInverted = Object.keys(base).reduce(function (memo, key) {
+            if (base[key] !== attr[key] && attr[key] !== undefined) {
+                memo[key] = base[key];
+            }
+            return memo;
+        }, {});
+        return Object.keys(attr).reduce(function (memo, key) {
+            if (attr[key] !== base[key] && base[key] === undefined) {
+                memo[key] = null;
+            }
+            return memo;
+        }, baseInverted);
+    }
+    AttributeMap.invert = invert;
+    function transform(a, b, priority) {
+        if (priority === void 0) { priority = false; }
+        if (typeof a !== 'object') {
+            return b;
+        }
+        if (typeof b !== 'object') {
+            return undefined;
+        }
+        if (!priority) {
+            return b; // b simply overwrites us without priority
+        }
+        var attributes = Object.keys(b).reduce(function (attrs, key) {
+            if (a[key] === undefined) {
+                attrs[key] = b[key]; // null is a valid value
+            }
+            return attrs;
+        }, {});
+        return Object.keys(attributes).length > 0 ? attributes : undefined;
+    }
+    AttributeMap.transform = transform;
+})(AttributeMap || (AttributeMap = {}));
+exports["default"] = AttributeMap;
+//# sourceMappingURL=AttributeMap.js.map
+
+/***/ }),
+
+/***/ "./node_modules/quill-delta/dist/Delta.js":
+/*!************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Delta.js ***!
+  \************************************************/
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+var fast_diff_1 = __importDefault(__webpack_require__(/*! fast-diff */ "./node_modules/fast-diff/diff.js"));
+var lodash_clonedeep_1 = __importDefault(__webpack_require__(/*! lodash.clonedeep */ "./node_modules/lodash.clonedeep/index.js"));
+var lodash_isequal_1 = __importDefault(__webpack_require__(/*! lodash.isequal */ "./node_modules/lodash.isequal/index.js"));
+var AttributeMap_1 = __importDefault(__webpack_require__(/*! ./AttributeMap */ "./node_modules/quill-delta/dist/AttributeMap.js"));
+var Op_1 = __importDefault(__webpack_require__(/*! ./Op */ "./node_modules/quill-delta/dist/Op.js"));
+var NULL_CHARACTER = String.fromCharCode(0); // Placeholder char for embed in diff()
+var Delta = /** @class */ (function () {
+    function Delta(ops) {
+        // Assume we are given a well formed ops
+        if (Array.isArray(ops)) {
+            this.ops = ops;
+        }
+        else if (ops != null && Array.isArray(ops.ops)) {
+            this.ops = ops.ops;
+        }
+        else {
+            this.ops = [];
+        }
+    }
+    Delta.prototype.insert = function (arg, attributes) {
+        var newOp = {};
+        if (typeof arg === 'string' && arg.length === 0) {
+            return this;
+        }
+        newOp.insert = arg;
+        if (attributes != null &&
+            typeof attributes === 'object' &&
+            Object.keys(attributes).length > 0) {
+            newOp.attributes = attributes;
+        }
+        return this.push(newOp);
+    };
+    Delta.prototype.delete = function (length) {
+        if (length <= 0) {
+            return this;
+        }
+        return this.push({ delete: length });
+    };
+    Delta.prototype.retain = function (length, attributes) {
+        if (length <= 0) {
+            return this;
+        }
+        var newOp = { retain: length };
+        if (attributes != null &&
+            typeof attributes === 'object' &&
+            Object.keys(attributes).length > 0) {
+            newOp.attributes = attributes;
+        }
+        return this.push(newOp);
+    };
+    Delta.prototype.push = function (newOp) {
+        var index = this.ops.length;
+        var lastOp = this.ops[index - 1];
+        newOp = lodash_clonedeep_1.default(newOp);
+        if (typeof lastOp === 'object') {
+            if (typeof newOp.delete === 'number' &&
+                typeof lastOp.delete === 'number') {
+                this.ops[index - 1] = { delete: lastOp.delete + newOp.delete };
+                return this;
+            }
+            // Since it does not matter if we insert before or after deleting at the same index,
+            // always prefer to insert first
+            if (typeof lastOp.delete === 'number' && newOp.insert != null) {
+                index -= 1;
+                lastOp = this.ops[index - 1];
+                if (typeof lastOp !== 'object') {
+                    this.ops.unshift(newOp);
+                    return this;
+                }
+            }
+            if (lodash_isequal_1.default(newOp.attributes, lastOp.attributes)) {
+                if (typeof newOp.insert === 'string' &&
+                    typeof lastOp.insert === 'string') {
+                    this.ops[index - 1] = { insert: lastOp.insert + newOp.insert };
+                    if (typeof newOp.attributes === 'object') {
+                        this.ops[index - 1].attributes = newOp.attributes;
+                    }
+                    return this;
+                }
+                else if (typeof newOp.retain === 'number' &&
+                    typeof lastOp.retain === 'number') {
+                    this.ops[index - 1] = { retain: lastOp.retain + newOp.retain };
+                    if (typeof newOp.attributes === 'object') {
+                        this.ops[index - 1].attributes = newOp.attributes;
+                    }
+                    return this;
+                }
+            }
+        }
+        if (index === this.ops.length) {
+            this.ops.push(newOp);
+        }
+        else {
+            this.ops.splice(index, 0, newOp);
+        }
+        return this;
+    };
+    Delta.prototype.chop = function () {
+        var lastOp = this.ops[this.ops.length - 1];
+        if (lastOp && lastOp.retain && !lastOp.attributes) {
+            this.ops.pop();
+        }
+        return this;
+    };
+    Delta.prototype.filter = function (predicate) {
+        return this.ops.filter(predicate);
+    };
+    Delta.prototype.forEach = function (predicate) {
+        this.ops.forEach(predicate);
+    };
+    Delta.prototype.map = function (predicate) {
+        return this.ops.map(predicate);
+    };
+    Delta.prototype.partition = function (predicate) {
+        var passed = [];
+        var failed = [];
+        this.forEach(function (op) {
+            var target = predicate(op) ? passed : failed;
+            target.push(op);
+        });
+        return [passed, failed];
+    };
+    Delta.prototype.reduce = function (predicate, initialValue) {
+        return this.ops.reduce(predicate, initialValue);
+    };
+    Delta.prototype.changeLength = function () {
+        return this.reduce(function (length, elem) {
+            if (elem.insert) {
+                return length + Op_1.default.length(elem);
+            }
+            else if (elem.delete) {
+                return length - elem.delete;
+            }
+            return length;
+        }, 0);
+    };
+    Delta.prototype.length = function () {
+        return this.reduce(function (length, elem) {
+            return length + Op_1.default.length(elem);
+        }, 0);
+    };
+    Delta.prototype.slice = function (start, end) {
+        if (start === void 0) { start = 0; }
+        if (end === void 0) { end = Infinity; }
+        var ops = [];
+        var iter = Op_1.default.iterator(this.ops);
+        var index = 0;
+        while (index < end && iter.hasNext()) {
+            var nextOp = void 0;
+            if (index < start) {
+                nextOp = iter.next(start - index);
+            }
+            else {
+                nextOp = iter.next(end - index);
+                ops.push(nextOp);
+            }
+            index += Op_1.default.length(nextOp);
+        }
+        return new Delta(ops);
+    };
+    Delta.prototype.compose = function (other) {
+        var thisIter = Op_1.default.iterator(this.ops);
+        var otherIter = Op_1.default.iterator(other.ops);
+        var ops = [];
+        var firstOther = otherIter.peek();
+        if (firstOther != null &&
+            typeof firstOther.retain === 'number' &&
+            firstOther.attributes == null) {
+            var firstLeft = firstOther.retain;
+            while (thisIter.peekType() === 'insert' &&
+                thisIter.peekLength() <= firstLeft) {
+                firstLeft -= thisIter.peekLength();
+                ops.push(thisIter.next());
+            }
+            if (firstOther.retain - firstLeft > 0) {
+                otherIter.next(firstOther.retain - firstLeft);
+            }
+        }
+        var delta = new Delta(ops);
+        while (thisIter.hasNext() || otherIter.hasNext()) {
+            if (otherIter.peekType() === 'insert') {
+                delta.push(otherIter.next());
+            }
+            else if (thisIter.peekType() === 'delete') {
+                delta.push(thisIter.next());
+            }
+            else {
+                var length_1 = Math.min(thisIter.peekLength(), otherIter.peekLength());
+                var thisOp = thisIter.next(length_1);
+                var otherOp = otherIter.next(length_1);
+                if (typeof otherOp.retain === 'number') {
+                    var newOp = {};
+                    if (typeof thisOp.retain === 'number') {
+                        newOp.retain = length_1;
+                    }
+                    else {
+                        newOp.insert = thisOp.insert;
+                    }
+                    // Preserve null when composing with a retain, otherwise remove it for inserts
+                    var attributes = AttributeMap_1.default.compose(thisOp.attributes, otherOp.attributes, typeof thisOp.retain === 'number');
+                    if (attributes) {
+                        newOp.attributes = attributes;
+                    }
+                    delta.push(newOp);
+                    // Optimization if rest of other is just retain
+                    if (!otherIter.hasNext() &&
+                        lodash_isequal_1.default(delta.ops[delta.ops.length - 1], newOp)) {
+                        var rest = new Delta(thisIter.rest());
+                        return delta.concat(rest).chop();
+                    }
+                    // Other op should be delete, we could be an insert or retain
+                    // Insert + delete cancels out
+                }
+                else if (typeof otherOp.delete === 'number' &&
+                    typeof thisOp.retain === 'number') {
+                    delta.push(otherOp);
+                }
+            }
+        }
+        return delta.chop();
+    };
+    Delta.prototype.concat = function (other) {
+        var delta = new Delta(this.ops.slice());
+        if (other.ops.length > 0) {
+            delta.push(other.ops[0]);
+            delta.ops = delta.ops.concat(other.ops.slice(1));
+        }
+        return delta;
+    };
+    Delta.prototype.diff = function (other, cursor) {
+        if (this.ops === other.ops) {
+            return new Delta();
+        }
+        var strings = [this, other].map(function (delta) {
+            return delta
+                .map(function (op) {
+                if (op.insert != null) {
+                    return typeof op.insert === 'string' ? op.insert : NULL_CHARACTER;
+                }
+                var prep = delta === other ? 'on' : 'with';
+                throw new Error('diff() called ' + prep + ' non-document');
+            })
+                .join('');
+        });
+        var retDelta = new Delta();
+        var diffResult = fast_diff_1.default(strings[0], strings[1], cursor);
+        var thisIter = Op_1.default.iterator(this.ops);
+        var otherIter = Op_1.default.iterator(other.ops);
+        diffResult.forEach(function (component) {
+            var length = component[1].length;
+            while (length > 0) {
+                var opLength = 0;
+                switch (component[0]) {
+                    case fast_diff_1.default.INSERT:
+                        opLength = Math.min(otherIter.peekLength(), length);
+                        retDelta.push(otherIter.next(opLength));
+                        break;
+                    case fast_diff_1.default.DELETE:
+                        opLength = Math.min(length, thisIter.peekLength());
+                        thisIter.next(opLength);
+                        retDelta.delete(opLength);
+                        break;
+                    case fast_diff_1.default.EQUAL:
+                        opLength = Math.min(thisIter.peekLength(), otherIter.peekLength(), length);
+                        var thisOp = thisIter.next(opLength);
+                        var otherOp = otherIter.next(opLength);
+                        if (lodash_isequal_1.default(thisOp.insert, otherOp.insert)) {
+                            retDelta.retain(opLength, AttributeMap_1.default.diff(thisOp.attributes, otherOp.attributes));
+                        }
+                        else {
+                            retDelta.push(otherOp).delete(opLength);
+                        }
+                        break;
+                }
+                length -= opLength;
+            }
+        });
+        return retDelta.chop();
+    };
+    Delta.prototype.eachLine = function (predicate, newline) {
+        if (newline === void 0) { newline = '\n'; }
+        var iter = Op_1.default.iterator(this.ops);
+        var line = new Delta();
+        var i = 0;
+        while (iter.hasNext()) {
+            if (iter.peekType() !== 'insert') {
+                return;
+            }
+            var thisOp = iter.peek();
+            var start = Op_1.default.length(thisOp) - iter.peekLength();
+            var index = typeof thisOp.insert === 'string'
+                ? thisOp.insert.indexOf(newline, start) - start
+                : -1;
+            if (index < 0) {
+                line.push(iter.next());
+            }
+            else if (index > 0) {
+                line.push(iter.next(index));
+            }
+            else {
+                if (predicate(line, iter.next(1).attributes || {}, i) === false) {
+                    return;
+                }
+                i += 1;
+                line = new Delta();
+            }
+        }
+        if (line.length() > 0) {
+            predicate(line, {}, i);
+        }
+    };
+    Delta.prototype.invert = function (base) {
+        var inverted = new Delta();
+        this.reduce(function (baseIndex, op) {
+            if (op.insert) {
+                inverted.delete(Op_1.default.length(op));
+            }
+            else if (op.retain && op.attributes == null) {
+                inverted.retain(op.retain);
+                return baseIndex + op.retain;
+            }
+            else if (op.delete || (op.retain && op.attributes)) {
+                var length_2 = (op.delete || op.retain);
+                var slice = base.slice(baseIndex, baseIndex + length_2);
+                slice.forEach(function (baseOp) {
+                    if (op.delete) {
+                        inverted.push(baseOp);
+                    }
+                    else if (op.retain && op.attributes) {
+                        inverted.retain(Op_1.default.length(baseOp), AttributeMap_1.default.invert(op.attributes, baseOp.attributes));
+                    }
+                });
+                return baseIndex + length_2;
+            }
+            return baseIndex;
+        }, 0);
+        return inverted.chop();
+    };
+    Delta.prototype.transform = function (arg, priority) {
+        if (priority === void 0) { priority = false; }
+        priority = !!priority;
+        if (typeof arg === 'number') {
+            return this.transformPosition(arg, priority);
+        }
+        var other = arg;
+        var thisIter = Op_1.default.iterator(this.ops);
+        var otherIter = Op_1.default.iterator(other.ops);
+        var delta = new Delta();
+        while (thisIter.hasNext() || otherIter.hasNext()) {
+            if (thisIter.peekType() === 'insert' &&
+                (priority || otherIter.peekType() !== 'insert')) {
+                delta.retain(Op_1.default.length(thisIter.next()));
+            }
+            else if (otherIter.peekType() === 'insert') {
+                delta.push(otherIter.next());
+            }
+            else {
+                var length_3 = Math.min(thisIter.peekLength(), otherIter.peekLength());
+                var thisOp = thisIter.next(length_3);
+                var otherOp = otherIter.next(length_3);
+                if (thisOp.delete) {
+                    // Our delete either makes their delete redundant or removes their retain
+                    continue;
+                }
+                else if (otherOp.delete) {
+                    delta.push(otherOp);
+                }
+                else {
+                    // We retain either their retain or insert
+                    delta.retain(length_3, AttributeMap_1.default.transform(thisOp.attributes, otherOp.attributes, priority));
+                }
+            }
+        }
+        return delta.chop();
+    };
+    Delta.prototype.transformPosition = function (index, priority) {
+        if (priority === void 0) { priority = false; }
+        priority = !!priority;
+        var thisIter = Op_1.default.iterator(this.ops);
+        var offset = 0;
+        while (thisIter.hasNext() && offset <= index) {
+            var length_4 = thisIter.peekLength();
+            var nextType = thisIter.peekType();
+            thisIter.next();
+            if (nextType === 'delete') {
+                index -= Math.min(length_4, index - offset);
+                continue;
+            }
+            else if (nextType === 'insert' && (offset < index || !priority)) {
+                index += length_4;
+            }
+            offset += length_4;
+        }
+        return index;
+    };
+    Delta.Op = Op_1.default;
+    Delta.AttributeMap = AttributeMap_1.default;
+    return Delta;
+}());
+module.exports = Delta;
+//# sourceMappingURL=Delta.js.map
+
+/***/ }),
+
+/***/ "./node_modules/quill-delta/dist/Iterator.js":
+/*!***************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Iterator.js ***!
+  \***************************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+var Op_1 = __importDefault(__webpack_require__(/*! ./Op */ "./node_modules/quill-delta/dist/Op.js"));
+var Iterator = /** @class */ (function () {
+    function Iterator(ops) {
+        this.ops = ops;
+        this.index = 0;
+        this.offset = 0;
+    }
+    Iterator.prototype.hasNext = function () {
+        return this.peekLength() < Infinity;
+    };
+    Iterator.prototype.next = function (length) {
+        if (!length) {
+            length = Infinity;
+        }
+        var nextOp = this.ops[this.index];
+        if (nextOp) {
+            var offset = this.offset;
+            var opLength = Op_1.default.length(nextOp);
+            if (length >= opLength - offset) {
+                length = opLength - offset;
+                this.index += 1;
+                this.offset = 0;
+            }
+            else {
+                this.offset += length;
+            }
+            if (typeof nextOp.delete === 'number') {
+                return { delete: length };
+            }
+            else {
+                var retOp = {};
+                if (nextOp.attributes) {
+                    retOp.attributes = nextOp.attributes;
+                }
+                if (typeof nextOp.retain === 'number') {
+                    retOp.retain = length;
+                }
+                else if (typeof nextOp.insert === 'string') {
+                    retOp.insert = nextOp.insert.substr(offset, length);
+                }
+                else {
+                    // offset should === 0, length should === 1
+                    retOp.insert = nextOp.insert;
+                }
+                return retOp;
+            }
+        }
+        else {
+            return { retain: Infinity };
+        }
+    };
+    Iterator.prototype.peek = function () {
+        return this.ops[this.index];
+    };
+    Iterator.prototype.peekLength = function () {
+        if (this.ops[this.index]) {
+            // Should never return 0 if our index is being managed correctly
+            return Op_1.default.length(this.ops[this.index]) - this.offset;
+        }
+        else {
+            return Infinity;
+        }
+    };
+    Iterator.prototype.peekType = function () {
+        if (this.ops[this.index]) {
+            if (typeof this.ops[this.index].delete === 'number') {
+                return 'delete';
+            }
+            else if (typeof this.ops[this.index].retain === 'number') {
+                return 'retain';
+            }
+            else {
+                return 'insert';
+            }
+        }
+        return 'retain';
+    };
+    Iterator.prototype.rest = function () {
+        if (!this.hasNext()) {
+            return [];
+        }
+        else if (this.offset === 0) {
+            return this.ops.slice(this.index);
+        }
+        else {
+            var offset = this.offset;
+            var index = this.index;
+            var next = this.next();
+            var rest = this.ops.slice(this.index);
+            this.offset = offset;
+            this.index = index;
+            return [next].concat(rest);
+        }
+    };
+    return Iterator;
+}());
+exports["default"] = Iterator;
+//# sourceMappingURL=Iterator.js.map
+
+/***/ }),
+
+/***/ "./node_modules/quill-delta/dist/Op.js":
+/*!*********************************************!*\
+  !*** ./node_modules/quill-delta/dist/Op.js ***!
+  \*********************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+var Iterator_1 = __importDefault(__webpack_require__(/*! ./Iterator */ "./node_modules/quill-delta/dist/Iterator.js"));
+var Op;
+(function (Op) {
+    function iterator(ops) {
+        return new Iterator_1.default(ops);
+    }
+    Op.iterator = iterator;
+    function length(op) {
+        if (typeof op.delete === 'number') {
+            return op.delete;
+        }
+        else if (typeof op.retain === 'number') {
+            return op.retain;
+        }
+        else {
+            return typeof op.insert === 'string' ? op.insert.length : 1;
+        }
+    }
+    Op.length = length;
+})(Op || (Op = {}));
+exports["default"] = Op;
+//# sourceMappingURL=Op.js.map
 
 /***/ }),
 
@@ -23694,7 +23746,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Devis_vue_vue_type_template_id_68d248a6_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Devis.vue?vue&type=template&id=68d248a6&scoped=true */ "./resources/js/Pages/Devis.vue?vue&type=template&id=68d248a6&scoped=true");
 /* harmony import */ var _Devis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Devis.vue?vue&type=script&lang=js */ "./resources/js/Pages/Devis.vue?vue&type=script&lang=js");
 /* harmony import */ var _Devis_vue_vue_type_style_index_0_id_68d248a6_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Devis.vue?vue&type=style&index=0&id=68d248a6&lang=scss&scoped=true */ "./resources/js/Pages/Devis.vue?vue&type=style&index=0&id=68d248a6&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -23702,7 +23754,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Devis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Devis_vue_vue_type_template_id_68d248a6_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-68d248a6"],['__file',"resources/js/Pages/Devis.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Devis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Devis_vue_vue_type_template_id_68d248a6_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-68d248a6"],['__file',"resources/js/Pages/Devis.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -23724,13 +23776,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=template&id=c259b9a4 */ "./resources/js/components/Breadcrumb.vue?vue&type=template&id=c259b9a4");
 /* harmony import */ var _Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=script&lang=js */ "./resources/js/components/Breadcrumb.vue?vue&type=script&lang=js");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -23753,7 +23805,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Navbar.vue?vue&type=template&id=6dde423b&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=template&id=6dde423b&scoped=true");
 /* harmony import */ var _Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Navbar.vue?vue&type=script&lang=js */ "./resources/js/components/Navbar.vue?vue&type=script&lang=js");
 /* harmony import */ var _Navbar_vue_vue_type_style_index_0_id_6dde423b_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -23761,7 +23813,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -23784,7 +23836,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FeatureList_vue_vue_type_template_id_1c0af900_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FeatureList.vue?vue&type=template&id=1c0af900&scoped=true */ "./resources/js/components/feature/FeatureList.vue?vue&type=template&id=1c0af900&scoped=true");
 /* harmony import */ var _FeatureList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FeatureList.vue?vue&type=script&lang=js */ "./resources/js/components/feature/FeatureList.vue?vue&type=script&lang=js");
 /* harmony import */ var _FeatureList_vue_vue_type_style_index_0_id_1c0af900_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./FeatureList.vue?vue&type=style&index=0&id=1c0af900&lang=scss&scoped=true */ "./resources/js/components/feature/FeatureList.vue?vue&type=style&index=0&id=1c0af900&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -23792,7 +23844,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_FeatureList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FeatureList_vue_vue_type_template_id_1c0af900_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-1c0af900"],['__file',"resources/js/components/feature/FeatureList.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_FeatureList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FeatureList_vue_vue_type_template_id_1c0af900_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-1c0af900"],['__file',"resources/js/components/feature/FeatureList.vue"]])
 /* hot reload */
 if (false) {}
 

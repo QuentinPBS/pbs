@@ -30,6 +30,39 @@ function isFunction(val) {
 function isProxy(value) {
   return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReactive)(value) || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.isReadonly)(value);
 }
+function get(obj, stringPath, def) {
+  // Cache the current object
+  let current = obj;
+  const path = stringPath.split('.'); // For each item in the path, dig into the object
+
+  for (let i = 0; i < path.length; i++) {
+    // If the item isn't found, return the default (or null)
+    if (!current[path[i]]) return def; // Otherwise, update the current  value
+
+    current = current[path[i]];
+  }
+
+  return current;
+}
+function gatherBooleanGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.some(path => {
+      return get(nestedResults, path, {
+        [property]: false
+      })[property];
+    });
+  });
+}
+function gatherArrayGroupProperties(group, nestedResults, property) {
+  return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.computed)(() => {
+    return group.reduce((all, path) => {
+      const fetchedProperty = get(nestedResults, path, {
+        [property]: false
+      })[property] || [];
+      return all.concat(fetchedProperty);
+    }, []);
+  });
+}
 
 /**
  * Response form a raw Validator function.
@@ -250,6 +283,7 @@ function sortValidations() {
   const rules = {};
   const nestedValidators = {};
   const config = {};
+  let validationGroups = null;
   validationKeys.forEach(key => {
     const v = validations[key];
 
@@ -266,6 +300,10 @@ function sortValidations() {
           $validator: v
         };
         break;
+
+      case key === '$validationGroups':
+        validationGroups = v;
+        break;
       // Catch $-prefixed properties as config
 
       case key.startsWith('$'):
@@ -281,7 +319,8 @@ function sortValidations() {
   return {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   };
 }
 
@@ -710,7 +749,8 @@ function setValidations(_ref) {
   const {
     rules,
     nestedValidators,
-    config
+    config,
+    validationGroups
   } = sortValidations(validations);
   const mergedConfig = Object.assign({}, globalConfig, config); // create protected state for cases when the state branch does not exist yet.
   // This protects when using the OptionsAPI as the data is bound after the setup method
@@ -730,8 +770,23 @@ function setValidations(_ref) {
   const results = createValidationResults(rules, nestedState, key, resultsCache, path, mergedConfig, instance, nestedExternalResults, state); // Use nested keys to repeat the process
   // *WARN*: This is recursive
 
-  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults); // Collect and merge this level validation results
+  const nestedResults = collectNestedValidationResults(nestedValidators, nestedState, path, resultsCache, mergedConfig, instance, nestedExternalResults);
+  const $validationGroups = {};
+
+  if (validationGroups) {
+    Object.entries(validationGroups).forEach(_ref2 => {
+      let [key, group] = _ref2;
+      $validationGroups[key] = {
+        $invalid: gatherBooleanGroupProperties(group, nestedResults, '$invalid'),
+        $error: gatherBooleanGroupProperties(group, nestedResults, '$error'),
+        $pending: gatherBooleanGroupProperties(group, nestedResults, '$pending'),
+        $errors: gatherArrayGroupProperties(group, nestedResults, '$errors'),
+        $silentErrors: gatherArrayGroupProperties(group, nestedResults, '$silentErrors')
+      };
+    });
+  } // Collect and merge this level validation results
   // with all nested validation results
+
 
   const {
     $dirty,
@@ -821,7 +876,8 @@ function setValidations(_ref) {
     $commit
   }, childResults && {
     $getResultsForChild,
-    $clearExternalResults
+    $clearExternalResults,
+    $validationGroups
   }, nestedResults));
 }
 
@@ -1002,7 +1058,10 @@ function ComputedProxyFactory(target) {
  * @return {ComputedRef<*>}
  */
 
+let uid = 0;
 function useVuelidate(validations, state) {
+  var _getCurrentInstance;
+
   let globalConfig = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   // if we pass only one argument, its most probably the globalConfig.
@@ -1020,14 +1079,11 @@ function useVuelidate(validations, state) {
     $externalResults,
     currentVueInstance
   } = globalConfig;
-  const instance = currentVueInstance || (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)();
-  const componentOptions = instance ? instance.proxy.$options : {}; // if there is no registration name, add one.
+  const instance = currentVueInstance || ((_getCurrentInstance = (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.getCurrentInstance)()) === null || _getCurrentInstance === void 0 ? void 0 : _getCurrentInstance.proxy);
+  const componentOptions = instance ? instance.$options : {}; // if there is no registration name, add one.
 
-  if (!$registerAs && instance) {
-    // NOTE:
-    // ._uid // Vue 2.x Composition-API plugin
-    // .uid // Vue 3.0
-    const uid = instance.uid || instance._uid;
+  if (!$registerAs) {
+    uid += 1;
     $registerAs = `_vuelidate_${uid}`;
   }
 
@@ -1050,7 +1106,7 @@ function useVuelidate(validations, state) {
     (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.onBeforeMount)(() => {
       // Delay binding state to validations defined with the Options API until mounting, when the data
       // has been attached to the component instance. From that point on it will be reactive.
-      state.value = instance.proxy;
+      state.value = instance;
       (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.watch)(() => isFunction(rules) ? rules.call(state.value, new ComputedProxyFactory(state.value)) : rules, validations => {
         validationResults.value = setValidations({
           validations,
@@ -1058,8 +1114,8 @@ function useVuelidate(validations, state) {
           childResults,
           resultsCache,
           globalConfig,
-          instance: instance.proxy,
-          externalResults: $externalResults || instance.proxy.vuelidateExternalResults
+          instance,
+          externalResults: $externalResults || instance.vuelidateExternalResults
         });
       }, {
         immediate: true
@@ -1076,7 +1132,7 @@ function useVuelidate(validations, state) {
         childResults,
         resultsCache,
         globalConfig,
-        instance: instance ? instance.proxy : {},
+        instance: instance !== null && instance !== void 0 ? instance : {},
         externalResults: $externalResults
       });
     }, {
@@ -1249,7 +1305,7 @@ function forEach(validators) {
       }
 
       // go over the collection. It can be a ref as well.
-      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem) => {
+      return (0,vue_demi__WEBPACK_IMPORTED_MODULE_0__.unref)(collection).reduce((previous, collectionItem, index) => {
         // go over each property
         const collectionEntryResult = Object.entries(collectionItem).reduce((all, _ref) => {
           let [property, $model] = _ref;
@@ -1261,7 +1317,7 @@ function forEach(validators) {
             // extract the validator. Supports simple and extended validators.
             const validatorFunction = unwrapNormalizedValidator(currentValidator); // Call the validator, passing the VM as this, the value, current iterated object and the rest.
 
-            const $response = validatorFunction.call(this, $model, collectionItem, ...others); // extract the valid from the result
+            const $response = validatorFunction.call(this, $model, collectionItem, index, ...others); // extract the valid from the result
 
             const $valid = unwrapValidatorResponse($response); // store the entire response for later
 
@@ -2219,7 +2275,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             case 3:
               response = _context.sent;
               _this.state.user = response.data.data.item;
-              console.log(response.data.data.item);
 
               if (response.status === 401) {
                 _this.$store.commit('SET_USER', null);
@@ -2229,25 +2284,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 window.location.href = '/login';
               }
 
-              _context.next = 12;
+              _context.next = 11;
               break;
 
-            case 9:
-              _context.prev = 9;
+            case 8:
+              _context.prev = 8;
               _context.t0 = _context["catch"](0);
-              console.log(_context.t0);
+              console.error(_context.t0);
 
-            case 12:
-              _context.prev = 12;
+            case 11:
+              _context.prev = 11;
               _this.state.isLoaded = true;
-              return _context.finish(12);
+              return _context.finish(11);
 
-            case 15:
+            case 14:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[0, 9, 12, 15]]);
+      }, _callee, null, [[0, 8, 11, 14]]);
     }))();
   }
 });
@@ -2320,26 +2375,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 4:
               response = _context.sent;
-              console.log('response', response.data.length);
 
               if (response.data.length > 0) {
                 _this.state.notification += 1;
               }
 
-              _context.next = 12;
+              _context.next = 11;
               break;
 
-            case 9:
-              _context.prev = 9;
+            case 8:
+              _context.prev = 8;
               _context.t0 = _context["catch"](1);
-              console.log(_context.t0);
+              console.error(_context.t0);
 
-            case 12:
+            case 11:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[1, 9]]);
+      }, _callee, null, [[1, 8]]);
     }))();
   },
   methods: {
@@ -3066,7 +3120,7 @@ var APISettings = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }),
-  baseURL: "".concat("http://paybystep2.test", "/api")
+  baseURL: "".concat("http://localhost:8000", "/api")
 };
 
 /***/ }),
@@ -3503,7 +3557,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context9.prev = _context9.next) {
             case 0:
               _context9.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/user/".concat(user.id, "/password"), user, {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/user/password/update", user, {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }
@@ -3732,7 +3786,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Profile_vue_vue_type_template_id_1bdc34e0__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Profile.vue?vue&type=template&id=1bdc34e0 */ "./resources/js/Pages/Profile.vue?vue&type=template&id=1bdc34e0");
 /* harmony import */ var _Profile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Profile.vue?vue&type=script&lang=js */ "./resources/js/Pages/Profile.vue?vue&type=script&lang=js");
 /* harmony import */ var _Profile_vue_vue_type_style_index_0_id_1bdc34e0_lang_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Profile.vue?vue&type=style&index=0&id=1bdc34e0&lang=scss */ "./resources/js/Pages/Profile.vue?vue&type=style&index=0&id=1bdc34e0&lang=scss");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -3740,7 +3794,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Profile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Profile_vue_vue_type_template_id_1bdc34e0__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Profile.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Profile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Profile_vue_vue_type_template_id_1bdc34e0__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/Profile.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -3761,13 +3815,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=template&id=c259b9a4 */ "./resources/js/components/Breadcrumb.vue?vue&type=template&id=c259b9a4");
 /* harmony import */ var _Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=script&lang=js */ "./resources/js/components/Breadcrumb.vue?vue&type=script&lang=js");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -3789,7 +3843,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Navbar.vue?vue&type=template&id=6dde423b&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=template&id=6dde423b&scoped=true");
 /* harmony import */ var _Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Navbar.vue?vue&type=script&lang=js */ "./resources/js/components/Navbar.vue?vue&type=script&lang=js");
 /* harmony import */ var _Navbar_vue_vue_type_style_index_0_id_6dde423b_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -3797,7 +3851,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -3818,13 +3872,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _FormUpdatePassword_vue_vue_type_template_id_5bab12d1__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FormUpdatePassword.vue?vue&type=template&id=5bab12d1 */ "./resources/js/components/user/FormUpdatePassword.vue?vue&type=template&id=5bab12d1");
 /* harmony import */ var _FormUpdatePassword_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FormUpdatePassword.vue?vue&type=script&lang=js */ "./resources/js/components/user/FormUpdatePassword.vue?vue&type=script&lang=js");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_FormUpdatePassword_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FormUpdatePassword_vue_vue_type_template_id_5bab12d1__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/user/FormUpdatePassword.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_FormUpdatePassword_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FormUpdatePassword_vue_vue_type_template_id_5bab12d1__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/user/FormUpdatePassword.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -3846,7 +3900,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FormUpdateProfile_vue_vue_type_template_id_9ce40e3a_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FormUpdateProfile.vue?vue&type=template&id=9ce40e3a&scoped=true */ "./resources/js/components/user/FormUpdateProfile.vue?vue&type=template&id=9ce40e3a&scoped=true");
 /* harmony import */ var _FormUpdateProfile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FormUpdateProfile.vue?vue&type=script&lang=js */ "./resources/js/components/user/FormUpdateProfile.vue?vue&type=script&lang=js");
 /* harmony import */ var _FormUpdateProfile_vue_vue_type_style_index_0_id_9ce40e3a_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./FormUpdateProfile.vue?vue&type=style&index=0&id=9ce40e3a&lang=scss&scoped=true */ "./resources/js/components/user/FormUpdateProfile.vue?vue&type=style&index=0&id=9ce40e3a&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -3854,7 +3908,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_FormUpdateProfile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FormUpdateProfile_vue_vue_type_template_id_9ce40e3a_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-9ce40e3a"],['__file',"resources/js/components/user/FormUpdateProfile.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_FormUpdateProfile_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_FormUpdateProfile_vue_vue_type_template_id_9ce40e3a_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-9ce40e3a"],['__file',"resources/js/components/user/FormUpdateProfile.vue"]])
 /* hot reload */
 if (false) {}
 

@@ -77,17 +77,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 11:
               responseInvitation = _context.sent;
-              console.log(responseInvitation.data.length);
               if (responseInvitation.data.length > 0) _this.state.invitation = responseInvitation.data;
-              console.log('caca');
               _this.state.isLoaded = true;
-              _context.next = 22;
+              _context.next = 19;
               break;
 
-            case 18:
-              _context.prev = 18;
+            case 16:
+              _context.prev = 16;
               _context.t0 = _context["catch"](0);
-              console.log();
 
               if (_context.t0.response.status === 401) {
                 _this.$store.commit('SET_USER', null);
@@ -97,16 +94,16 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 window.location.href = '/login';
               }
 
-            case 22:
-              _context.prev = 22;
-              return _context.finish(22);
+            case 19:
+              _context.prev = 19;
+              return _context.finish(19);
 
-            case 24:
+            case 21:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[0, 18, 22, 24]]);
+      }, _callee, null, [[0, 16, 19, 21]]);
     }))();
   }
 });
@@ -179,26 +176,25 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 4:
               response = _context.sent;
-              console.log('response', response.data.length);
 
               if (response.data.length > 0) {
                 _this.state.notification += 1;
               }
 
-              _context.next = 12;
+              _context.next = 11;
               break;
 
-            case 9:
-              _context.prev = 9;
+            case 8:
+              _context.prev = 8;
               _context.t0 = _context["catch"](1);
-              console.log(_context.t0);
+              console.error(_context.t0);
 
-            case 12:
+            case 11:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[1, 9]]);
+      }, _callee, null, [[1, 8]]);
     }))();
   },
   methods: {
@@ -261,27 +257,26 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             switch (_context.prev = _context.next) {
               case 0:
                 this.state.isLoadingYes = true;
-                console.log(this.invitation);
-                _context.prev = 2;
-                _context.next = 5;
+                _context.prev = 1;
+                _context.next = 4;
                 return _services_inviteService__WEBPACK_IMPORTED_MODULE_2__["default"].acceptedInvite(this.invitation[0].token);
 
-              case 5:
+              case 4:
                 location.reload();
-                _context.next = 11;
+                _context.next = 10;
                 break;
 
-              case 8:
-                _context.prev = 8;
-                _context.t0 = _context["catch"](2);
-                console.log(_context.t0);
+              case 7:
+                _context.prev = 7;
+                _context.t0 = _context["catch"](1);
+                console.error(_context.t0);
 
-              case 11:
+              case 10:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, this, [[2, 8]]);
+        }, _callee, this, [[1, 7]]);
       }));
 
       function handleAcceptClick() {
@@ -309,7 +304,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 7:
                 _context2.prev = 7;
                 _context2.t0 = _context2["catch"](1);
-                console.log(_context2.t0);
+                console.error(_context2.t0);
 
               case 10:
               case "end":
@@ -711,7 +706,7 @@ var APISettings = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }),
-  baseURL: "".concat("http://paybystep2.test", "/api")
+  baseURL: "".concat("http://localhost:8000", "/api")
 };
 
 /***/ }),
@@ -1402,7 +1397,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context9.prev = _context9.next) {
             case 0:
               _context9.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/user/".concat(user.id, "/password"), user, {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/user/password/update", user, {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }
@@ -1631,7 +1626,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DashboardDevis_vue_vue_type_template_id_333d4b98__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DashboardDevis.vue?vue&type=template&id=333d4b98 */ "./resources/js/Pages/DashboardDevis.vue?vue&type=template&id=333d4b98");
 /* harmony import */ var _DashboardDevis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DashboardDevis.vue?vue&type=script&lang=js */ "./resources/js/Pages/DashboardDevis.vue?vue&type=script&lang=js");
 /* harmony import */ var _DashboardDevis_vue_vue_type_style_index_0_id_333d4b98_lang_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DashboardDevis.vue?vue&type=style&index=0&id=333d4b98&lang=scss */ "./resources/js/Pages/DashboardDevis.vue?vue&type=style&index=0&id=333d4b98&lang=scss");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -1639,7 +1634,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_DashboardDevis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_DashboardDevis_vue_vue_type_template_id_333d4b98__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/DashboardDevis.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_DashboardDevis_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_DashboardDevis_vue_vue_type_template_id_333d4b98__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/Pages/DashboardDevis.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -1660,13 +1655,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=template&id=c259b9a4 */ "./resources/js/components/Breadcrumb.vue?vue&type=template&id=c259b9a4");
 /* harmony import */ var _Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Breadcrumb.vue?vue&type=script&lang=js */ "./resources/js/components/Breadcrumb.vue?vue&type=script&lang=js");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
 
 ;
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_2__["default"])(_Breadcrumb_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Breadcrumb_vue_vue_type_template_id_c259b9a4__WEBPACK_IMPORTED_MODULE_0__.render],['__file',"resources/js/components/Breadcrumb.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -1688,7 +1683,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Navbar.vue?vue&type=template&id=6dde423b&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=template&id=6dde423b&scoped=true");
 /* harmony import */ var _Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Navbar.vue?vue&type=script&lang=js */ "./resources/js/components/Navbar.vue?vue&type=script&lang=js");
 /* harmony import */ var _Navbar_vue_vue_type_style_index_0_id_6dde423b_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true */ "./resources/js/components/Navbar.vue?vue&type=style&index=0&id=6dde423b&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -1696,7 +1691,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Navbar_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Navbar_vue_vue_type_template_id_6dde423b_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-6dde423b"],['__file',"resources/js/components/Navbar.vue"]])
 /* hot reload */
 if (false) {}
 
@@ -1718,7 +1713,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ProjectClientList_vue_vue_type_template_id_195ddbb1_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ProjectClientList.vue?vue&type=template&id=195ddbb1&scoped=true */ "./resources/js/components/project/ProjectClientList.vue?vue&type=template&id=195ddbb1&scoped=true");
 /* harmony import */ var _ProjectClientList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ProjectClientList.vue?vue&type=script&lang=js */ "./resources/js/components/project/ProjectClientList.vue?vue&type=script&lang=js");
 /* harmony import */ var _ProjectClientList_vue_vue_type_style_index_0_id_195ddbb1_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ProjectClientList.vue?vue&type=style&index=0&id=195ddbb1&lang=scss&scoped=true */ "./resources/js/components/project/ProjectClientList.vue?vue&type=style&index=0&id=195ddbb1&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -1726,7 +1721,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_ProjectClientList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_ProjectClientList_vue_vue_type_template_id_195ddbb1_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-195ddbb1"],['__file',"resources/js/components/project/ProjectClientList.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_ProjectClientList_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_ProjectClientList_vue_vue_type_template_id_195ddbb1_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-195ddbb1"],['__file',"resources/js/components/project/ProjectClientList.vue"]])
 /* hot reload */
 if (false) {}
 

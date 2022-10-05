@@ -49,11 +49,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               _context.prev = 0;
               projectId = _this.$route.params.projectId;
               userId = _this.$route.params.userId;
-              console.log(projectId, userId);
-              _context.next = 6;
+              _context.next = 5;
               return _services_projectService__WEBPACK_IMPORTED_MODULE_1__["default"].getProjectById(projectId);
 
-            case 6:
+            case 5:
               response = _context.sent;
 
               if (response.status === 200) {
@@ -61,24 +60,24 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               }
 
               _this.state.isLoaded = false;
-              _context.next = 15;
+              _context.next = 14;
               break;
 
-            case 11:
-              _context.prev = 11;
+            case 10:
+              _context.prev = 10;
               _context.t0 = _context["catch"](0);
-              console.log(_context.t0.response);
+              console.error(_context.t0.response);
 
               if (_context.t0.response.status === 401) {
                 _this.$router.push('/');
               }
 
-            case 15:
+            case 14:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[0, 11]]);
+      }, _callee, null, [[0, 10]]);
     }))();
   },
   methods: {
@@ -90,9 +89,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         console.error(e);
       }
     },
-    handleDecline: function handleDecline() {
-      console.log('decline');
-    }
+    handleDecline: function handleDecline() {}
   }
 });
 
@@ -176,7 +173,7 @@ var APISettings = {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }),
-  baseURL: "".concat("http://paybystep2.test", "/api")
+  baseURL: "".concat("http://localhost:8000", "/api")
 };
 
 /***/ }),
@@ -658,7 +655,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Invite_vue_vue_type_template_id_9c2dcd1c_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Invite.vue?vue&type=template&id=9c2dcd1c&scoped=true */ "./resources/js/Pages/Invite.vue?vue&type=template&id=9c2dcd1c&scoped=true");
 /* harmony import */ var _Invite_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Invite.vue?vue&type=script&lang=js */ "./resources/js/Pages/Invite.vue?vue&type=script&lang=js");
 /* harmony import */ var _Invite_vue_vue_type_style_index_0_id_9c2dcd1c_lang_scss_scoped_true__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Invite.vue?vue&type=style&index=0&id=9c2dcd1c&lang=scss&scoped=true */ "./resources/js/Pages/Invite.vue?vue&type=style&index=0&id=9c2dcd1c&lang=scss&scoped=true");
-/* harmony import */ var C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
+/* harmony import */ var _var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./node_modules/vue-loader/dist/exportHelper.js */ "./node_modules/vue-loader/dist/exportHelper.js");
 
 
 
@@ -666,7 +663,7 @@ __webpack_require__.r(__webpack_exports__);
 ;
 
 
-const __exports__ = /*#__PURE__*/(0,C_laragon_www_paybystep2_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Invite_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Invite_vue_vue_type_template_id_9c2dcd1c_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-9c2dcd1c"],['__file',"resources/js/Pages/Invite.vue"]])
+const __exports__ = /*#__PURE__*/(0,_var_www_html_pbs_node_modules_vue_loader_dist_exportHelper_js__WEBPACK_IMPORTED_MODULE_3__["default"])(_Invite_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"], [['render',_Invite_vue_vue_type_template_id_9c2dcd1c_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render],['__scopeId',"data-v-9c2dcd1c"],['__file',"resources/js/Pages/Invite.vue"]])
 /* hot reload */
 if (false) {}
 

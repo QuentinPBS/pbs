@@ -2,8 +2,9 @@
 
 namespace App\Actions\Project;
 
-use App\Http\Requests\ProjectStoreRequest;
 use App\Models\Project;
+use Illuminate\Support\Str;
+use App\Http\Requests\ProjectStoreRequest;
 
 class StoreProjectAction
 {
@@ -12,10 +13,22 @@ class StoreProjectAction
      */
     public function execute(ProjectStoreRequest $request, $userID)
     {
-       return Project::create([
+        $file = $request->image;
+        $path = null;
+        if ($file) {
+
+            $filePath = time() . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path("storage/projects"), $filePath);
+            $path = "storage/projects" . '/' . $filePath;
+        }
+
+
+
+        return Project::create([
             'name' => $request->name,
             'description' => $request->description,
-            'image' => $request->image ? $request->image : "https://paybystep.s3.eu-west-3.amazonaws.com/bg-default.png",
+            'image' => $path,
             'user_id' => $userID,
         ]);
     }
