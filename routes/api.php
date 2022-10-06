@@ -48,9 +48,13 @@ Route::middleware(['api'])->group(function ($router) {
     Route::get('leads/project/{id}', [LeadController::class, 'showByProjectId'])->name('leads.showByProjectId');
     Route::post('leads', [LeadController::class, 'store'])->name('leads.store');
     Route::get('leads/{slug}', [LeadController::class, 'showByLeadSlug'])->name('leads.showByLeadSlug');
-    //Feature conversation
 
-    Route::post('leads/messages/create', [LeadConversationController::class, 'handleStoreMessage']);
+    //Lead conversation
+
+    Route::post('lead/messages/create', [LeadConversationController::class, 'handleStoreMessage']);
+    Route::get('lead/{slug}/messages', [LeadConversationController::class, 'handleGetLeadConversation']);
+
+
     Route::get('features/lead/{id}', [FeaturesController::class, 'showByLeadId'])->name('features.showByLeadId');
     Route::post('features', [FeaturesController::class, 'store'])->name('features.store');
     Route::put('features/validation/2/{id}', [ValidationController::class, 'updateStepTwo'])->name('features.updateStepTwo');

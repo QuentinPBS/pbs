@@ -106,85 +106,67 @@
         </div>
       </div>
       <div class="devis-list__description">
-        <p>Description</p>
+        <p class="mb-1 text-sm">Description</p>
 
-        <QuillEditor
+        <textarea
+          id="message"
+          rows="4"
+          class="
+            block
+            p-2.5
+            w-full
+            text-sm text-gray-900
+            bg-gray-50
+            rounded-lg
+            border border-gray-300
+            focus:ring-blue-500 focus:border-blue-500
+            dark:bg-gray-700
+            dark:border-gray-600
+            dark:placeholder-gray-400
+            dark:text-white
+            dark:focus:ring-blue-500
+            dark:focus:border-blue-500
+          "
+          placeholder="Your message..."
+          v-model="state.content"
+        ></textarea>
+
+        <!-- <QuillEditor
           theme="snow"
           :options="state.options"
           v-model:content="state.content"
           style="height: 250px"
-        />
-        <button @click="test">save</button>
-
-        <div class="flex items-end justify-start mb-4">
-          <div
-            class="
-              flex flex-col
-              space-y-2
-              text-xs
-              max-w-xs
-              mx-2
-              order-1
-              items-end
-            "
+        /> -->
+       
+        <button
+        @click="sendMessage" 
+          type="submit"
+          class="
+            inline-flex
+            justify-center
+            p-2
+            text-blue-600
+            rounded-full
+            cursor-pointer
+            hover:bg-blue-100
+            dark:text-blue-500 dark:hover:bg-gray-600
+            mb-5
+          "
+        >
+          <svg
+            aria-hidden="true"
+            class="w-6 h-6 rotate-90"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <div>
-              <span
-                class="
-                  px-4
-                  py-2
-                  rounded-lg
-                  inline-block
-                  rounded-br-none
-                  bg-gray-300
-                  text-gray-600
-                "
-                >yes, I have a mac. I never had issues with root permission as
-                well, but this helped me to solve the problem</span
-              >
-            </div>
-          </div>
-          <img
-            src="https://images.unsplash.com/photo-1590031905470-a1a1feacbb0b?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144"
-            alt="My profile"
-            class="w-6 h-6 rounded-full order-2"
-          />
-        </div>
-
-        <div class="flex items-end justify-end mb-3">
-          <div
-            class="
-              flex flex-col
-              space-y-2
-              text-xs
-              max-w-xs
-              mx-2
-              order-1
-              items-end
-            "
-          >
-            <div>
-              <span
-                class="
-                  px-4
-                  py-2
-                  rounded-lg
-                  inline-block
-                  rounded-br-none
-                  bg-blue-600
-                  text-white
-                "
-                >yes, I have a mac. I never had issues with root permission as
-                well, but this helped me to solve the problem</span
-              >
-            </div>
-          </div>
-          <img
-            src="https://images.unsplash.com/photo-1590031905470-a1a1feacbb0b?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=3&amp;w=144&amp;h=144"
-            alt="My profile"
-            class="w-6 h-6 rounded-full order-2"
-          />
-        </div>
+            <path
+              d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
+            ></path>
+          </svg>
+          <span class="sr-only">Send message</span>
+        </button>
+        <LeadConversation :leadConversation="leadConversation" />
       </div>
     </div>
 
@@ -387,13 +369,15 @@ import { VueFinalModal, ModalsContainer } from "vue-final-modal";
 import useVuelidate from "@vuelidate/core";
 import { required, email } from "@vuelidate/validators";
 import featureService from "../../services/featureService";
+import leadConversationService from "../../services/leadConversationService";
 import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import inviteService from "../../services/inviteService";
+import LeadConversation from "../conversation/LeadConversation.vue";
 export default {
   name: "DevisList",
 
-  props: ["devis", "features"],
+  props: ["devis", "features", "leadConversation"],
 
   setup() {
     const state = reactive({
@@ -409,13 +393,14 @@ export default {
       email: "",
       deadline: new Date().toISOString().split("T")[0],
       price: 0,
-      content: {},
+      content: "",
       options: {
         modules: {
           toolbar: ["bold", "italic", "underline"],
         },
         readOnly: false,
         theme: "snow",
+        contentType: "html",
       },
       currentFeature: null,
     });
@@ -448,6 +433,7 @@ export default {
     ModalsContainer,
     VueFinalModal,
     QuillEditor,
+    LeadConversation,
   },
 
   computed: {
@@ -634,6 +620,25 @@ export default {
         console.error(error);
       } finally {
         this.state.isLoadingInvite = false;
+      }
+    },
+    // send lead conversation message
+    async sendMessage() {
+      if (this.state.content) {
+        try {
+          const response =
+            await leadConversationService.storeLeadConversationMessage({
+              message: this.state.content,
+              lead_id: this.devis.id,
+              user_id: this.$store.state.userStore.user.id,
+            });
+          if (response.status == 201) {
+            this.state.content=""
+            this.$emit("sendMessage");
+          }
+        } catch (error) {
+          console.error(error);
+        }
       }
     },
   },

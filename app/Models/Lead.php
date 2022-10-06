@@ -24,7 +24,7 @@ class Lead extends Model
         'validation_id',
         'share_id',
     ];
-    
+
     /**
      * Return the sluggable configuration array for this model.
      *
@@ -81,10 +81,17 @@ class Lead extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function getSlugOptions() : SlugOptions
+    public function getSlugOptions(): SlugOptions
     {
         return SlugOptions::create()
             ->generateSlugsFrom('name')
             ->saveSlugsTo('slug');
+    }
+
+
+
+    public function messages()
+    {
+        return $this->hasMany(LeadConversation::class);
     }
 }

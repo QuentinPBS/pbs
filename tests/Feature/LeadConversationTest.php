@@ -33,7 +33,7 @@ class LeadConversationTest extends TestCase
             'Authorization' => 'Bearer ' . $token,
             'Accept' => 'application/json'
         ])
-            ->post('/api/leads/messages/create', [
+            ->post('/api/lead/messages/create', [
                 'message' => "",
                 'user_id' => $user->id,
                 'lead_id' => $lead->id
@@ -63,10 +63,35 @@ class LeadConversationTest extends TestCase
             'Authorization' => 'Bearer ' . $token,
             'Accept' => 'application/json'
         ])
-            ->post('/api/leads/messages/create', [
+            ->post('/api/lead/messages/create', [
                 'message' => Str::random(50),
                 'user_id' => $user->id,
                 'lead_id' => $lead->id
             ])->assertStatus(201);
+    }
+
+
+    public function test_list_lead_conversation_success()
+    {
+
+        $user = User::factory()->create();
+        $token = JWTAuth::fromUser($user);
+
+        $project = Project::factory()->create();
+        $lead = Lead::factory()->create([
+            'project_id' => $project->id
+        ]);
+        $lead->messages()->create([
+            'message' => Str::random(20),
+            'user_id' => $user->id
+        ]);
+
+        $this->withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+            'Accept' => 'application/json'
+        ])
+            ->get('/api/lead/' . $lead->slug . '/messages')
+
+            ->assertStatus(200);
     }
 }

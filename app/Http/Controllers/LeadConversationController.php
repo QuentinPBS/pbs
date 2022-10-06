@@ -17,4 +17,15 @@ class LeadConversationController extends Controller
             'status' => true
         ], 201);
     }
+    public function handleGetLeadConversation($slug)
+    {
+        $messages = LeadConversation::query()
+            ->with('user')
+            ->whereHas('lead', fn ($q) => $q->whereSlug($slug))
+            ->get();
+
+        return response()->json([
+            'messages' => $messages
+        ], 200);
+    }
 }

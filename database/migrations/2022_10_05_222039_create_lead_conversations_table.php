@@ -16,8 +16,12 @@ class CreateLeadConversationsTable extends Migration
         Schema::create('lead_conversations', function (Blueprint $table) {
             $table->id();
             $table->text('message');
-            $table->foreignId('lead_id');
-            $table->foreignId('user_id');
+            $table->foreignId('lead_id')
+                ->constrained()
+                ->onDelete('cascade');
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }
