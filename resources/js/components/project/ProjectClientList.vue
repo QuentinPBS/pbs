@@ -79,7 +79,7 @@ export default {
         handleRejectClick: async function() {
             this.state.isLoadingNo = true
             try {
-                await inviteService.rejectInvite(this.$store.state.userStore.user.email)
+                await inviteService.rejectInvite(this.invitation[0].token)
                 location.reload();
             } catch (error) {
                 console.error(error)

@@ -2919,6 +2919,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       isSendEmailError: false,
       isLoadingInvite: false,
       isSendEmailErrorCatch: false,
+      showRejectStep: false,
       name: "",
       email: "",
       deadline: new Date().toISOString().split("T")[0],
@@ -2932,7 +2933,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         theme: "snow",
         contentType: "html"
       },
-      currentFeature: null
+      currentFeature: null,
+      rejectedStep: null
     });
     var rules = (0,vue__WEBPACK_IMPORTED_MODULE_0__.computed)(function () {
       return {
@@ -2981,6 +2983,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     openIsDelivredModal: function openIsDelivredModal(feature) {
       this.state.currentFeature = feature;
       this.state.showModalIsDelivred = true;
+    },
+    openRejectStepModal: function openRejectStepModal(feature) {
+      this.state.rejectedStep = feature;
+      this.state.showRejectStep = true;
     },
     cancelIsDelivry: function cancelIsDelivry() {
       var _this = this;
@@ -3054,6 +3060,44 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee2, null, [[0, 7]]);
       }))();
     },
+    handleRejectStep: function handleRejectStep() {
+      var _this3 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
+        var response;
+        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _context3.prev = 0;
+                _context3.next = 3;
+                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].rejectStep(_this3.state.rejectedStep);
+
+              case 3:
+                response = _context3.sent;
+
+                if (response.status === 200) {
+                  _this3.state.showRejectStep = false;
+
+                  _this3.$emit("rejectStep");
+                }
+
+                _context3.next = 10;
+                break;
+
+              case 7:
+                _context3.prev = 7;
+                _context3.t0 = _context3["catch"](0);
+                console.error(_context3.t0);
+
+              case 10:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3, null, [[0, 7]]);
+      }))();
+    },
     cancelForm: function cancelForm() {
       this.state.name = "";
       this.state.price = 0;
@@ -3097,43 +3141,10 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     isSuccessClient: function isSuccessClient(feature) {
       if (feature.user_id !== this.$store.state.userStore.user.id) return feature.validation.identifier === "success";else return false;
     },
-    validateBtn: function validateBtn(feature) {
-      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
-        var response;
-        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                _context3.prev = 0;
-                _context3.next = 3;
-                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepTwo(feature);
-
-              case 3:
-                response = _context3.sent;
-
-                if (response.status === 200) {
-                  location.reload();
-                }
-
-                _context3.next = 10;
-                break;
-
-              case 7:
-                _context3.prev = 7;
-                _context3.t0 = _context3["catch"](0);
-                console.error(_context3.t0);
-
-              case 10:
-              case "end":
-                return _context3.stop();
-            }
-          }
-        }, _callee3, null, [[0, 7]]);
-      }))();
+    isRejected: function isRejected(feature) {
+      return feature.validation_id == 6;
     },
-    delivredBtn: function delivredBtn() {
-      var _this3 = this;
-
+    validateBtn: function validateBtn(feature) {
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
         var response;
         return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -3142,7 +3153,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 0:
                 _context4.prev = 0;
                 _context4.next = 3;
-                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepThree(_this3.state.currentFeature);
+                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepTwo(feature);
 
               case 3:
                 response = _context4.sent;
@@ -3167,7 +3178,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee4, null, [[0, 7]]);
       }))();
     },
-    handlePFeatureClick: function handlePFeatureClick() {
+    delivredBtn: function delivredBtn() {
       var _this4 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
@@ -3176,55 +3187,34 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context5.prev = _context5.next) {
               case 0:
-                _this4.v$.$validate();
-
-                if (!_this4.v$.$error) {
-                  _context5.next = 3;
-                  break;
-                }
-
-                return _context5.abrupt("return");
+                _context5.prev = 0;
+                _context5.next = 3;
+                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepThree(_this4.state.currentFeature);
 
               case 3:
-                _context5.prev = 3;
-                _this4.state.isLoading = true;
-                _context5.next = 7;
-                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].createFeature({
-                  name: _this4.state.name,
-                  devis_id: _this4.devis.id,
-                  price: _this4.state.price,
-                  deadline: _this4.state.deadline
-                });
-
-              case 7:
                 response = _context5.sent;
 
-                if (response.status === 201) {
+                if (response.status === 200) {
                   location.reload();
                 }
 
-                _context5.next = 14;
+                _context5.next = 10;
                 break;
 
-              case 11:
-                _context5.prev = 11;
-                _context5.t0 = _context5["catch"](3);
+              case 7:
+                _context5.prev = 7;
+                _context5.t0 = _context5["catch"](0);
                 console.error(_context5.t0);
 
-              case 14:
-                _context5.prev = 14;
-                _this4.state.isLoading = false;
-                return _context5.finish(14);
-
-              case 17:
+              case 10:
               case "end":
                 return _context5.stop();
             }
           }
-        }, _callee5, null, [[3, 11, 14, 17]]);
+        }, _callee5, null, [[0, 7]]);
       }))();
     },
-    handleInvitationClick: function handleInvitationClick() {
+    handlePFeatureClick: function handlePFeatureClick() {
       var _this5 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
@@ -3233,9 +3223,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                _this5.vEmail$.$validate();
+                _this5.v$.$validate();
 
-                if (!_this5.vEmail$.$error) {
+                if (!_this5.v$.$error) {
                   _context6.next = 3;
                   break;
                 }
@@ -3243,44 +3233,45 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 return _context6.abrupt("return");
 
               case 3:
-                _this5.state.isLoadingInvite = true;
-                _this5.state.isSendEmail = false;
-                _this5.state.isSendEmailError = false;
-                _this5.state.isSendEmailErrorCatch = false;
-                _context6.prev = 7;
-                _context6.next = 10;
-                return _services_inviteService__WEBPACK_IMPORTED_MODULE_7__["default"].sendInvite(_this5.devis.project_id, {
-                  email: _this5.state.email,
-                  userId: _this5.$store.state.userStore.user.id
+                _context6.prev = 3;
+                _this5.state.isLoading = true;
+                _context6.next = 7;
+                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].createFeature({
+                  name: _this5.state.name,
+                  devis_id: _this5.devis.id,
+                  price: _this5.state.price,
+                  deadline: _this5.state.deadline
                 });
 
-              case 10:
+              case 7:
                 response = _context6.sent;
-                if (response.data.success) _this5.state.isSendEmail = true;else _this5.state.isSendEmailError = true;
-                _context6.next = 18;
+
+                if (response.status === 201) {
+                  location.reload();
+                }
+
+                _context6.next = 14;
                 break;
+
+              case 11:
+                _context6.prev = 11;
+                _context6.t0 = _context6["catch"](3);
+                console.error(_context6.t0);
 
               case 14:
                 _context6.prev = 14;
-                _context6.t0 = _context6["catch"](7);
-                _this5.state.isSendEmailErrorCatch = true;
-                console.error(_context6.t0);
+                _this5.state.isLoading = false;
+                return _context6.finish(14);
 
-              case 18:
-                _context6.prev = 18;
-                _this5.state.isLoadingInvite = false;
-                return _context6.finish(18);
-
-              case 21:
+              case 17:
               case "end":
                 return _context6.stop();
             }
           }
-        }, _callee6, null, [[7, 14, 18, 21]]);
+        }, _callee6, null, [[3, 11, 14, 17]]);
       }))();
     },
-    // send lead conversation message
-    sendMessage: function sendMessage() {
+    handleInvitationClick: function handleInvitationClick() {
       var _this6 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
@@ -3289,42 +3280,98 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context7.prev = _context7.next) {
               case 0:
-                if (!_this6.state.content) {
-                  _context7.next = 11;
+                _this6.vEmail$.$validate();
+
+                if (!_this6.vEmail$.$error) {
+                  _context7.next = 3;
                   break;
                 }
 
-                _context7.prev = 1;
-                _context7.next = 4;
-                return _services_leadConversationService__WEBPACK_IMPORTED_MODULE_4__["default"].storeLeadConversationMessage({
-                  message: _this6.state.content,
-                  lead_id: _this6.devis.id,
-                  user_id: _this6.$store.state.userStore.user.id
+                return _context7.abrupt("return");
+
+              case 3:
+                _this6.state.isLoadingInvite = true;
+                _this6.state.isSendEmail = false;
+                _this6.state.isSendEmailError = false;
+                _this6.state.isSendEmailErrorCatch = false;
+                _context7.prev = 7;
+                _context7.next = 10;
+                return _services_inviteService__WEBPACK_IMPORTED_MODULE_7__["default"].sendInvite(_this6.devis.project_id, {
+                  email: _this6.state.email,
+                  userId: _this6.$store.state.userStore.user.id
                 });
 
-              case 4:
+              case 10:
                 response = _context7.sent;
-
-                if (response.status == 201) {
-                  _this6.state.content = "";
-
-                  _this6.$emit("sendMessage");
-                }
-
-                _context7.next = 11;
+                if (response.data.success) _this6.state.isSendEmail = true;else _this6.state.isSendEmailError = true;
+                _context7.next = 18;
                 break;
 
-              case 8:
-                _context7.prev = 8;
-                _context7.t0 = _context7["catch"](1);
+              case 14:
+                _context7.prev = 14;
+                _context7.t0 = _context7["catch"](7);
+                _this6.state.isSendEmailErrorCatch = true;
                 console.error(_context7.t0);
 
-              case 11:
+              case 18:
+                _context7.prev = 18;
+                _this6.state.isLoadingInvite = false;
+                return _context7.finish(18);
+
+              case 21:
               case "end":
                 return _context7.stop();
             }
           }
-        }, _callee7, null, [[1, 8]]);
+        }, _callee7, null, [[7, 14, 18, 21]]);
+      }))();
+    },
+    // send lead conversation message
+    sendMessage: function sendMessage() {
+      var _this7 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
+        var response;
+        return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+                if (!_this7.state.content) {
+                  _context8.next = 11;
+                  break;
+                }
+
+                _context8.prev = 1;
+                _context8.next = 4;
+                return _services_leadConversationService__WEBPACK_IMPORTED_MODULE_4__["default"].storeLeadConversationMessage({
+                  message: _this7.state.content,
+                  lead_id: _this7.devis.id,
+                  user_id: _this7.$store.state.userStore.user.id
+                });
+
+              case 4:
+                response = _context8.sent;
+
+                if (response.status == 201) {
+                  _this7.state.content = "";
+
+                  _this7.$emit("sendMessage");
+                }
+
+                _context8.next = 11;
+                break;
+
+              case 8:
+                _context8.prev = 8;
+                _context8.t0 = _context8["catch"](1);
+                console.error(_context8.t0);
+
+              case 11:
+              case "end":
+                return _context8.stop();
+            }
+          }
+        }, _callee8, null, [[1, 8]]);
       }))();
     }
   }
@@ -3385,6 +3432,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     features: $setup.state.features,
     leadConversation: $setup.state.leadConversation,
     onSendMessage: _cache[0] || (_cache[0] = function ($event) {
+      return $options.loadData();
+    }),
+    onRejectStep: _cache[1] || (_cache[1] = function ($event) {
       return $options.loadData();
     })
   }, null, 8
@@ -3669,42 +3719,50 @@ var _hoisted_11 = /*#__PURE__*/_withScopeId(function () {
 });
 
 var _hoisted_12 = {
+  "class": "flex"
+};
+var _hoisted_13 = {
   key: 0,
   "class": "text-secondary text-sm"
 };
-var _hoisted_13 = ["onClick"];
 var _hoisted_14 = ["onClick"];
-var _hoisted_15 = {
-  key: 3,
-  "class": "text-secondary text-sm"
-};
-var _hoisted_16 = {
-  key: 4,
-  "class": "text-red-500 text-sm"
-};
+var _hoisted_15 = ["onClick"];
+var _hoisted_16 = ["onClick"];
 var _hoisted_17 = {
-  key: 5,
-  "class": "text-danger text-sm"
+  key: 4,
+  "class": "text-secondary text-sm"
 };
 var _hoisted_18 = {
-  key: 6,
-  "class": "text-secondary text-sm"
+  key: 5,
+  "class": "text-red-500 text-sm"
 };
-var _hoisted_19 = ["onClick"];
-var _hoisted_20 = {
-  key: 8,
+var _hoisted_19 = {
+  key: 6,
   "class": "text-danger text-sm"
 };
-var _hoisted_21 = {
+var _hoisted_20 = {
+  key: 7,
+  "class": "text-secondary text-sm"
+};
+var _hoisted_21 = ["onClick"];
+var _hoisted_22 = {
   key: 9,
+  "class": "text-danger text-sm"
+};
+var _hoisted_23 = {
+  key: 10,
   "class": "text-sm"
 };
-var _hoisted_22 = {
+var _hoisted_24 = {
+  key: 11,
+  "class": "text-sm"
+};
+var _hoisted_25 = {
   key: 1,
   "class": "flex flex-col items-center w-full mt-28 gap-4"
 };
 
-var _hoisted_23 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_26 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
     src: "/images/logo_b&w.png",
     alt: "logo paybystep"
@@ -3713,7 +3771,7 @@ var _hoisted_23 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_24 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_27 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "text-xl font-bold"
   }, "Vous n'avez aucune étape", -1
@@ -3721,11 +3779,11 @@ var _hoisted_24 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_25 = {
+var _hoisted_28 = {
   "class": "devis-list__description"
 };
 
-var _hoisted_26 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_29 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "mb-1 text-sm"
   }, "Description", -1
@@ -3733,7 +3791,7 @@ var _hoisted_26 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_27 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_30 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("svg", {
     "aria-hidden": "true",
     "class": "w-6 h-6 rotate-90",
@@ -3747,7 +3805,7 @@ var _hoisted_27 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_28 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_31 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "sr-only"
   }, "Send message", -1
@@ -3755,9 +3813,9 @@ var _hoisted_28 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_29 = [_hoisted_27, _hoisted_28];
+var _hoisted_32 = [_hoisted_30, _hoisted_31];
 
-var _hoisted_30 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_33 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "modal__title"
   }, "Créer une étape", -1
@@ -3765,17 +3823,17 @@ var _hoisted_30 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_31 = {
+var _hoisted_34 = {
   "class": "modal__content"
 };
-var _hoisted_32 = {
+var _hoisted_35 = {
   "class": "project-list__form"
 };
-var _hoisted_33 = {
+var _hoisted_36 = {
   "class": "form-control w-full"
 };
 
-var _hoisted_34 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_37 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
     "class": "label"
   }, "Nom de l'étape", -1
@@ -3783,18 +3841,18 @@ var _hoisted_34 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_35 = {
+var _hoisted_38 = {
   key: 0,
   "class": "label"
 };
-var _hoisted_36 = {
+var _hoisted_39 = {
   "class": "label-text-alt text-red-400"
 };
-var _hoisted_37 = {
+var _hoisted_40 = {
   "class": "form-control w-full"
 };
 
-var _hoisted_38 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_41 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
     "class": "label"
   }, "Prix", -1
@@ -3802,18 +3860,18 @@ var _hoisted_38 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_39 = {
+var _hoisted_42 = {
   key: 0,
   "class": "label"
 };
-var _hoisted_40 = {
+var _hoisted_43 = {
   "class": "label-text-alt text-red-400"
 };
-var _hoisted_41 = {
+var _hoisted_44 = {
   "class": "form-control w-full"
 };
 
-var _hoisted_42 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_45 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
     "class": "label"
   }, "Deadline", -1
@@ -3821,19 +3879,19 @@ var _hoisted_42 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_43 = ["min"];
-var _hoisted_44 = {
+var _hoisted_46 = ["min"];
+var _hoisted_47 = {
   key: 0,
   "class": "label"
 };
-var _hoisted_45 = {
+var _hoisted_48 = {
   "class": "label-text-alt text-red-400"
 };
-var _hoisted_46 = {
+var _hoisted_49 = {
   "class": "modal__action"
 };
 
-var _hoisted_47 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_50 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "modal__title"
   }, "Partager le devis", -1
@@ -3841,53 +3899,53 @@ var _hoisted_47 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_48 = {
+var _hoisted_51 = {
   "class": "modal__content"
 };
-var _hoisted_49 = {
+var _hoisted_52 = {
   key: 0,
   "class": "alert alert-success my-5"
 };
 
-var _hoisted_50 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Un email vient d'être envoyé")], -1
-  /* HOISTED */
-  );
-});
-
-var _hoisted_51 = [_hoisted_50];
-var _hoisted_52 = {
-  key: 1,
-  "class": "alert alert-error my-5"
-};
-
 var _hoisted_53 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Un email est déjà envoyé")], -1
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Un email vient d'être envoyé")], -1
   /* HOISTED */
   );
 });
 
 var _hoisted_54 = [_hoisted_53];
 var _hoisted_55 = {
-  key: 2,
+  key: 1,
   "class": "alert alert-error my-5"
 };
 
 var _hoisted_56 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Une erreure est survenu.")], -1
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Un email est déjà envoyé")], -1
   /* HOISTED */
   );
 });
 
 var _hoisted_57 = [_hoisted_56];
 var _hoisted_58 = {
+  key: 2,
+  "class": "alert alert-error my-5"
+};
+
+var _hoisted_59 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", null, "Une erreure est survenu.")], -1
+  /* HOISTED */
+  );
+});
+
+var _hoisted_60 = [_hoisted_59];
+var _hoisted_61 = {
   "class": "project-list__form"
 };
-var _hoisted_59 = {
+var _hoisted_62 = {
   "class": "form-control w-full"
 };
 
-var _hoisted_60 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_63 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
     "class": "label"
   }, "Adresse mail", -1
@@ -3895,35 +3953,13 @@ var _hoisted_60 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_61 = {
+var _hoisted_64 = {
   key: 0,
   "class": "label"
 };
-var _hoisted_62 = {
+var _hoisted_65 = {
   "class": "label-text-alt text-red-400"
 };
-var _hoisted_63 = {
-  "class": "modal__action"
-};
-
-var _hoisted_64 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
-    "class": "modal__title"
-  }, "Délivrer la feature (Bétat Test)", -1
-  /* HOISTED */
-  );
-});
-
-var _hoisted_65 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
-    "class": "modal__content"
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
-    "class": "my-5"
-  }, " Merci d'envoyer votre justificatif d'étape directement à votre client (mail, sms, whatsapp, pigeon voyageur, signal de fumée ...). Nous développons actuellement l'hébergement des preuves. ")], -1
-  /* HOISTED */
-  );
-});
-
 var _hoisted_66 = {
   "class": "modal__action"
 };
@@ -3931,7 +3967,7 @@ var _hoisted_66 = {
 var _hoisted_67 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
     "class": "modal__title"
-  }, "Vérification du Délivrable", -1
+  }, "Délivrer la feature (Bétat Test)", -1
   /* HOISTED */
   );
 });
@@ -3941,12 +3977,56 @@ var _hoisted_68 = /*#__PURE__*/_withScopeId(function () {
     "class": "modal__content"
   }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
     "class": "my-5"
-  }, " Merci de vérifier les délivrable avant de valider. Nous développons actuellement l'hébergement des preuves. ")], -1
+  }, " Merci d'envoyer votre justificatif d'étape directement à votre client (mail, sms, whatsapp, pigeon voyageur, signal de fumée ...). Nous développons actuellement l'hébergement des preuves. ")], -1
   /* HOISTED */
   );
 });
 
 var _hoisted_69 = {
+  "class": "modal__action"
+};
+
+var _hoisted_70 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+    "class": "modal__title"
+  }, "Vérification du Délivrable", -1
+  /* HOISTED */
+  );
+});
+
+var _hoisted_71 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    "class": "modal__content"
+  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+    "class": "my-5"
+  }, " Merci de vérifier les délivrable avant de valider. Nous développons actuellement l'hébergement des preuves. ")], -1
+  /* HOISTED */
+  );
+});
+
+var _hoisted_72 = {
+  "class": "modal__action"
+};
+
+var _hoisted_73 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", {
+    "class": "modal__title"
+  }, "Refus de l'etape", -1
+  /* HOISTED */
+  );
+});
+
+var _hoisted_74 = /*#__PURE__*/_withScopeId(function () {
+  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    "class": "modal__content"
+  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", {
+    "class": "my-5"
+  }, "Etes vous sur de vouloir refuser cette etape?")], -1
+  /* HOISTED */
+  );
+});
+
+var _hoisted_75 = {
   "class": "modal__action"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -3978,7 +4058,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     /* TEXT */
     ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(": " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(feature.deadline), 1
     /* TEXT */
-    )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [$options.isWaiting(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_12, "En attente de validation")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isWaitingClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+    )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [$options.isWaiting(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_13, "En attente de validation")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isWaitingClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
       key: 1,
       "class": "btn btn-primary",
       onClick: function onClick($event) {
@@ -3986,31 +4066,39 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }
     }, " Valider ", 8
     /* PROPS */
-    , _hoisted_13)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isValidated(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+    , _hoisted_14)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isWaitingClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
       key: 2,
+      "class": "btn bg-red-500 text-white ml-2",
+      onClick: function onClick($event) {
+        return $options.openRejectStepModal(feature);
+      }
+    }, " Refuser ", 8
+    /* PROPS */
+    , _hoisted_15)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isValidated(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+      key: 3,
       "class": "btn btn-primary",
       onClick: function onClick($event) {
         return $options.openDelivredModal(feature);
       }
     }, " Délivrer ", 8
     /* PROPS */
-    , _hoisted_14)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isValidatedClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_15, "En attente de délivrable")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isCanceled(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_16, "Non validée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isCanceledClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_17, "Non validée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isDelivered(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_18, "En attente de confirmation")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isDeliveredClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
-      key: 7,
+    , _hoisted_16)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isValidatedClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_17, "En attente de délivrable")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isCanceled(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_18, "Non validée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isCanceledClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_19, "Non validée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isDelivered(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_20, "En attente de confirmation")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isDeliveredClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+      key: 8,
       "class": "btn btn-primary",
       onClick: function onClick($event) {
         return $options.openIsDelivredModal(feature);
       }
     }, " Valider les délivrables ", 8
     /* PROPS */
-    , _hoisted_19)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccess(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_20, "Confirmé")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccessClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_21, "Acceptée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])]);
+    , _hoisted_21)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccess(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_22, "Confirmé")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccessClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_23, "Acceptée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isRejected(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_24, "Refusée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]);
   }), 128
   /* KEYED_FRAGMENT */
-  ))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_22, [_hoisted_23, _hoisted_24, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  ))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_25, [_hoisted_26, _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     "class": "btn btn-primary",
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $setup.state.showModal = true;
     })
-  }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_25, [_hoisted_26, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
+  }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
     id: "message",
     rows: "4",
     "class": "block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
@@ -4026,7 +4114,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     type: "submit",
     "class": "inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600 mb-5"
-  }, _hoisted_29), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_LeadConversation, {
+  }, _hoisted_32), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_LeadConversation, {
     leadConversation: $props.leadConversation
   }, null, 8
   /* PROPS */
@@ -4044,7 +4132,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[5] || (_cache[5] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, "X"), _hoisted_30, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_31, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_32, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_33, [_hoisted_34, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, "X"), _hoisted_33, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_34, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_35, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_36, [_hoisted_37, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "text",
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
           'input-error': $setup.v$.name.$error
@@ -4054,9 +4142,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         })
       }, null, 2
       /* CLASS */
-      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.name]]), $setup.v$.name.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_35, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_36, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.name.$errors[0].$message), 1
+      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.name]]), $setup.v$.name.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_38, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_39, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.name.$errors[0].$message), 1
       /* TEXT */
-      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_37, [_hoisted_38, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_40, [_hoisted_41, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "text",
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
           'input-error': $setup.v$.price.$error
@@ -4066,9 +4154,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         })
       }, null, 2
       /* CLASS */
-      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.price]]), $setup.v$.price.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_39, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_40, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.price.$errors[0].$message), 1
+      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.price]]), $setup.v$.price.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_42, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_43, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.price.$errors[0].$message), 1
       /* TEXT */
-      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_41, [_hoisted_42, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_44, [_hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "date",
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
           'input-error': $setup.v$.deadline.$error
@@ -4079,9 +4167,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         min: new Date().toISOString().split('T')[0]
       }, null, 10
       /* CLASS, PROPS */
-      , _hoisted_43), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.deadline]]), $setup.v$.deadline.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_44, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_45, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.deadline.$errors[0].$message), 1
+      , _hoisted_46), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.deadline]]), $setup.v$.deadline.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_47, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_48, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.v$.deadline.$errors[0].$message), 1
       /* TEXT */
-      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_46, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_49, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "btn btn-link",
         onClick: _cache[9] || (_cache[9] = function ($event) {
           return $options.cancelForm();
@@ -4116,7 +4204,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[12] || (_cache[12] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, "X"), _hoisted_47, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_48, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div class=\"project-list__form\">\n                    <div class=\"form-control w-full\">\n                        <label class=\"label\">Inviter via le lien</label>\n                        <div class=\"input-group\">\n                            <input type=\"text\" disabled=\"true\" class=\"w-full input\" :value=\"test\" />\n                            <button class=\"btn btn-square px-10\">Copier</button>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"divider\">OU</div> "), $setup.state.isSendEmail ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_49, _hoisted_51)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_52, _hoisted_54)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailErrorCatch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_55, _hoisted_57)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_58, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_59, [_hoisted_60, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+      }, "X"), _hoisted_50, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_51, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <div class=\"project-list__form\">\n                    <div class=\"form-control w-full\">\n                        <label class=\"label\">Inviter via le lien</label>\n                        <div class=\"input-group\">\n                            <input type=\"text\" disabled=\"true\" class=\"w-full input\" :value=\"test\" />\n                            <button class=\"btn btn-square px-10\">Copier</button>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"divider\">OU</div> "), $setup.state.isSendEmail ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_52, _hoisted_54)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailError ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_55, _hoisted_57)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $setup.state.isSendEmailErrorCatch ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_58, _hoisted_60)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_61, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_62, [_hoisted_63, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
         type: "email",
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
           'input-error': $setup.vEmail$.email.$error
@@ -4126,9 +4214,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         })
       }, null, 2
       /* CLASS */
-      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.email]]), $setup.vEmail$.email.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_61, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_62, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.vEmail$.email.$errors[0].$message), 1
+      ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.email]]), $setup.vEmail$.email.$error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("label", _hoisted_64, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_65, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.vEmail$.email.$errors[0].$message), 1
       /* TEXT */
-      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_63, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      )])) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_66, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "btn btn-link",
         onClick: _cache[14] || (_cache[14] = function ($event) {
           return $options.cancelFormInvite();
@@ -4163,7 +4251,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[17] || (_cache[17] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, "X"), _hoisted_64, _hoisted_65, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_66, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, "X"), _hoisted_67, _hoisted_68, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_69, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         "class": "btn btn-link",
         onClick: _cache[18] || (_cache[18] = function ($event) {
           return $setup.state.showModalDelivred = false;
@@ -4198,7 +4286,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[21] || (_cache[21] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, "X"), _hoisted_67, _hoisted_68, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_69, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+      }, "X"), _hoisted_70, _hoisted_71, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_72, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         onClick: _cache[22] || (_cache[22] = function ($event) {
           return $options.cancelIsDelivry();
         }),
@@ -4217,6 +4305,37 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.isLoading ? "loading" : " Accepter"), 3
       /* TEXT, CLASS */
       )])];
+    }),
+    _: 1
+    /* STABLE */
+
+  }, 8
+  /* PROPS */
+  , ["modelValue"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_vue_final_modal, {
+    modelValue: $setup.state.showRejectStep,
+    "onUpdate:modelValue": _cache[28] || (_cache[28] = function ($event) {
+      return $setup.state.showRejectStep = $event;
+    }),
+    classes: "modal-container",
+    "content-class": "modal-content"
+  }, {
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+        "class": "modal__close",
+        onClick: _cache[25] || (_cache[25] = function ($event) {
+          return $setup.state.showModal = false;
+        })
+      }, "X"), _hoisted_73, _hoisted_74, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_75, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+        onClick: _cache[26] || (_cache[26] = function ($event) {
+          return $setup.state.showRejectStep = false;
+        }),
+        "class": "btn btn-bg-black-500 text-white mr-2"
+      }, " Annuler "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+        onClick: _cache[27] || (_cache[27] = function ($event) {
+          return $options.handleRejectStep();
+        }),
+        "class": "btn btn-primary"
+      }, " Valider ")])];
     }),
     _: 1
     /* STABLE */
@@ -4628,6 +4747,38 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }
 
     return downSteptwo;
+  }(),
+  rejectStep: function () {
+    var _rejectStep = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12(feature) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
+        while (1) {
+          switch (_context12.prev = _context12.next) {
+            case 0:
+              _context12.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/features/validation/6/").concat(feature.id), feature, {
+                headers: {
+                  'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
+                }
+              });
+
+            case 2:
+              response = _context12.sent;
+              return _context12.abrupt("return", response);
+
+            case 4:
+            case "end":
+              return _context12.stop();
+          }
+        }
+      }, _callee12);
+    }));
+
+    function rejectStep(_x12) {
+      return _rejectStep.apply(this, arguments);
+    }
+
+    return rejectStep;
   }()
 });
 
@@ -4764,7 +4915,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context4.prev = _context4.next) {
             case 0:
               _context4.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/invites/reject/").concat(token), {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/invites/reject/").concat(token), {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }

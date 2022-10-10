@@ -308,7 +308,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           switch (_context4.prev = _context4.next) {
             case 0:
               _context4.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/invites/reject/").concat(token), {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/invites/reject/").concat(token), {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }

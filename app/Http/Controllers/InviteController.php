@@ -44,7 +44,7 @@ class InviteController extends Controller
 
         return response()->json(['success' => 'User invite user']);
     }
-    
+
     /**
      * Accept invitation
      *
@@ -83,5 +83,15 @@ class InviteController extends Controller
         if (!$invitations) return response()->json(['error' => 'No invitations']);
 
         return response()->json($invitations, 200);
+    }
+
+    public function handleRejectInvitation($token)
+    {
+        $checkInvitation = Invitations::whereToken($token)->first();
+        if (!$checkInvitation) {
+            return response()->json(['status' => false], 404);
+        }
+        $checkInvitation->delete();
+        return response()->json(['status' => true], 200);
     }
 }

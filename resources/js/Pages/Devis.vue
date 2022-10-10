@@ -21,6 +21,7 @@
           :features="state.features"
           :leadConversation="state.leadConversation"
           v-on:sendMessage="loadData()"
+          v-on:rejectStep="loadData()"
         />
       </div>
     </div>
@@ -65,7 +66,6 @@ export default {
 
   methods: {
     async loadData() {
-     
       try {
         const slugDevis = this.$route.params.slugDevis;
         //List lead (devis) details

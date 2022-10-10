@@ -49,51 +49,65 @@
                 </div>
               </div>
             </div>
-            <div>
-              <span class="text-secondary text-sm" v-if="isWaiting(feature)"
-                >En attente de validation</span
-              >
-              <button
-                class="btn btn-primary"
-                @click="validateBtn(feature)"
-                v-if="isWaitingClient(feature)"
-              >
-                Valider
-              </button>
-              <button
-                class="btn btn-primary"
-                @click="openDelivredModal(feature)"
-                v-if="isValidated(feature)"
-              >
-                Délivrer
-              </button>
-              <span
-                class="text-secondary text-sm"
-                v-if="isValidatedClient(feature)"
-                >En attente de délivrable</span
-              >
-              <span class="text-red-500 text-sm" v-if="isCanceled(feature)"
-                >Non validée</span
-              >
-              <span class="text-danger text-sm" v-if="isCanceledClient(feature)"
-                >Non validée</span
-              >
-              <span class="text-secondary text-sm" v-if="isDelivered(feature)"
-                >En attente de confirmation</span
-              >
-              <button
-                class="btn btn-primary"
-                @click="openIsDelivredModal(feature)"
-                v-if="isDeliveredClient(feature)"
-              >
-                Valider les délivrables
-              </button>
-              <span class="text-danger text-sm" v-if="isSuccess(feature)"
-                >Confirmé</span
-              >
-              <span class="text-sm" v-if="isSuccessClient(feature)"
-                >Acceptée</span
-              >
+            <div class="flex">
+              <div>
+                <span class="text-secondary text-sm" v-if="isWaiting(feature)"
+                  >En attente de validation</span
+                >
+                <button
+                  class="btn btn-primary"
+                  @click="validateBtn(feature)"
+                  v-if="isWaitingClient(feature)"
+                >
+                  Valider
+                </button>
+
+                <button
+                  class="btn bg-red-500 text-white ml-2"
+                  @click="openRejectStepModal(feature)"
+                  v-if="isWaitingClient(feature)"
+                >
+                  Refuser
+                </button>
+                <button
+                  class="btn btn-primary"
+                  @click="openDelivredModal(feature)"
+                  v-if="isValidated(feature)"
+                >
+                  Délivrer
+                </button>
+                <span
+                  class="text-secondary text-sm"
+                  v-if="isValidatedClient(feature)"
+                  >En attente de délivrable</span
+                >
+                <span class="text-red-500 text-sm" v-if="isCanceled(feature)"
+                  >Non validée</span
+                >
+                <span
+                  class="text-danger text-sm"
+                  v-if="isCanceledClient(feature)"
+                  >Non validée</span
+                >
+                <span class="text-secondary text-sm" v-if="isDelivered(feature)"
+                  >En attente de confirmation</span
+                >
+                <button
+                  class="btn btn-primary"
+                  @click="openIsDelivredModal(feature)"
+                  v-if="isDeliveredClient(feature)"
+                >
+                  Valider les délivrables
+                </button>
+                <span class="text-danger text-sm" v-if="isSuccess(feature)"
+                  >Confirmé</span
+                >
+                <span class="text-sm" v-if="isSuccessClient(feature)"
+                  >Acceptée</span
+                >
+
+                <span class="text-sm" v-if="isRejected(feature)">Refusée</span>
+              </div>
             </div>
           </div>
         </div>
@@ -137,9 +151,9 @@
           v-model:content="state.content"
           style="height: 250px"
         /> -->
-       
+
         <button
-        @click="sendMessage" 
+          @click="sendMessage"
           type="submit"
           class="
             inline-flex
@@ -360,6 +374,29 @@
         </button>
       </div>
     </vue-final-modal>
+
+    <vue-final-modal
+      v-model="state.showRejectStep"
+      classes="modal-container"
+      content-class="modal-content"
+    >
+      <button class="modal__close" @click="state.showModal = false">X</button>
+      <span class="modal__title">Refus de l'etape</span>
+      <div class="modal__content">
+        <p class="my-5">Etes vous sur de vouloir refuser cette etape?</p>
+      </div>
+      <div class="modal__action">
+        <button
+          @click="state.showRejectStep = false"
+          class="btn btn-bg-black-500 text-white mr-2"
+        >
+          Annuler
+        </button>
+        <button @click="handleRejectStep()" class="btn btn-primary">
+          Valider
+        </button>
+      </div>
+    </vue-final-modal>
   </div>
 </template>
 
@@ -389,6 +426,7 @@ export default {
       isSendEmailError: false,
       isLoadingInvite: false,
       isSendEmailErrorCatch: false,
+      showRejectStep: false,
       name: "",
       email: "",
       deadline: new Date().toISOString().split("T")[0],
@@ -403,6 +441,7 @@ export default {
         contentType: "html",
       },
       currentFeature: null,
+      rejectedStep: null,
     });
 
     const rules = computed(() => {
@@ -452,6 +491,10 @@ export default {
       this.state.currentFeature = feature;
       this.state.showModalIsDelivred = true;
     },
+    openRejectStepModal(feature) {
+      this.state.rejectedStep = feature;
+      this.state.showRejectStep = true;
+    },
 
     async cancelIsDelivry() {
       try {
@@ -473,6 +516,20 @@ export default {
         );
         if (response.status === 200) {
           location.reload();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    async handleRejectStep() {
+      try {
+        const response = await featureService.rejectStep(
+          this.state.rejectedStep
+        );
+        if (response.status === 200) {
+          this.state.showRejectStep = false;
+          this.$emit("rejectStep");
         }
       } catch (error) {
         console.error(error);
@@ -554,6 +611,10 @@ export default {
       else return false;
     },
 
+    isRejected(feature) {
+      return feature.validation_id == 6;
+    },
+
     async validateBtn(feature) {
       try {
         const response = await featureService.updateStepTwo(feature);
@@ -633,7 +694,7 @@ export default {
               user_id: this.$store.state.userStore.user.id,
             });
           if (response.status == 201) {
-            this.state.content=""
+            this.state.content = "";
             this.$emit("sendMessage");
           }
         } catch (error) {

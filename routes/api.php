@@ -61,12 +61,13 @@ Route::middleware(['api'])->group(function ($router) {
     Route::put('features/validation/3/{id}', [ValidationController::class, 'updateStepthree'])->name('features.updateStepTwo');
     Route::put('features/validation/4/{id}', [ValidationController::class, 'updateStepfour'])->name('features.updateStepfour');
     Route::put('features/unvalidation/3/{id}', [ValidationController::class, 'downSteptwo'])->name('features.downSteptwo');
-
+    Route::put('features/validation/6/{id}', [ValidationController::class, 'handleRejectStep']);
 
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');
     Route::get('invites/get/{email}', [InviteController::class, 'getInvitations'])->name('invites.get');
     Route::get('invites/accept/{token}', [InviteController::class, 'acceptInvitation'])->name('invites.accept');
+    Route::delete('invites/reject/{token}', [InviteController::class, 'handleRejectInvitation']);
 
     Route::put('user/{id}', [AuthController::class, 'updateUser'])->name('user.updateUser');
     Route::put('user/password/update', [AuthController::class, 'updatePassword'])->name('user.updatePassword');

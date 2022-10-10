@@ -25,7 +25,7 @@ export default {
     },
 
     rejectInvite: async (token) => {
-        const response = await axios.post(`${APISettings.baseURL}/invites/reject/${token}`, {
+        const response = await axios.delete(`${APISettings.baseURL}/invites/reject/${token}`, {
             headers: {'Authorization': 'Bearer ' + store.state.tokenStore.token}
         });
         return response;

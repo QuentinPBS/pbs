@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Database\Seeders\AddRejectedStatus;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,6 +18,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             ShareSeeder::class,
             ValidationSeeder::class,
+            AddRejectedStatus::class
         ]);
     }
 }
