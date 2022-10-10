@@ -27,7 +27,8 @@
             'bg-gray-300 text-gray-600': senderIsAuth(conversation),
             'bg-blue-600 text-white': !senderIsAuth(conversation),
           }"
-          >{{ conversation.message }}
+          v-html="conversation.message"
+          >
         </span>
         <div class="flex justify-end text-gray-600 text-xs"></div>
       </div>

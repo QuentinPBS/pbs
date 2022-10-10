@@ -122,7 +122,7 @@
       <div class="devis-list__description">
         <p class="mb-1 text-sm">Description</p>
 
-        <textarea
+        <!-- <textarea
           id="message"
           rows="4"
           class="
@@ -143,14 +143,15 @@
           "
           placeholder="Your message..."
           v-model="state.content"
-        ></textarea>
+        ></textarea> -->
 
-        <!-- <QuillEditor
+        <QuillEditor
           theme="snow"
           :options="state.options"
           v-model:content="state.content"
           style="height: 250px"
-        /> -->
+          contentType="html"
+        />
 
         <button
           @click="sendMessage"

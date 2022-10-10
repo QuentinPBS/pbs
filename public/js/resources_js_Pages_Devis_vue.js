@@ -3616,7 +3616,7 @@ var _hoisted_1 = {
 
 var _hoisted_2 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" a envoyé: ");
 
-var _hoisted_3 = ["title"];
+var _hoisted_3 = ["title", "innerHTML"];
 
 var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
   "class": "flex justify-end text-gray-600 text-xs"
@@ -3645,9 +3645,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)(["px-4 py-2 rounded-lg inline-block rounded-br-none mb-1", {
         'bg-gray-300 text-gray-600': $options.senderIsAuth(conversation),
         'bg-blue-600 text-white': !$options.senderIsAuth(conversation)
-      }])
-    }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)(conversation.message), 11
-    /* TEXT, CLASS, PROPS */
+      }]),
+      innerHTML: conversation.message
+    }, null, 10
+    /* CLASS, PROPS */
     , _hoisted_3), _hoisted_4], 2
     /* CLASS */
     )], 2
@@ -4030,6 +4031,8 @@ var _hoisted_75 = {
   "class": "modal__action"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
+  var _component_QuillEditor = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("QuillEditor");
+
   var _component_LeadConversation = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("LeadConversation");
 
   var _component_vue_final_modal = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("vue-final-modal");
@@ -4098,17 +4101,20 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $setup.state.showModal = true;
     })
-  }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("textarea", {
-    id: "message",
-    rows: "4",
-    "class": "block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500",
-    placeholder: "Your message...",
-    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
+  }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <textarea\n          id=\"message\"\n          rows=\"4\"\n          class=\"\n            block\n            p-2.5\n            w-full\n            text-sm text-gray-900\n            bg-gray-50\n            rounded-lg\n            border border-gray-300\n            focus:ring-blue-500 focus:border-blue-500\n            dark:bg-gray-700\n            dark:border-gray-600\n            dark:placeholder-gray-400\n            dark:text-white\n            dark:focus:ring-blue-500\n            dark:focus:border-blue-500\n          \"\n          placeholder=\"Your message...\"\n          v-model=\"state.content\"\n        ></textarea> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_QuillEditor, {
+    theme: "snow",
+    options: $setup.state.options,
+    content: $setup.state.content,
+    "onUpdate:content": _cache[3] || (_cache[3] = function ($event) {
       return $setup.state.content = $event;
-    })
-  }, null, 512
-  /* NEED_PATCH */
-  ), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $setup.state.content]]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <QuillEditor\n          theme=\"snow\"\n          :options=\"state.options\"\n          v-model:content=\"state.content\"\n          style=\"height: 250px\"\n        /> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+    }),
+    style: {
+      "height": "250px"
+    },
+    contentType: "html"
+  }, null, 8
+  /* PROPS */
+  , ["options", "content"]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
     onClick: _cache[4] || (_cache[4] = function () {
       return $options.sendMessage && $options.sendMessage.apply($options, arguments);
     }),
