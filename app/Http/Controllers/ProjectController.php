@@ -58,7 +58,7 @@ class ProjectController extends Controller
         $path = null;
         if ($file) {
 
-            $filePath = time() . '_' . Str::random(5) . '.' . $file->getClientOriginalExtension();
+            $filePath = time() . '_' . Str::random(5) . '.' . $file->extension();
 
             $file->move(public_path("storage/projects"), $filePath);
             $path = "storage/projects" . '/' . $filePath;

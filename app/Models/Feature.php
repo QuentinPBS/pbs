@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\FeatureDelivery;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Feature extends Model
 {
@@ -34,5 +35,11 @@ class Feature extends Model
     public function validation()
     {
         return $this->belongsTo(Validation::class);
+    }
+
+    /* Get delivery for the feature. */
+    public function delivery()
+    {
+        return $this->hasOne(FeatureDelivery::class);
     }
 }

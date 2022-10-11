@@ -3145,6 +3145,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       return feature.validation_id == 6;
     },
     validateBtn: function validateBtn(feature) {
+      var _this4 = this;
+
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
         var response;
         return _regeneratorRuntime().wrap(function _callee4$(_context4) {
@@ -3159,7 +3161,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 response = _context4.sent;
 
                 if (response.status === 200) {
-                  location.reload();
+                  _this4.$emit("validateStep");
                 }
 
                 _context4.next = 10;
@@ -3179,7 +3181,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     delivredBtn: function delivredBtn() {
-      var _this4 = this;
+      var _this5 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5() {
         var response;
@@ -3189,7 +3191,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
               case 0:
                 _context5.prev = 0;
                 _context5.next = 3;
-                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepThree(_this4.state.currentFeature);
+                return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepThree(_this5.state.currentFeature);
 
               case 3:
                 response = _context5.sent;
@@ -3215,7 +3217,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     handlePFeatureClick: function handlePFeatureClick() {
-      var _this5 = this;
+      var _this6 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6() {
         var response;
@@ -3223,9 +3225,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                _this5.v$.$validate();
+                _this6.v$.$validate();
 
-                if (!_this5.v$.$error) {
+                if (!_this6.v$.$error) {
                   _context6.next = 3;
                   break;
                 }
@@ -3234,13 +3236,13 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
               case 3:
                 _context6.prev = 3;
-                _this5.state.isLoading = true;
+                _this6.state.isLoading = true;
                 _context6.next = 7;
                 return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].createFeature({
-                  name: _this5.state.name,
-                  devis_id: _this5.devis.id,
-                  price: _this5.state.price,
-                  deadline: _this5.state.deadline
+                  name: _this6.state.name,
+                  devis_id: _this6.devis.id,
+                  price: _this6.state.price,
+                  deadline: _this6.state.deadline
                 });
 
               case 7:
@@ -3260,7 +3262,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
               case 14:
                 _context6.prev = 14;
-                _this5.state.isLoading = false;
+                _this6.state.isLoading = false;
                 return _context6.finish(14);
 
               case 17:
@@ -3272,7 +3274,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }))();
     },
     handleInvitationClick: function handleInvitationClick() {
-      var _this6 = this;
+      var _this7 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7() {
         var response;
@@ -3280,9 +3282,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context7.prev = _context7.next) {
               case 0:
-                _this6.vEmail$.$validate();
+                _this7.vEmail$.$validate();
 
-                if (!_this6.vEmail$.$error) {
+                if (!_this7.vEmail$.$error) {
                   _context7.next = 3;
                   break;
                 }
@@ -3290,32 +3292,32 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 return _context7.abrupt("return");
 
               case 3:
-                _this6.state.isLoadingInvite = true;
-                _this6.state.isSendEmail = false;
-                _this6.state.isSendEmailError = false;
-                _this6.state.isSendEmailErrorCatch = false;
+                _this7.state.isLoadingInvite = true;
+                _this7.state.isSendEmail = false;
+                _this7.state.isSendEmailError = false;
+                _this7.state.isSendEmailErrorCatch = false;
                 _context7.prev = 7;
                 _context7.next = 10;
-                return _services_inviteService__WEBPACK_IMPORTED_MODULE_7__["default"].sendInvite(_this6.devis.project_id, {
-                  email: _this6.state.email,
-                  userId: _this6.$store.state.userStore.user.id
+                return _services_inviteService__WEBPACK_IMPORTED_MODULE_7__["default"].sendInvite(_this7.devis.project_id, {
+                  email: _this7.state.email,
+                  userId: _this7.$store.state.userStore.user.id
                 });
 
               case 10:
                 response = _context7.sent;
-                if (response.data.success) _this6.state.isSendEmail = true;else _this6.state.isSendEmailError = true;
+                if (response.data.success) _this7.state.isSendEmail = true;else _this7.state.isSendEmailError = true;
                 _context7.next = 18;
                 break;
 
               case 14:
                 _context7.prev = 14;
                 _context7.t0 = _context7["catch"](7);
-                _this6.state.isSendEmailErrorCatch = true;
+                _this7.state.isSendEmailErrorCatch = true;
                 console.error(_context7.t0);
 
               case 18:
                 _context7.prev = 18;
-                _this6.state.isLoadingInvite = false;
+                _this7.state.isLoadingInvite = false;
                 return _context7.finish(18);
 
               case 21:
@@ -3328,7 +3330,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     },
     // send lead conversation message
     sendMessage: function sendMessage() {
-      var _this7 = this;
+      var _this8 = this;
 
       return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8() {
         var response;
@@ -3336,7 +3338,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
-                if (!_this7.state.content) {
+                if (!_this8.state.content) {
                   _context8.next = 11;
                   break;
                 }
@@ -3344,18 +3346,18 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _context8.prev = 1;
                 _context8.next = 4;
                 return _services_leadConversationService__WEBPACK_IMPORTED_MODULE_4__["default"].storeLeadConversationMessage({
-                  message: _this7.state.content,
-                  lead_id: _this7.devis.id,
-                  user_id: _this7.$store.state.userStore.user.id
+                  message: _this8.state.content,
+                  lead_id: _this8.devis.id,
+                  user_id: _this8.$store.state.userStore.user.id
                 });
 
               case 4:
                 response = _context8.sent;
 
                 if (response.status == 201) {
-                  _this7.state.content = "";
+                  _this8.state.content = "";
 
-                  _this7.$emit("sendMessage");
+                  _this8.$emit("sendMessage");
                 }
 
                 _context8.next = 11;
@@ -3434,7 +3436,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     onSendMessage: _cache[0] || (_cache[0] = function ($event) {
       return $options.loadData();
     }),
-    onRejectStep: _cache[1] || (_cache[1] = function ($event) {
+    onValidateStep: _cache[1] || (_cache[1] = function ($event) {
+      return $options.loadData();
+    }),
+    onRejectStep: _cache[2] || (_cache[2] = function ($event) {
       return $options.loadData();
     })
   }, null, 8

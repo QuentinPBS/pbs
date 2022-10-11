@@ -61,4 +61,9 @@ class Project extends Model
     {
         return $this->belongsToMany(User::class, 'members');
     }
+    /* Get features for the project. */
+    public function features()
+    {
+        return $this->hasManyThrough(Feature::class, Lead::class);
+    }
 }

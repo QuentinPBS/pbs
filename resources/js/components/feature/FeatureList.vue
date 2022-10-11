@@ -169,6 +169,7 @@
           "
         >
           <svg
+
             aria-hidden="true"
             class="w-6 h-6 rotate-90"
             fill="currentColor"
@@ -620,7 +621,7 @@ export default {
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
-          location.reload();
+         this.$emit("validateStep")
         }
       } catch (error) {
         console.error(error);

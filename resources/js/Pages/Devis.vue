@@ -21,6 +21,7 @@
           :features="state.features"
           :leadConversation="state.leadConversation"
           v-on:sendMessage="loadData()"
+          v-on:validateStep="loadData()"
           v-on:rejectStep="loadData()"
         />
       </div>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FeatureConversationController;
+use App\Http\Controllers\FeatureDeliveryController;
 use App\Http\Controllers\FeaturesController;
 use App\Http\Controllers\ValidationController;
 use App\Http\Controllers\ForgotPasswordController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\LeadConversationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
 use App\Models\FeatureConversation;
+use App\Models\FeatureDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +65,11 @@ Route::middleware(['api'])->group(function ($router) {
     Route::put('features/unvalidation/3/{id}', [ValidationController::class, 'downSteptwo'])->name('features.downSteptwo');
     Route::put('features/validation/6/{id}', [ValidationController::class, 'handleRejectStep']);
 
+    //feature delivery
+    Route::post('feature/{id}/link/import', [FeatureDeliveryController::class, 'handleImportLink']);
+    Route::post('feature/{id}/file/import', [FeatureDeliveryController::class, 'handleImportFile']);
+
+    Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');
     Route::get('invites/get/{email}', [InviteController::class, 'getInvitations'])->name('invites.get');

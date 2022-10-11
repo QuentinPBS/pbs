@@ -1,6 +1,10 @@
 <?php
 
+use App\Mail\SendValidationMail;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,4 +17,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/{any}', 'app')->where('any', '.*');
+// Route::view('/{any}', 'app')->where('any', '.*');
+Route::get('test', function () {
+
+    return Storage::disk('local')->download('BwC8fGniolvBJml5KZU4NLe08ARnKpZMnUqdBZk8.jpg');
+ 
+   
+
+    Mail::to("rihaneatef@gmail.com")->send(new SendValidationMail());
+    echo "done";
+});
