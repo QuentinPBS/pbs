@@ -83,7 +83,7 @@ export default {
       }
     },
     async approvedIsDelivry() {
-        this.state.isLoading = true
+      this.state.isLoading = true;
       try {
         const response = await featureService.updateStepfour(this.feature);
         if (response.status === 200) {
