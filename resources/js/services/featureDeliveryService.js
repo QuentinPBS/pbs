@@ -9,6 +9,14 @@ export default {
         });
 
         return response;
+    },
+
+    importDeliveryLink: async (feature) => {
+        const response = await axios.post(`${APISettings.baseURL}/feature/${feature.id}/link/import/`, feature, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+
+        return response;
     }
 
 }

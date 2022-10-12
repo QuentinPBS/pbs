@@ -68,7 +68,7 @@ Route::middleware(['api'])->group(function ($router) {
     //feature delivery
     Route::post('feature/{id}/link/import', [FeatureDeliveryController::class, 'handleImportLink']);
     Route::post('feature/{id}/file/import', [FeatureDeliveryController::class, 'handleImportFile']);
-
+    Route::get('feature/{id}/delivery', [FeatureDeliveryController::class, 'handleGetDelivery']);
     Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');

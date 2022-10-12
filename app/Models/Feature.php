@@ -9,7 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Feature extends Model
 {
     use HasFactory;
-
+    const WAITING = 1;
+    const VALIDATED = 2;
+    const CANCELED = 3;
+    const DELIVERED = 4;
+    const SUCCESS = 5;
+    const REJECTED = 6;
     protected $fillable = [
         'name',
         'price',

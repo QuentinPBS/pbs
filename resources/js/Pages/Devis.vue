@@ -23,6 +23,8 @@
           v-on:sendMessage="loadData()"
           v-on:validateStep="loadData()"
           v-on:rejectStep="loadData()"
+          v-on:fileDelivered="loadData()"
+          v-on:linkDelivered="loadData()"
         />
       </div>
     </div>

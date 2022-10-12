@@ -15,8 +15,12 @@ class FeatureDeliveryController extends Controller
     public function handleImportLink($id, FeatureDeliveryLinkRequest $request)
     {
         $validatedData = $request->validated();
-
+        $feature = Feature::find($validatedData['feature_id']);
         FeatureDelivery::create($validatedData);
+        // deliver file
+        $feature->update([
+            'validation_id' => Feature::DELIVERED
+        ]);
         return response()->json([
             'status' => true
         ], 201);
@@ -28,12 +32,16 @@ class FeatureDeliveryController extends Controller
         $file = $validatedData['file'];
 
         Storage::disk('local')->put('files', $file);
-
+        $feature = Feature::find($validatedData['feature_id']);
         FeatureDelivery::create([
             'type' => FeatureDelivery::FILE,
             'link' => $file->hashName(),
             'feature_id' => $validatedData['feature_id'],
             'user_id' => $validatedData['user_id']
+        ]);
+        // deliver file
+        $feature->update([
+            'validation_id' => Feature::DELIVERED
         ]);
         return response()->json([
             'status' => true
@@ -49,7 +57,19 @@ class FeatureDeliveryController extends Controller
                 'status' => false
             ], 404);
         }
-       
+
         return Storage::disk('local')->download("files/" . $checkFeature->delivery->link);
+    }
+
+
+    public function handleGetDelivery($id)
+    {
+        $featureDelivery = FeatureDelivery::query()
+            ->where('feature_id', $id)
+            ->first();
+        return response()->json([
+            'status' => true,
+            'featureDelivery' => $featureDelivery
+        ], 200);
     }
 }

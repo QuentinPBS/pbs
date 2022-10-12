@@ -327,15 +327,25 @@
       classes="modal-container"
       content-class="modal-content"
     >
-      <button class="modal__close" @click="state.showModalDelivred = false">X</button>
-      <span class="modal__title">Vérification du Délivrable (Importation)</span>
-     <DeliverFeature />
-       <div class="modal__action">
-    <button class="btn btn-link" @click="state.showModalDelivred = false">Annuler</button>
-   
-  </div>
+      <div class="flex justify-between">
+        <span class="modal__title"
+          >Vérification du Délivrable</span
+        >
+        <button class="" @click="state.showModalDelivred = false">
+          X
+        </button>
+      </div>
+
+      <div class="modal__content py-4">
+        <DeliverFeature
+          :feature="state.currentFeature"
+          v-on:fileDelivered="fileDelivered()"
+          v-on:linkDelivered="linkDelivered()"
+          v-on:closeModal="state.showModalDelivred = false"
+        />
+      </div>
     </vue-final-modal>
-    
+
     <vue-final-modal
       v-model="state.showModalIsDelivred"
       classes="modal-container"
@@ -464,7 +474,7 @@ export default {
     VueFinalModal,
     QuillEditor,
     LeadConversation,
-    DeliverFeature
+    DeliverFeature,
   },
 
   computed: {
@@ -693,6 +703,15 @@ export default {
           console.error(error);
         }
       }
+    },
+
+    linkDelivered() {
+      this.state.showModalDelivred = false;
+      this.$emit("linkDelivered");
+    },
+    fileDelivered() {
+      this.state.showModalDelivred = false;
+      this.$emit("fileDelivered");
     },
   },
 };
