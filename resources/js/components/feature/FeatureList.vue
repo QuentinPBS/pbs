@@ -169,7 +169,6 @@
           "
         >
           <svg
-
             aria-hidden="true"
             class="w-6 h-6 rotate-90"
             fill="currentColor"
@@ -322,32 +321,21 @@
         </button>
       </div>
     </vue-final-modal>
+
     <vue-final-modal
       v-model="state.showModalDelivred"
       classes="modal-container"
       content-class="modal-content"
     >
-      <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Délivrer la feature (Bétat Test)</span>
-      <div class="modal__content">
-        <p class="my-5">
-          Merci d'envoyer votre justificatif d'étape directement à votre client
-          (mail, sms, whatsapp, pigeon voyageur, signal de fumée ...). Nous
-          développons actuellement l'hébergement des preuves.
-        </p>
-      </div>
-      <div class="modal__action">
-        <button class="btn btn-link" @click="state.showModalDelivred = false">
-          Annuler
-        </button>
-        <button
-          @click="delivredBtn()"
-          :class="[{ loading: state.isLoading }, 'btn btn-primary']"
-        >
-          {{ state.isLoading ? "loading" : " Ok j'ai compris" }}
-        </button>
-      </div>
+      <button class="modal__close" @click="state.showModalDelivred = false">X</button>
+      <span class="modal__title">Vérification du Délivrable (Importation)</span>
+     <DeliverFeature />
+       <div class="modal__action">
+    <button class="btn btn-link" @click="state.showModalDelivred = false">Annuler</button>
+   
+  </div>
     </vue-final-modal>
+    
     <vue-final-modal
       v-model="state.showModalIsDelivred"
       classes="modal-container"
@@ -413,6 +401,7 @@ import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import inviteService from "../../services/inviteService";
 import LeadConversation from "../conversation/LeadConversation.vue";
+import DeliverFeature from "../feature/DeliverFeature.vue";
 export default {
   name: "DevisList",
 
@@ -475,6 +464,7 @@ export default {
     VueFinalModal,
     QuillEditor,
     LeadConversation,
+    DeliverFeature
   },
 
   computed: {
@@ -621,7 +611,7 @@ export default {
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
-         this.$emit("validateStep")
+          this.$emit("validateStep");
         }
       } catch (error) {
         console.error(error);

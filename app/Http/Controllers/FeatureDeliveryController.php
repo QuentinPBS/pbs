@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Feature;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\FeatureDelivery;
@@ -25,12 +26,12 @@ class FeatureDeliveryController extends Controller
     {
         $validatedData = $request->validated();
         $file = $validatedData['file'];
-        $fileName = time() . '_' . Str::random(5) . '.' . $file->extension();
-        Storage::disk('local')->putFile('files', $file);
-      
+
+        Storage::disk('local')->put('files', $file);
+
         FeatureDelivery::create([
             'type' => FeatureDelivery::FILE,
-            'link' => $fileName,
+            'link' => $file->hashName(),
             'feature_id' => $validatedData['feature_id'],
             'user_id' => $validatedData['user_id']
         ]);
@@ -41,12 +42,14 @@ class FeatureDeliveryController extends Controller
 
     public function handleDownloadFile($id)
     {
+
         $checkFeature = Feature::find($id);
         if (!$checkFeature) {
             return response()->json([
                 'status' => false
             ], 404);
         }
-        return Storage::disk('local')->download('files/' . $checkFeature->delivery->link);
+       
+        return Storage::disk('local')->download("files/" . $checkFeature->delivery->link);
     }
 }

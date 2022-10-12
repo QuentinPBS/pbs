@@ -11,5 +11,13 @@ import App from './App.vue'
 
 router.beforeEach(middleware({ store }))
 router.beforeEach(VueRouterMetaTags.update);
+import DropZone from 'dropzone-vue';
 
-createApp(App).use(router).use(store).use(vfmPlugin).mount('#app')
+// optionally import default styles
+import 'dropzone-vue/dist/dropzone-vue.common.css';
+createApp(App)
+.use(router)
+.use(store)
+.use(vfmPlugin)
+.use(DropZone)
+.mount('#app')

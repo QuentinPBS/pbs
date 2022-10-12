@@ -17,10 +17,10 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
-// Route::view('/{any}', 'app')->where('any', '.*');
+Route::view('/{any}', 'app')->where('any', '.*');
 Route::get('test', function () {
 
-    return Storage::disk('local')->download('BwC8fGniolvBJml5KZU4NLe08ARnKpZMnUqdBZk8.jpg');
+    return Storage::disk('local')->download('files/0sEY0UdfflSMXke1Lr87Mkcg1jgMiNmPFlKP1Kom.jpg');
  
    
 
