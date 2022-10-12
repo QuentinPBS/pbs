@@ -328,16 +328,13 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title"
-          >Vérification du Délivrable</span
-        >
-        <button class="" @click="state.showModalDelivred = false">
-          X
-        </button>
+        <span class="modal__title">Vérification du Délivrable</span>
+        <button class="" @click="state.showModalDelivred = false">X</button>
       </div>
 
       <div class="modal__content py-4">
         <DeliverFeature
+          v-if="state.showModalDelivred"
           :feature="state.currentFeature"
           v-on:fileDelivered="fileDelivered()"
           v-on:linkDelivered="linkDelivered()"
@@ -351,27 +348,18 @@
       classes="modal-container"
       content-class="modal-content"
     >
-      <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Vérification du Délivrable</span>
-      <div class="modal__content">
-        <p class="my-5">
-          Merci de vérifier les délivrable avant de valider. Nous développons
-          actuellement l'hébergement des preuves.
-        </p>
+      <div class="flex justify-between">
+        <span class="modal__title">Vérification du Délivrable</span>
+        <button class="" @click="state.showModalIsDelivred = false">X</button>
       </div>
-      <div class="modal__action">
-        <button
-          @click="cancelIsDelivry()"
-          :class="[{ loading: state.isLoading }, 'btn btn-link']"
-        >
-          {{ state.isLoading ? "loading" : " Refuser" }}
-        </button>
-        <button
-          @click="approvedIsDelivry()"
-          :class="[{ loading: state.isLoading }, 'btn btn-primary']"
-        >
-          {{ state.isLoading ? "loading" : " Accepter" }}
-        </button>
+
+      <div class="modal__content">
+        <ValidateDeliveredFeature
+          :feature="state.currentFeature"
+          v-if="state.showModalIsDelivred"
+          v-on:closeModal="state.showModalIsDelivred = false"
+          v-on:deliveryAccepted="deliveryAccepted()"
+        />
       </div>
     </vue-final-modal>
 
@@ -412,6 +400,7 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import inviteService from "../../services/inviteService";
 import LeadConversation from "../conversation/LeadConversation.vue";
 import DeliverFeature from "../feature/DeliverFeature.vue";
+import ValidateDeliveredFeature from "../feature/ValidateDeliveredFeature.vue";
 export default {
   name: "DevisList",
 
@@ -475,6 +464,7 @@ export default {
     QuillEditor,
     LeadConversation,
     DeliverFeature,
+    ValidateDeliveredFeature,
   },
 
   computed: {
@@ -501,19 +491,6 @@ export default {
     async cancelIsDelivry() {
       try {
         const response = await featureService.downSteptwo(
-          this.state.currentFeature
-        );
-        if (response.status === 200) {
-          location.reload();
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-
-    async approvedIsDelivry() {
-      try {
-        const response = await featureService.updateStepfour(
           this.state.currentFeature
         );
         if (response.status === 200) {
@@ -712,6 +689,10 @@ export default {
     fileDelivered() {
       this.state.showModalDelivred = false;
       this.$emit("fileDelivered");
+    },
+    deliveryAccepted() {
+      this.state.showModalIsDelivred = false;
+      this.$emit("deliveryAccepted");
     },
   },
 };

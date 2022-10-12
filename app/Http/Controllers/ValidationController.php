@@ -64,15 +64,18 @@ class ValidationController extends Controller
     {
         $feature = Feature::find($featureId);
         $lead = Lead::find($feature->lead_id);
-        $members = Member::where('project_id', $lead->project_id)->with(['user'])->get();
-        if (!$feature) return response()->json(['error' => 'Feature not found']);
 
+        if (!$feature) {
+            return response()->json(['error' => 'Feature not found']);
+        }
+        $member = Member::query()
+            ->where('project_id', $lead->project_id)
+            ->where('user_id', '<>', auth()->id())
+            ->first();
         $feature->update([
             'validation_id' => 5,
         ]);
-        foreach ($members as $member) {
-            if (auth()->user()->email !== $member->user->email) Mail::to($member->user->email)->send(new SendValidationMail());
-        };
+        Mail::to($member->user->email)->send(new SendValidationMail());
 
         return response()->json(['success' => 'Feature updated successfully']);
     }

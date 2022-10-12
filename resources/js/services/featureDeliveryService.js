@@ -17,6 +17,16 @@ export default {
         });
 
         return response;
+    },
+
+    fetchFeatureDelivery: async (feature) => {
+        const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/delivery`, feature, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+
+        return response;
     }
+
+
 
 }

@@ -25,6 +25,7 @@
           v-on:rejectStep="loadData()"
           v-on:fileDelivered="loadData()"
           v-on:linkDelivered="loadData()"
+          v-on:deliveryAccepted="loadData()"
         />
       </div>
     </div>
