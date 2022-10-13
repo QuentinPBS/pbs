@@ -146,6 +146,7 @@
         ></textarea> -->
 
         <QuillEditor
+          ref="myEditor"
           theme="snow"
           :options="state.options"
           v-model:content="state.content"
@@ -674,6 +675,7 @@ export default {
             });
           if (response.status == 201) {
             this.state.content = "";
+            this.$refs.myEditor.setHTML("");
             this.$emit("sendMessage");
           }
         } catch (error) {
