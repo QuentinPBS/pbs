@@ -55,7 +55,10 @@
                   >En attente de validation</span
                 >
                 <button
-                  class="btn btn-primary"
+                  :class="[
+                    { loading: state.isLoading },
+                    'btn btn-primary',
+                  ]"
                   @click="validateBtn(feature)"
                   v-if="isWaitingClient(feature)"
                 >
@@ -595,6 +598,7 @@ export default {
     },
 
     async validateBtn(feature) {
+    isLoading
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {

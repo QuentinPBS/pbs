@@ -3180,31 +3180,32 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                _context3.prev = 0;
-                _context3.next = 3;
+                isLoading;
+                _context3.prev = 1;
+                _context3.next = 4;
                 return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepTwo(feature);
 
-              case 3:
+              case 4:
                 response = _context3.sent;
 
                 if (response.status === 200) {
                   _this3.$emit("validateStep");
                 }
 
-                _context3.next = 10;
+                _context3.next = 11;
                 break;
 
-              case 7:
-                _context3.prev = 7;
-                _context3.t0 = _context3["catch"](0);
+              case 8:
+                _context3.prev = 8;
+                _context3.t0 = _context3["catch"](1);
                 console.error(_context3.t0);
 
-              case 10:
+              case 11:
               case "end":
                 return _context3.stop();
             }
           }
-        }, _callee3, null, [[0, 7]]);
+        }, _callee3, null, [[1, 8]]);
       }))();
     },
     delivredBtn: function delivredBtn() {
@@ -3451,7 +3452,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   setup: function setup() {
     var state = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_2__.reactive)({
       type: 2,
-      file: null
+      file: null,
+      isLoading: false
     });
     return {
       state: state
@@ -3474,35 +3476,37 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
+                _this.state.isLoading = true;
                 body = new FormData();
                 body.append("id", _this.feature.id);
                 body.append("type", 2);
                 body.append("user_id", _this.$store.state.userStore.user.id);
                 body.append("file", _this.state.file);
-                _context.next = 8;
+                _context.next = 9;
                 return _services_featureDeliveryService_js__WEBPACK_IMPORTED_MODULE_1__["default"].importDeliveryFile(body);
 
-              case 8:
+              case 9:
                 response = _context.sent;
 
                 if (response.status === 201) {
                   _this.$emit("fileDelivered");
                 }
 
-                _context.next = 15;
+                _context.next = 17;
                 break;
 
-              case 12:
-                _context.prev = 12;
+              case 13:
+                _context.prev = 13;
                 _context.t0 = _context["catch"](0);
+                _this.state.isLoading = false;
                 console.error(_context.t0);
 
-              case 15:
+              case 17:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 12]]);
+        }, _callee, null, [[0, 13]]);
       }))();
     }
   }
@@ -3542,7 +3546,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   setup: function setup() {
     var state = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_2__.reactive)({
       type: 1,
-      link: ""
+      link: "",
+      isLoading: false
     });
     var rules = (0,_vue_reactivity__WEBPACK_IMPORTED_MODULE_2__.computed)(function () {
       return {
@@ -3578,36 +3583,38 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 return _context.abrupt("return");
 
               case 3:
-                _context.prev = 3;
+                _this.state.isLoading = true;
+                _context.prev = 4;
                 body = new FormData();
                 body.append("id", _this.feature.id);
                 body.append("type", 1);
                 body.append("user_id", _this.$store.state.userStore.user.id);
                 body.append("link", _this.state.link);
-                _context.next = 11;
+                _context.next = 12;
                 return _services_featureDeliveryService_js__WEBPACK_IMPORTED_MODULE_1__["default"].importDeliveryLink(body);
 
-              case 11:
+              case 12:
                 response = _context.sent;
 
                 if (response.status === 201) {
                   _this.$emit("linkDelivered");
                 }
 
-                _context.next = 18;
+                _context.next = 20;
                 break;
 
-              case 15:
-                _context.prev = 15;
-                _context.t0 = _context["catch"](3);
+              case 16:
+                _context.prev = 16;
+                _context.t0 = _context["catch"](4);
+                _this.state.isLoading = false;
                 console.error(_context.t0);
 
-              case 18:
+              case 20:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[3, 15]]);
+        }, _callee, null, [[4, 16]]);
       }))();
     }
   }
@@ -4516,12 +4523,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     /* TEXT */
     )])])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_12, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [$options.isWaiting(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_13, "En attente de validation")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isWaitingClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
       key: 1,
-      "class": "btn btn-primary",
+      "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
+        loading: $setup.state.isLoading
+      }, 'btn btn-primary']),
       onClick: function onClick($event) {
         return $options.validateBtn(feature);
       }
-    }, " Valider ", 8
-    /* PROPS */
+    }, " Valider ", 10
+    /* CLASS, PROPS */
     , _hoisted_14)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isWaitingClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
       key: 2,
       "class": "btn bg-red-500 text-white ml-2",
@@ -4851,11 +4860,15 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     })
   }, " Annuler "), $setup.state.file ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     key: 0,
-    "class": "btn bg-green-500 text-white",
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
+      loading: $setup.state.isLoading
+    }, 'btn bg-green-500 text-white']),
     onClick: _cache[1] || (_cache[1] = function ($event) {
       return $options.uploadFile();
     })
-  }, " Valider ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 64
+  }, " Valider ", 2
+  /* CLASS */
+  )) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])], 64
   /* STABLE_FRAGMENT */
   );
 }
@@ -4913,11 +4926,15 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return _ctx.$emit('closeModal');
     })
   }, " Annuler "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
-    "class": "btn bg-green-500 text-white",
+    "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
+      loading: $setup.state.isLoading
+    }, 'btn bg-green-500 text-white']),
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $options.uploadLink();
     })
-  }, " Valider ")])], 64
+  }, " Valider ", 2
+  /* CLASS */
+  )])], 64
   /* STABLE_FRAGMENT */
   );
 }
