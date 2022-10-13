@@ -19,7 +19,7 @@
         <features-list
           :devis="state.devis"
           :features="state.features"
-          :leadConversation="state.leadConversation"
+          :conversation="state.leadConversation"
           v-on:sendMessage="loadData()"
           v-on:validateStep="loadData()"
           v-on:rejectStep="loadData()"
@@ -90,7 +90,7 @@ export default {
           await leadConversationService.getLeadConversation(slugDevis);
 
         if (responseLeadConversation.status === 200) {
-          this.state.leadConversation = responseLeadConversation.data.messages;
+          this.state.leadConversation = responseLeadConversation.data.lead;
         }
       } catch (e) {
         if (e.response.status === 401) {
