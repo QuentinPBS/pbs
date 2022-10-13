@@ -573,7 +573,7 @@ export default {
     },
 
     async validateBtn(feature) {
-      isLoading;
+      this.state.isLoading = true;
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
