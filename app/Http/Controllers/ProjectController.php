@@ -74,12 +74,9 @@ class ProjectController extends Controller
         // why saving static data..
         $members = [
             [
-                'user_id' => User::first()?->id,
-                'role_id' => 1
-            ], [
 
                 'user_id' => auth()->id(),
-                'role_id' => 2
+                'role_id' => 1
             ]
         ];
 

@@ -15,14 +15,11 @@
   </div>
 
   <div class="flex justify-end py-4">
-    <button
-      class="btn bg-red-500 text-white mr-2"
-      @click="$emit('closeModal')"
-    >
+    <button class="btn bg-red-500 text-white mr-2" @click="$emit('closeModal')">
       Annuler
     </button>
     <button
-      class="btn bg-green-500 text-white"
+      :class="[{ loading: state.isLoading }, 'btn bg-green-500 text-white']"
       v-if="state.file"
       @click="uploadFile()"
     >
@@ -42,6 +39,7 @@ export default {
     const state = reactive({
       type: 2,
       file: null,
+      isLoading: false,
     });
 
     return {
@@ -58,6 +56,7 @@ export default {
     },
     async uploadFile() {
       try {
+        this.state.isLoading = true;
         let body = new FormData();
         body.append("id", this.feature.id);
         body.append("type", 2);
@@ -68,6 +67,8 @@ export default {
           this.$emit("fileDelivered");
         }
       } catch (error) {
+        this.state.isLoading = false;
+
         console.error(error);
       }
     },
