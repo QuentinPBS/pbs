@@ -3242,7 +3242,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                isLoading;
+                _this3.state.isLoading = true;
                 _context3.prev = 1;
                 _context3.next = 4;
                 return _services_featureService__WEBPACK_IMPORTED_MODULE_3__["default"].updateStepTwo(feature);
