@@ -3385,6 +3385,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 if (response.status == 201) {
                   _this7.state.content = "";
 
+                  _this7.$refs.myEditor.setHTML("");
+
                   _this7.$emit("sendMessage");
                 }
 
@@ -4564,6 +4566,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return $setup.state.showModal = true;
     })
   }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" <textarea\n          id=\"message\"\n          rows=\"4\"\n          class=\"\n            block\n            p-2.5\n            w-full\n            text-sm text-gray-900\n            bg-gray-50\n            rounded-lg\n            border border-gray-300\n            focus:ring-blue-500 focus:border-blue-500\n            dark:bg-gray-700\n            dark:border-gray-600\n            dark:placeholder-gray-400\n            dark:text-white\n            dark:focus:ring-blue-500\n            dark:focus:border-blue-500\n          \"\n          placeholder=\"Your message...\"\n          v-model=\"state.content\"\n        ></textarea> "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_QuillEditor, {
+    ref: "myEditor",
     theme: "snow",
     options: $setup.state.options,
     content: $setup.state.content,
