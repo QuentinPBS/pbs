@@ -121,30 +121,6 @@
       </div>
       <div class="devis-list__description">
         <p class="mb-1 text-sm">Description</p>
-
-        <!-- <textarea
-          id="message"
-          rows="4"
-          class="
-            block
-            p-2.5
-            w-full
-            text-sm text-gray-900
-            bg-gray-50
-            rounded-lg
-            border border-gray-300
-            focus:ring-blue-500 focus:border-blue-500
-            dark:bg-gray-700
-            dark:border-gray-600
-            dark:placeholder-gray-400
-            dark:text-white
-            dark:focus:ring-blue-500
-            dark:focus:border-blue-500
-          "
-          placeholder="Your message..."
-          v-model="state.content"
-        ></textarea> -->
-
         <QuillEditor
           ref="myEditor"
           theme="snow"
@@ -153,36 +129,14 @@
           style="height: 250px"
           contentType="html"
         />
-
         <button
           @click="sendMessage"
-          type="submit"
-          class="
-            inline-flex
-            justify-center
-            p-2
-            text-blue-600
-            rounded-full
-            cursor-pointer
-            hover:bg-blue-100
-            dark:text-blue-500 dark:hover:bg-gray-600
-            mb-5
-          "
+          :class="[{ loading: state.isLoading }, 'btn bg-blue-400 mt-2']"
         >
-          <svg
-            aria-hidden="true"
-            class="w-6 h-6 rotate-90"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
-            ></path>
-          </svg>
-          <span class="sr-only">Send message</span>
+          save
         </button>
-        <LeadConversation :leadConversation="leadConversation" />
+
+        <!-- <LeadConversation :leadConversation="leadConversation" /> -->
       </div>
     </div>
 
@@ -400,6 +354,8 @@ import { required, email } from "@vuelidate/validators";
 import featureService from "../../services/featureService";
 import leadConversationService from "../../services/leadConversationService";
 import { QuillEditor } from "@vueup/vue-quill";
+
+import Quill from "quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import inviteService from "../../services/inviteService";
 import LeadConversation from "../conversation/LeadConversation.vue";
@@ -408,8 +364,23 @@ import ValidateDeliveredFeature from "../feature/ValidateDeliveredFeature.vue";
 export default {
   name: "DevisList",
 
-  props: ["devis", "features", "leadConversation"],
+  props: ["devis", "features", "conversation"],
 
+  mounted() {
+    window.userId = this.$store.state.userStore.user.id;
+    var Block = Quill.import("blots/block");
+
+    class SpanBlock extends Block {
+      static create(value) {
+        let node = super.create();
+        node.setAttribute("class", `user-${window.userId}`);
+        return node;
+      }
+    }
+    Quill.register(SpanBlock);
+
+    this.processDom();
+  },
   setup() {
     const state = reactive({
       showModal: false,
@@ -436,6 +407,7 @@ export default {
       },
       currentFeature: null,
       rejectedStep: null,
+      content: "",
     });
 
     const rules = computed(() => {
@@ -672,17 +644,22 @@ export default {
     // send lead conversation message
     async sendMessage() {
       if (this.state.content) {
+        this.state.isLoading = true;
+        let message = this.state.content.replaceAll(
+          'contenteditable="false"',
+          ""
+        );
+
         try {
           const response =
             await leadConversationService.storeLeadConversationMessage({
-              message: this.state.content,
+              message: message,
               lead_id: this.devis.id,
               user_id: this.$store.state.userStore.user.id,
             });
           if (response.status == 201) {
-            this.state.content = "";
-            this.$refs.myEditor.setHTML("");
             this.$emit("sendMessage");
+            this.state.isLoading = false;
           }
         } catch (error) {
           console.error(error);
@@ -701,6 +678,28 @@ export default {
     deliveryAccepted() {
       this.state.showModalIsDelivred = false;
       this.$emit("deliveryAccepted");
+    },
+
+    processDom() {
+      let oldContent = this.conversation.content;
+      if (oldContent) {
+        oldContent = oldContent.concat(
+          `<p class="user-${this.$store.state.userStore.user.id}"></p>`
+        );
+        this.state.content = oldContent;
+        this.$refs.myEditor.setHTML(oldContent);
+        let elements = window.document.querySelectorAll(
+          `.ql-editor>p:not([class^='user-${this.$store.state.userStore.user.id}'])`
+        ); //matches all
+
+        for (let i = 0; i < elements.length; i++) {
+          elements[i].setAttribute("contenteditable", false);
+          elements[i].setAttribute(
+            "style",
+            " user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"
+          );
+        }
+      }
     },
   },
 };
@@ -774,5 +773,13 @@ export default {
   align-items: center;
   flex-shrink: 0;
   padding: 1rem 0 0;
+}
+
+.disable-select {
+  user-select: none !important; /* supported by Chrome and Opera */
+  -webkit-user-select: none !important; /* Safari */
+  -khtml-user-select: none !important; /* Konqueror HTML */
+  -moz-user-select: none !important; /* Firefox */
+  -ms-user-select: none !important; /* Internet Explorer/Edge */
 }
 </style>
