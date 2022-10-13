@@ -24,7 +24,7 @@ class StoreFeatureConversationMessage extends FormRequest
     public function rules()
     {
         return [
-            'message' => 'required|max:1000',
+            'message' => 'required|max:100000',
             'user_id' => 'required|exists:users,id',
             'feature_id' => 'required|exists:features,id'
         ];
