@@ -39,7 +39,10 @@
     <button class="btn bg-red-500 text-white mr-2" @click="$emit('closeModal')">
       Annuler
     </button>
-    <button class="btn bg-green-500 text-white" @click="uploadLink()">
+    <button
+      :class="[{ loading: state.isLoading }, 'btn bg-green-500 text-white']"
+      @click="uploadLink()"
+    >
       Valider
     </button>
   </div>
@@ -56,6 +59,7 @@ export default {
     const state = reactive({
       type: 1,
       link: "",
+      isLoading: false,
     });
     const rules = computed(() => {
       return {
@@ -75,7 +79,7 @@ export default {
       if (this.v$.$error) {
         return;
       }
-
+      this.state.isLoading = true;
       try {
         let body = new FormData();
         body.append("id", this.feature.id);
@@ -87,6 +91,7 @@ export default {
           this.$emit("linkDelivered");
         }
       } catch (error) {
+        this.state.isLoading = false;
         console.error(error);
       }
     },
