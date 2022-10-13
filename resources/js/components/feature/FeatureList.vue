@@ -55,10 +55,7 @@
                   >En attente de validation</span
                 >
                 <button
-                  :class="[
-                    { loading: state.isLoading },
-                    'btn btn-primary',
-                  ]"
+                  :class="[{ loading: state.isLoading }, 'btn btn-primary']"
                   @click="validateBtn(feature)"
                   v-if="isWaitingClient(feature)"
                 >
@@ -384,7 +381,10 @@
         >
           Annuler
         </button>
-        <button @click="handleRejectStep()" class="btn btn-primary">
+        <button
+          @click="handleRejectStep()"
+          :class="[{ loading: state.isLoading }, 'btn btn-primary']"
+        >
           Valider
         </button>
       </div>
@@ -506,6 +506,7 @@ export default {
     },
 
     async handleRejectStep() {
+      this.state.isLoading = true;
       try {
         const response = await featureService.rejectStep(
           this.state.rejectedStep
@@ -515,6 +516,7 @@ export default {
           this.$emit("rejectStep");
         }
       } catch (error) {
+        this.state.isLoading = false;
         console.error(error);
       }
     },
@@ -599,7 +601,7 @@ export default {
     },
 
     async validateBtn(feature) {
-    isLoading
+      isLoading;
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
