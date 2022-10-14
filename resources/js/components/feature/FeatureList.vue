@@ -650,6 +650,11 @@ export default {
           ""
         );
 
+        message = message.replaceAll(
+          'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
+          ""
+        );
+
         try {
           const response =
             await leadConversationService.storeLeadConversationMessage({

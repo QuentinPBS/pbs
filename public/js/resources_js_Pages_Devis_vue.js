@@ -3429,21 +3429,22 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
             switch (_context7.prev = _context7.next) {
               case 0:
                 if (!_this7.state.content) {
-                  _context7.next = 13;
+                  _context7.next = 14;
                   break;
                 }
 
                 _this7.state.isLoading = true;
                 message = _this7.state.content.replaceAll('contenteditable="false"', "");
-                _context7.prev = 3;
-                _context7.next = 6;
+                message = message.replaceAll('style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"', "");
+                _context7.prev = 4;
+                _context7.next = 7;
                 return _services_leadConversationService__WEBPACK_IMPORTED_MODULE_4__["default"].storeLeadConversationMessage({
                   message: message,
                   lead_id: _this7.devis.id,
                   user_id: _this7.$store.state.userStore.user.id
                 });
 
-              case 6:
+              case 7:
                 response = _context7.sent;
 
                 if (response.status == 201) {
@@ -3452,20 +3453,20 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
                   _this7.state.isLoading = false;
                 }
 
-                _context7.next = 13;
+                _context7.next = 14;
                 break;
 
-              case 10:
-                _context7.prev = 10;
-                _context7.t0 = _context7["catch"](3);
+              case 11:
+                _context7.prev = 11;
+                _context7.t0 = _context7["catch"](4);
                 console.error(_context7.t0);
 
-              case 13:
+              case 14:
               case "end":
                 return _context7.stop();
             }
           }
-        }, _callee7, null, [[3, 10]]);
+        }, _callee7, null, [[4, 11]]);
       }))();
     },
     linkDelivered: function linkDelivered() {
