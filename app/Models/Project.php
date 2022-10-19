@@ -69,6 +69,6 @@ class Project extends Model
     public function getImageAttribute()
     {
 
-        return Storage::url($this->attributes['image']);
+        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
     }
 }

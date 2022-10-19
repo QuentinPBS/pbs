@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Member extends Model
 {
     use HasFactory;
-
+    const ADMIN = 1;
+    const MEMBER = 2;
     /**
      * The attributes that are mass assignable.
      *
