@@ -18,12 +18,3 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::view('/{any}', 'app')->where('any', '.*');
-Route::get('test', function () {
-
-    return Storage::disk('local')->download('files/0sEY0UdfflSMXke1Lr87Mkcg1jgMiNmPFlKP1Kom.jpg');
-
-
-
-    Mail::to("rihaneatef@gmail.com")->send(new SendValidationMail());
-    echo "done";
-});

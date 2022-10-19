@@ -55,7 +55,7 @@
                   >En attente de validation</span
                 >
                 <button
-                  :class="[{ loading: state.isLoading }, 'btn btn-primary']"
+                  :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
                   @click="validateBtn(feature)"
                   v-if="isWaitingClient(feature)"
                 >
@@ -208,7 +208,7 @@
         <button class="btn btn-link" @click="cancelForm()">Annuler</button>
         <button
           @click="handlePFeatureClick"
-          :class="[{ loading: state.isLoading }, 'btn btn-primary']"
+          :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
         >
           {{ state.isLoading ? "loading" : "Créer" }}
         </button>
@@ -341,7 +341,7 @@
         </button>
         <button
           @click="handleRejectStep()"
-          :class="[{ loading: state.isLoading }, 'btn btn-primary']"
+          :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
         >
           Valider
         </button>
@@ -394,6 +394,7 @@ export default {
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
+      isLoadingDelivery:false,
       isSendEmailErrorCatch: false,
       showRejectStep: false,
       name: "",
@@ -482,7 +483,7 @@ export default {
     },
 
     async handleRejectStep() {
-      this.state.isLoading = true;
+      this.state.isLoadingDelivery = true;
       try {
         const response = await featureService.rejectStep(
           this.state.rejectedStep
@@ -492,7 +493,7 @@ export default {
           this.$emit("rejectStep");
         }
       } catch (error) {
-        this.state.isLoading = false;
+        this.state.isLoadingDelivery = false;
         console.error(error);
       }
     },
@@ -577,7 +578,7 @@ export default {
     },
 
     async validateBtn(feature) {
-      this.state.isLoading = true;
+      this.state.isLoadingDelivery = true;
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
@@ -606,7 +607,7 @@ export default {
       if (this.v$.$error) return;
 
       try {
-        this.state.isLoading = true;
+        this.state.isLoadingDelivery = true;
         const response = await featureService.createFeature({
           name: this.state.name,
           devis_id: this.devis.id,
@@ -620,7 +621,7 @@ export default {
       } catch (error) {
         console.error(error);
       } finally {
-        this.state.isLoading = false;
+        this.state.isLoadingDelivery = false;
       }
     },
 
