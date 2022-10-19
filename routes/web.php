@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
-Route::view('/{any}', 'app')->where('any', '.*');
+// Route::view('/{any}', 'app')->where('any', '.*');
 Route::get('test', function () {
 
-    return Storage::disk('local')->download('files/0sEY0UdfflSMXke1Lr87Mkcg1jgMiNmPFlKP1Kom.jpg');
+    $path = public_path("storage/projects");
+    $files = File::allFiles($path);
+    foreach ($files as $file) {
 
-
-
-    Mail::to("rihaneatef@gmail.com")->send(new SendValidationMail());
-    echo "done";
+        Storage::put('files', $file, 'public');
+    }
+    return 'done';
 });
