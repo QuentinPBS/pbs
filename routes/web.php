@@ -17,14 +17,4 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
-// Route::view('/{any}', 'app')->where('any', '.*');
-Route::get('test', function () {
-
-    $path = public_path("storage/projects");
-    $files = File::allFiles($path);
-    foreach ($files as $file) {
-
-        Storage::put('files', $file, 'public');
-    }
-    return 'done';
-});
+Route::view('/{any}', 'app')->where('any', '.*');
