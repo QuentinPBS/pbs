@@ -61,7 +61,7 @@ class LeadController extends Controller
     public function showByProjectId($projectId, ShowLeadByProjectIdAction $showLeadByProjectIdAction)
     {
         $leads = $showLeadByProjectIdAction->execute($projectId);
-        dd($leads);
+
         return response()->json($leads, 200);
     }
 
@@ -73,7 +73,7 @@ class LeadController extends Controller
     public function showByLeadSlug($leadSlug, ShowLeadBySlugAction $showLeadBySlugAction)
     {
         $lead = $showLeadBySlugAction->execute($leadSlug);
-       
+
         return response()->json($lead, 200);
     }
 
