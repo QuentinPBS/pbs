@@ -6,6 +6,7 @@ use App\Models\User;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Project extends Model
@@ -17,11 +18,9 @@ class Project extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'description',
-        'image',
-        'user_id'
+    protected $guarded = [
+        'id',
+
     ];
 
     /**
@@ -65,5 +64,11 @@ class Project extends Model
     public function features()
     {
         return $this->hasManyThrough(Feature::class, Lead::class);
+    }
+
+    public function getImageAttribute()
+    {
+
+        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
     }
 }

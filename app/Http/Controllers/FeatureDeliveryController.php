@@ -31,11 +31,11 @@ class FeatureDeliveryController extends Controller
         $validatedData = $request->validated();
         $file = $validatedData['file'];
 
-        Storage::disk('local')->put('files', $file);
+        $path = Storage::put('deliveries', $file);
         $feature = Feature::find($validatedData['feature_id']);
         FeatureDelivery::create([
             'type' => FeatureDelivery::FILE,
-            'link' => $file->hashName(),
+            'link' => $path,
             'feature_id' => $validatedData['feature_id'],
             'user_id' => $validatedData['user_id']
         ]);
@@ -58,7 +58,7 @@ class FeatureDeliveryController extends Controller
             ], 404);
         }
 
-        return Storage::disk('local')->download("files/" . $checkFeature->delivery->link);
+        return Storage::download($checkFeature->delivery->link);
     }
 
 

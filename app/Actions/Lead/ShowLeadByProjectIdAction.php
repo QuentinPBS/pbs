@@ -3,6 +3,7 @@
 namespace App\Actions\Lead;
 
 use App\Models\Lead;
+use App\Models\Member;
 
 class ShowLeadByProjectIdAction
 {
@@ -12,6 +13,10 @@ class ShowLeadByProjectIdAction
     public function execute($projectId)
     {
         // search Member owner by userId
-        return Lead::where(['project_id' => $projectId])->with(['user', 'project'])->get();
+        return Lead::query()
+            ->with(['user', 'project'])
+            ->where(['project_id' => $projectId])
+         
+            ->get();
     }
 }
