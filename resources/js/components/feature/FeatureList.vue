@@ -4,7 +4,7 @@
       <div class="devis-list__header__project">
         <h1>{{ devis.name }}</h1>
         <button
-          v-if="devis.user_id === this.$store.state.userStore.user.id"
+          v-if="devis.is_owner"
           class="btn btn-primary"
           @click="state.showModal = true"
         >
@@ -114,7 +114,11 @@
         <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
           <img src="/images/logo_b&w.png" alt="logo paybystep" />
           <p class="text-xl font-bold">Vous n'avez aucune étape</p>
-          <button class="btn btn-primary" @click="state.showModal = true">
+          <button
+            class="btn btn-primary"
+            @click="state.showModal = true"
+            v-if="devis.is_owner"
+          >
             Créer un étape
           </button>
         </div>
@@ -647,6 +651,11 @@ export default {
         this.state.isLoading = true;
         let message = this.state.content.replaceAll(
           'contenteditable="false"',
+          ""
+        );
+
+        message = message.replaceAll(
+          'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
           ""
         );
 

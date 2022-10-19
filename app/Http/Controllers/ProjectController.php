@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Project;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use App\Actions\Project\ShowProjectById;
 use App\Actions\Project\StoreMemberAction;
 use App\Http\Requests\ProjectStoreRequest;
@@ -58,10 +59,7 @@ class ProjectController extends Controller
         $path = null;
         if ($file) {
 
-            $filePath = time() . '_' . Str::random(5) . '.' . $file->extension();
-
-            $file->move(public_path("storage/projects"), $filePath);
-            $path = "storage/projects" . '/' . $filePath;
+            $path = Storage::put('files', $file, 'public');
         }
 
         $newProject = Project::create([

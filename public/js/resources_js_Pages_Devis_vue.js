@@ -3429,21 +3429,22 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
             switch (_context7.prev = _context7.next) {
               case 0:
                 if (!_this7.state.content) {
-                  _context7.next = 13;
+                  _context7.next = 14;
                   break;
                 }
 
                 _this7.state.isLoading = true;
                 message = _this7.state.content.replaceAll('contenteditable="false"', "");
-                _context7.prev = 3;
-                _context7.next = 6;
+                message = message.replaceAll('style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"', "");
+                _context7.prev = 4;
+                _context7.next = 7;
                 return _services_leadConversationService__WEBPACK_IMPORTED_MODULE_4__["default"].storeLeadConversationMessage({
                   message: message,
                   lead_id: _this7.devis.id,
                   user_id: _this7.$store.state.userStore.user.id
                 });
 
-              case 6:
+              case 7:
                 response = _context7.sent;
 
                 if (response.status == 201) {
@@ -3452,20 +3453,20 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
                   _this7.state.isLoading = false;
                 }
 
-                _context7.next = 13;
+                _context7.next = 14;
                 break;
 
-              case 10:
-                _context7.prev = 10;
-                _context7.t0 = _context7["catch"](3);
+              case 11:
+                _context7.prev = 11;
+                _context7.t0 = _context7["catch"](4);
                 console.error(_context7.t0);
 
-              case 13:
+              case 14:
               case "end":
                 return _context7.stop();
             }
           }
-        }, _callee7, null, [[3, 10]]);
+        }, _callee7, null, [[4, 11]]);
       }))();
     },
     linkDelivered: function linkDelivered() {
@@ -4552,7 +4553,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h1", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.devis.name), 1
   /* TEXT */
-  ), $props.devis.user_id === this.$store.state.userStore.user.id ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+  ), $props.devis.is_owner ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
     key: 0,
     "class": "btn btn-primary",
     onClick: _cache[0] || (_cache[0] = function ($event) {
@@ -4611,12 +4612,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     , _hoisted_21)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccess(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_22, "Confirmé")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isSuccessClient(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_23, "Acceptée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), $options.isRejected(feature) ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_24, "Refusée")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)])])]);
   }), 128
   /* KEYED_FRAGMENT */
-  ))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_25, [_hoisted_26, _hoisted_27, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
+  ))])) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_25, [_hoisted_26, _hoisted_27, $props.devis.is_owner ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", {
+    key: 0,
     "class": "btn btn-primary",
     onClick: _cache[2] || (_cache[2] = function ($event) {
       return $setup.state.showModal = true;
     })
-  }, " Créer un étape ")]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_QuillEditor, {
+  }, " Créer un étape ")) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]))]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_28, [_hoisted_29, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_QuillEditor, {
     ref: "myEditor",
     theme: "snow",
     options: $setup.state.options,
