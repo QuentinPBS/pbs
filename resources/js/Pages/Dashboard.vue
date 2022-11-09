@@ -41,6 +41,7 @@ export default {
     async created() {
         try {
             const response = await UserService.getUserCurrent(this.$store.state.tokenStore.token);
+            
             if (response.status === 200) this.$store.commit('SET_USER', response.data.data.item)
 
             if (response.status === 401) {

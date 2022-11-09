@@ -19,6 +19,14 @@ export default {
         return response;
     },
 
+    importDeliveryNullableFile: async (feature) => {
+        const response = await axios.post(`${APISettings.baseURL}/feature/${feature.id}/nullable/import/`, feature, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+
+        return response;
+    },
+
     fetchFeatureDelivery: async (feature) => {
         const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/delivery`, feature, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }

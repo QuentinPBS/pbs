@@ -7,7 +7,7 @@
       <a
         :href="state.delivery.link"
         class="text-blue-500 text-center underline break-all"
-           target="_blank"
+        target="_blank"
         >{{ state.delivery.link }}</a
       >
     </div>
@@ -20,10 +20,16 @@
       <a
         :href="`/api/feature/${feature.id}/file/download`"
         class="btn bg-blue-500 text-white"
-     
         >Télécharger</a
       >
     </div>
+  </div>
+
+    <div v-if="isNullable">
+    <p class="my-5 mb-2">
+     Pas de livrable pour cette étape
+    </p>
+
   </div>
   <div class="flex justify-end">
     <button @click="$emit('closeModal')" class="btn bg-red-500 text-white mr-2">
@@ -68,6 +74,11 @@ export default {
     isLink() {
       if (this.state.delivery) {
         return this.state.delivery.type == 1;
+      }
+    },
+    isNullable() {
+      if (this.state.delivery) {
+        return this.state.delivery.type == 3;
       }
     },
   },

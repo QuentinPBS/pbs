@@ -15,6 +15,7 @@
   </div>
 
   <div class="flex justify-end py-4">
+    
     <button class="btn bg-red-500 text-white mr-2" @click="$emit('closeModal')">
       Annuler
     </button>

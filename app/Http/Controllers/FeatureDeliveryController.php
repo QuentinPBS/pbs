@@ -9,6 +9,7 @@ use App\Models\FeatureDelivery;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\FeatureDeliveryFileRequest;
 use App\Http\Requests\FeatureDeliveryLinkRequest;
+use App\Http\Requests\FeatureDeliveryNullableRequest;
 
 class FeatureDeliveryController extends Controller
 {
@@ -36,6 +37,25 @@ class FeatureDeliveryController extends Controller
         FeatureDelivery::create([
             'type' => FeatureDelivery::FILE,
             'link' => $path,
+            'feature_id' => $validatedData['feature_id'],
+            'user_id' => $validatedData['user_id']
+        ]);
+        // deliver file
+        $feature->update([
+            'validation_id' => Feature::DELIVERED
+        ]);
+        return response()->json([
+            'status' => true
+        ], 201);
+    }
+
+    public function handleImportNullableFile($id, FeatureDeliveryNullableRequest $request)
+    {
+        $validatedData = $request->validated();
+        $feature = Feature::find($validatedData['feature_id']);
+        FeatureDelivery::create([
+            'type' => $validatedData['type'],
+            'link' => $validatedData['file'],
             'feature_id' => $validatedData['feature_id'],
             'user_id' => $validatedData['user_id']
         ]);

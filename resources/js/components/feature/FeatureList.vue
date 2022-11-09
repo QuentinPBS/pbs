@@ -300,6 +300,7 @@
           :feature="state.currentFeature"
           v-on:fileDelivered="fileDelivered()"
           v-on:linkDelivered="linkDelivered()"
+          v-on:nullableFileDelivered="nullableFileDelivered()"
           v-on:closeModal="state.showModalDelivred = false"
         />
       </div>
@@ -695,10 +696,15 @@ export default {
       this.state.showModalDelivred = false;
       this.$emit("fileDelivered");
     },
+     nullableFileDelivered() {
+      this.state.showModalDelivred = false;
+      this.$emit("nullableFileDelivered");
+    },
     deliveryAccepted() {
       this.state.showModalIsDelivred = false;
       this.$emit("deliveryAccepted");
     },
+
 
     processDom() {
       let oldContent = this.conversation.content;
