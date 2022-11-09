@@ -6,7 +6,7 @@
     <div class="flex justify-center mb-4">
       <a
         :href="state.delivery.link"
-        class="text-blue-500 text-center underline"
+        class="text-blue-500 text-center underline break-all"
         >{{ state.delivery.link }}</a
       >
     </div>
