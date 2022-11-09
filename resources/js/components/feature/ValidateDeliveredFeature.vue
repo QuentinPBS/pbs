@@ -7,6 +7,7 @@
       <a
         :href="state.delivery.link"
         class="text-blue-500 text-center underline break-all"
+           target="_blank"
         >{{ state.delivery.link }}</a
       >
     </div>
@@ -19,6 +20,7 @@
       <a
         :href="`/api/feature/${feature.id}/file/download`"
         class="btn bg-blue-500 text-white"
+     
         >Télécharger</a
       >
     </div>
