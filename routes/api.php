@@ -28,12 +28,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['api'])->group(function ($router) {
-    Route::post('login', [AuthController::class, 'login'])->name('auth.login');
-    Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
+Route::middleware(['jwt.verify'])->group(function ($router) {
+
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
-    Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');
-    Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
+   
+   
 
     Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
     Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
@@ -68,7 +68,7 @@ Route::middleware(['api'])->group(function ($router) {
     //feature delivery
     Route::post('feature/{id}/link/import', [FeatureDeliveryController::class, 'handleImportLink']);
     Route::post('feature/{id}/file/import', [FeatureDeliveryController::class, 'handleImportFile']);
-    Route::post('feature/{id}/nullable/import', [FeatureDeliveryController::class, 'handleImportFile']);
+    Route::post('feature/{id}/nullable/import', [FeatureDeliveryController::class, 'handleImportNullableFile']);
     Route::get('feature/{id}/delivery', [FeatureDeliveryController::class, 'handleGetDelivery']);
     Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);
 
@@ -81,3 +81,6 @@ Route::middleware(['api'])->group(function ($router) {
     Route::put('user/password/update', [AuthController::class, 'updatePassword'])->name('user.updatePassword');
 });
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
+Route::post('login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');
+Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');

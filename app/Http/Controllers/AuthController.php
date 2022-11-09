@@ -59,11 +59,11 @@ class AuthController extends Controller
 
     public function respondWithToken($token)
     {
-       
+        
         return $this->respond([
             'token' => $token,
             'access_type' => 'Bearer',
-            'expires_in' => 1,
+            'expires_in' => auth()->factory()->getTTL() * 60,
         ]);
     }
     

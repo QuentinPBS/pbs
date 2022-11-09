@@ -78,6 +78,7 @@ export default {
         if (responseDevis.status === 200) {
           this.state.devis = responseDevis.data;
         }
+      
         //list the steps of a lead (devis)
         const responseFeatures = await featuresService.getFeaturesByLeadId(
           this.state.devis.id

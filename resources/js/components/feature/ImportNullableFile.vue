@@ -41,7 +41,7 @@
     </button>
     <button
       :class="[{ loading: state.isLoading }, 'btn bg-green-500 text-white']"
-      @click="uploadNullableFile()"
+      @click="uploadFile()"
     >
       Valider
     </button>
@@ -67,14 +67,16 @@ export default {
   },
 
   methods: {
-    async uploadNullableFile() {
+    async uploadFile() {
       this.state.isLoading = true;
       try {
+        
         let body = new FormData();
         body.append("id", this.feature.id);
         body.append("type", this.state.type);
         body.append("user_id", this.$store.state.userStore.user.id);
         body.append("file", this.state.file);
+        
         const response =
           await featureDeliveryService.importDeliveryNullableFile(body);
         if (response.status === 201) {

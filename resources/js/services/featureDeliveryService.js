@@ -12,6 +12,7 @@ export default {
     },
 
     importDeliveryLink: async (feature) => {
+
         const response = await axios.post(`${APISettings.baseURL}/feature/${feature.id}/link/import/`, feature, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
         });
@@ -20,6 +21,7 @@ export default {
     },
 
     importDeliveryNullableFile: async (feature) => {
+
         const response = await axios.post(`${APISettings.baseURL}/feature/${feature.id}/nullable/import/`, feature, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
         });
@@ -28,9 +30,9 @@ export default {
     },
 
     fetchFeatureDelivery: async (feature) => {
-        const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/delivery`, feature, {
+        const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/delivery`, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
-        });
+        }, feature);
 
         return response;
     }

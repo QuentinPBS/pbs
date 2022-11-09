@@ -56,7 +56,7 @@
                 >
                 <button
                   :class="[
-                    { loading: state.isLoadingDelivery == feature.id },
+                    { loading: featureIsLoading(feature) },
                     'btn btn-primary',
                   ]"
                   @click="validateBtn(feature)"
@@ -211,7 +211,10 @@
         <button class="btn btn-link" @click="cancelForm()">Annuler</button>
         <button
           @click="handlePFeatureClick"
-          :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
+          :class="[
+            { loading: state.isLoadingCreateDelivery },
+            'btn btn-primary',
+          ]"
         >
           {{ state.isLoading ? "loading" : "Créer" }}
         </button>
@@ -401,7 +404,8 @@ export default {
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
-      isLoadingDelivery: null,
+      isLoadingCreateDelivery: false,
+      isLoadingDelivery: [],
       isLoadingRejectDelivery: null,
       isSendEmailErrorCatch: false,
       showRejectStep: false,
@@ -589,7 +593,7 @@ export default {
     },
 
     async validateBtn(feature) {
-      this.state.isLoadingDelivery = feature.id;
+      this.state.isLoadingDelivery.push(feature.id);
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
@@ -597,6 +601,7 @@ export default {
         }
       } catch (error) {
         console.error(error);
+        this.clearLoadingDeliveries(feature);
       }
     },
 
@@ -618,7 +623,7 @@ export default {
       if (this.v$.$error) return;
 
       try {
-        this.state.isLoadingDelivery = true;
+        this.state.isLoadingCreateDelivery = true;
         const response = await featureService.createFeature({
           name: this.state.name,
           devis_id: this.devis.id,
@@ -632,7 +637,7 @@ export default {
       } catch (error) {
         console.error(error);
       } finally {
-        this.state.isLoadingDelivery = false;
+        this.state.isLoadingCreateDelivery = false;
       }
     },
 
@@ -696,7 +701,7 @@ export default {
       this.state.showModalDelivred = false;
       this.$emit("fileDelivered");
     },
-     nullableFileDelivered() {
+    nullableFileDelivered() {
       this.state.showModalDelivred = false;
       this.$emit("nullableFileDelivered");
     },
@@ -704,7 +709,6 @@ export default {
       this.state.showModalIsDelivred = false;
       this.$emit("deliveryAccepted");
     },
-
 
     processDom() {
       let oldContent = this.conversation.content;
@@ -731,6 +735,17 @@ export default {
     convertDeadline(deadline) {
       var date = new Date(deadline);
       return date.toISOString().split("T")[0];
+    },
+
+    featureIsLoading(feature) {
+      return this.state.isLoadingDelivery.find(
+        (element) => element == feature.id
+      );
+    },
+    clearLoadingDeliveries(feature) {
+      this.state.isLoadingDelivery = this.state.isLoadingDelivery.filter(
+        (element) => element !== feature.id
+      );
     },
   },
 };
