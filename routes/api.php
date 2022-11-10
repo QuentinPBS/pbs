@@ -32,14 +32,12 @@ Route::middleware(['jwt.verify'])->group(function ($router) {
 
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
     Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
-   
-   
 
-    Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
-    Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
-    Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-    Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
+
+
+
+
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/user/{id}', [ProjectController::class, 'showByUserId'])->name('projects.showByUserId');
@@ -84,3 +82,7 @@ Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:
 Route::post('login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');
 Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
+Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
+Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');

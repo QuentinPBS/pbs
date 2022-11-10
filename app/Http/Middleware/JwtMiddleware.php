@@ -23,7 +23,7 @@ class JwtMiddleware
 
             JWTAuth::parseToken()->authenticate();
         } catch (Exception $e) {
-            dd($e);
+           
             if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
                 return response()->json(['status' => 'Token is Invalid'], 401);
             } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {

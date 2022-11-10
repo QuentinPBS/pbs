@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\SendValidationMail;
-use App\Models\Feature;
 use App\Models\Lead;
 use App\Models\Member;
+use App\Models\Feature;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Jobs\FeatureValidation;
+use App\Mail\SendValidationMail;
 use Illuminate\Support\Facades\Mail;
 
 class ValidationController extends Controller
@@ -35,8 +36,8 @@ class ValidationController extends Controller
             ->where('project_id', $feature->lead->project_id)
             ->where('user_id', '<>', auth()->id())
             ->first();
-
-        Mail::to($member->user->email)->send(new SendValidationMail());
+        FeatureValidation::dispatch($member);
+        // Mail::to($member->user->email)->send(new SendValidationMail());
 
 
         return response()->json(['success' => 'Feature updated successfully']);
@@ -54,7 +55,10 @@ class ValidationController extends Controller
         ]);
 
         foreach ($members as $member) {
-            if (auth()->user()->email !== $member->user->email) Mail::to($member->user->email)->send(new SendValidationMail());
+            if (auth()->user()->email !== $member->user->email) {
+                FeatureValidation::dispatch($member);
+                // Mail::to($member->user->email)->send(new SendValidationMail());
+            }
         };
 
         return response()->json(['success' => 'Feature updated successfully']);
@@ -75,7 +79,8 @@ class ValidationController extends Controller
         $feature->update([
             'validation_id' => 5,
         ]);
-        Mail::to($member->user->email)->send(new SendValidationMail());
+        FeatureValidation::dispatch($member);
+        // Mail::to($member->user->email)->send(new SendValidationMail());
 
         return response()->json(['success' => 'Feature updated successfully']);
     }
@@ -92,7 +97,10 @@ class ValidationController extends Controller
         ]);
 
         foreach ($members as $member) {
-            if (auth()->user()->email !== $member->user->email) Mail::to($member->user->email)->send(new SendValidationMail());
+            if (auth()->user()->email !== $member->user->email) {
+                FeatureValidation::dispatch($member);
+                // Mail::to($member->user->email)->send(new SendValidationMail());
+            }
         };
 
         return response()->json(['success' => 'Feature updated successfully']);

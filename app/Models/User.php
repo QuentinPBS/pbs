@@ -102,4 +102,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return $this->hasMany(FeatureDelivery::class);
     }
+
+  
 }
