@@ -322,6 +322,35 @@
       </div>
     </vue-final-modal>
 
+  <vue-final-modal
+      v-model="state.showModalCreateStripeAccount"
+      classes="modal-container"
+      content-class="modal-content"
+  >
+      <div class="flex justify-between">
+          <span class="modal__title">Créer votre compte de paiement</span>
+          <button class="" @click="state.showModalCreateStripeAccount = false">X</button>
+      </div>
+
+      <div class="modal__content">
+          <p class="my-5">Pour recevoir votre paiement vous devez d'abord créer votre compte de paiement.</p>
+      </div>
+      <div class="modal__action">
+          <button
+              @click="state.showModalCreateStripeAccount = false"
+              class="btn btn-bg-black-500 text-white mr-2"
+          >
+              Annuler
+          </button>
+          <button
+              @click="handleCreateStripeAccount()"
+              class="btn btn-primary"
+          >
+              Créer un compte de paiement
+          </button>
+      </div>
+  </vue-final-modal>
+
     <vue-final-modal
       v-model="state.showRejectStep"
       classes="modal-container"
@@ -365,6 +394,7 @@ import inviteService from "../../services/inviteService";
 import LeadConversation from "../conversation/LeadConversation.vue";
 import DeliverFeature from "../feature/DeliverFeature.vue";
 import ValidateDeliveredFeature from "../feature/ValidateDeliveredFeature.vue";
+import stripeService from "../../services/stripeService";
 export default {
   name: "DevisList",
 
@@ -391,6 +421,7 @@ export default {
       showModalShare: false,
       showModalDelivred: false,
       showModalIsDelivred: false,
+      showModalCreateStripeAccount: false,
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
@@ -455,9 +486,22 @@ export default {
   },
 
   methods: {
-    openDelivredModal(feature) {
-      this.state.currentFeature = feature;
-      this.state.showModalDelivred = true;
+    async openDelivredModal(feature) {
+        try {
+            const response = await stripeService.checkAccount(
+                'presta'
+            );
+            if (response.data.exists === true) {
+                this.state.currentFeature = feature;
+                this.state.showModalDelivred = true;
+            } else {
+                localStorage.stripeRedirect = window.location.href;
+                this.state.showModalCreateStripeAccount = true;
+                console.log('Create stripe account ...');
+            }
+        } catch (error) {
+            console.error(error);
+        }
     },
 
     openIsDelivredModal(feature) {
@@ -497,6 +541,19 @@ export default {
         console.error(error);
       }
     },
+
+  async handleCreateStripeAccount() {
+      try {
+          const response = await stripeService.createAccount(
+              'presta', this.devis.project_id, this.devis.id
+          );
+          if (response.status === 201) {
+              location.href = response.data.url;
+          }
+      } catch (error) {
+          console.error(error);
+      }
+  },
 
     cancelForm() {
       this.state.name = "";

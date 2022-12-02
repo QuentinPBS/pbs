@@ -106,6 +106,15 @@ const routes = [
             middleware: [auth],
         }
     },
+    {
+        path: '/stripe/callback/:accountId',
+        component: () => import('../Pages/StripeCallback.vue'),
+        name: 'StripeCallback',
+        meta: {
+            title: 'StripeCallback',
+            middleware: [auth],
+        }
+    },
 ]
 
 export default routes;

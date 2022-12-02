@@ -16,5 +16,4 @@ use Illuminate\Support\Facades\Storage;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::view('/{any}', 'app')->where('any', '.*');
