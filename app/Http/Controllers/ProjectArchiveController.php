@@ -35,16 +35,13 @@ class ProjectArchiveController extends Controller
         ], 201);
     }
 
-    public function handleUnarchiveProject(Request $request)
+    public function handleUnarchiveProject($projectId)
     {
-        $validatedData = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'project_id' => 'required|exists:projects,id'
-        ]);
+
 
         $checkArchive = DB::table('project_archived')
-            ->where('project_id', $validatedData['project_id'])
-            ->where('user_id', $validatedData['user_id'])
+            ->where('project_id', $projectId)
+            ->where('user_id', auth()->id())
             ->first();
         if (!$checkArchive) {
             return response()->json([
@@ -53,8 +50,8 @@ class ProjectArchiveController extends Controller
         }
 
         DB::table('project_archived')
-            ->where('project_id', $validatedData['project_id'])
-            ->where('user_id', $validatedData['user_id'])
+            ->where('project_id', $projectId)
+            ->where('user_id', auth()->id())
             ->delete();
 
         return response()->json([

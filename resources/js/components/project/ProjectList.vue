@@ -25,9 +25,34 @@
             />
           </figure>
           <div class="card-body">
-            <h2 class="card-title font-bold text-left">
-              {{ project.project.name }}
-            </h2>
+            <div class="flex justify-between items-center">
+              <h2 class="card-title font-bold">
+                {{ project.project.name }}
+              </h2>
+              <a
+                @click.prevent="archiveProject(project.project)"
+                title="archiver"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon icon-tabler icon-tabler-archive"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                  <rect x="3" y="4" width="18" height="4" rx="2"></rect>
+                  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10"></path>
+                  <line x1="10" y1="12" x2="14" y2="12"></line>
+                </svg>
+              </a>
+            </div>
+
             <p class="text-left">{{ project.project.description }}</p>
           </div>
         </a>
@@ -174,10 +199,27 @@ export default {
     uploadImage(e) {
       this.state.image = e.target.files[0];
     },
+    async archiveProject(project) {
+      
+      let body = new FormData();
+      body.append("project_id", project.id);
+      body.append("user_id", this.$store.state.userStore.user.id);
+      const response = await ProjectService.archiveProject(body);
+      if (response.status === 201) {
+        this.loadProjects();
+      }
+    },
+    async loadProjects() {
+      const response = await ProjectService.getProjectsByUserId(
+        this.$store.state.userStore.user.id
+      );
+      this.state.projects = response.data;
+    },
   },
 
   created() {
     this.state.projects = this.$store.state.projectStore.project;
+    this.loadProjects();
   },
 };
 </script>

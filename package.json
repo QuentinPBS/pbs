@@ -33,6 +33,7 @@
         "@wakeio/vue-wysiwyg": "^1.4.5",
         "daisyui": "^2.17.0",
         "dropzone-vue": "^0.1.11",
+        "laravel-vue-pagination": "^4.0.0",
         "quill-delta-to-html": "^0.12.1",
         "vue-final-modal": "^3.4.4",
         "vue-moment": "^4.1.0",

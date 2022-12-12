@@ -2358,7 +2358,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: 'Navbar',
+  name: "Navbar",
   setup: function setup() {
     var state = (0,vue__WEBPACK_IMPORTED_MODULE_0__.reactive)({
       user: null,
@@ -2407,9 +2407,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   },
   methods: {
     logout: function logout() {
-      this.$store.commit('SET_TOKEN', '');
-      this.$store.commit('SET_USER', null);
-      window.location = '/login';
+      this.$store.commit("SET_TOKEN", "");
+      this.$store.commit("SET_USER", null);
+      window.location = "/login";
     }
   }
 });
@@ -2668,50 +2668,29 @@ var _hoisted_4 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_5 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
-    href: "/",
-    tabindex: "0",
-    "class": ""
-  }, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Mes projets")], -1
-  /* HOISTED */
-  );
-});
-
-var _hoisted_6 = {
+var _hoisted_5 = {
   "class": "indicator"
 };
-var _hoisted_7 = {
+var _hoisted_6 = {
   key: 0,
   "class": "indicator-item badge-custome"
 };
-
-var _hoisted_8 = /*#__PURE__*/_withScopeId(function () {
-  return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
-    href: "/devis",
-    tabindex: "0",
-    "class": ""
-  }, "Devis reçus", -1
-  /* HOISTED */
-  );
-});
-
-var _hoisted_9 = {
+var _hoisted_7 = {
   "class": "flex-none gap-2"
 };
-var _hoisted_10 = {
+var _hoisted_8 = {
   "class": "dropdown dropdown-end"
 };
-var _hoisted_11 = {
+var _hoisted_9 = {
   tabindex: "0",
   "class": "btn btn-ghost"
 };
-var _hoisted_12 = {
+var _hoisted_10 = {
   tabindex: "0",
   "class": "mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52"
 };
 
-var _hoisted_13 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_11 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", null, [/*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", {
     href: "/profile"
   }, "Profile")], -1
@@ -2719,21 +2698,50 @@ var _hoisted_13 = /*#__PURE__*/_withScopeId(function () {
   );
 });
 
-var _hoisted_14 = /*#__PURE__*/_withScopeId(function () {
+var _hoisted_12 = /*#__PURE__*/_withScopeId(function () {
   return /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", null, "Logout", -1
   /* HOISTED */
   );
 });
 
-var _hoisted_15 = [_hoisted_14];
+var _hoisted_13 = [_hoisted_12];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [_hoisted_4, _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [$setup.state.notification !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_7)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), _hoisted_8])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.user), 1
+  var _component_router_link = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("router-link");
+
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_1, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [_hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_link, {
+    to: "/"
+  }, {
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Mes projets")];
+    }),
+    _: 1
+    /* STABLE */
+
+  }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_5, [$setup.state.notification !== 0 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("span", _hoisted_6)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_link, {
+    to: "/devis"
+  }, {
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Devis reçus")];
+    }),
+    _: 1
+    /* STABLE */
+
+  })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_router_link, {
+    to: "/project/archives"
+  }, {
+    "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("Archive")];
+    }),
+    _: 1
+    /* STABLE */
+
+  })]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_8, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", _hoisted_9, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.user), 1
   /* TEXT */
-  )]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_12, [_hoisted_13, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", {
+  )]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("ul", _hoisted_10, [_hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("li", {
     onClick: _cache[0] || (_cache[0] = function () {
       return $options.logout && $options.logout.apply($options, arguments);
     })
-  }, _hoisted_15)])])])])]);
+  }, _hoisted_13)])])])])]);
 }
 
 /***/ }),
@@ -3495,15 +3503,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
     return getProjectBySlug;
   }(),
-  createProject: function () {
-    var _createProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(project) {
+  getArchivedProjects: function () {
+    var _getArchivedProjects = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(page) {
       var response;
       return _regeneratorRuntime().wrap(function _callee5$(_context5) {
         while (1) {
           switch (_context5.prev = _context5.next) {
             case 0:
               _context5.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/projects"), project, {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().get("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/user/projects/archived?page=").concat(page), {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }
@@ -3521,21 +3529,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }, _callee5);
     }));
 
-    function createProject(_x5) {
-      return _createProject.apply(this, arguments);
+    function getArchivedProjects(_x5) {
+      return _getArchivedProjects.apply(this, arguments);
     }
 
-    return createProject;
+    return getArchivedProjects;
   }(),
-  updateProject: function () {
-    var _updateProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(project) {
+  createProject: function () {
+    var _createProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(project) {
       var response;
       return _regeneratorRuntime().wrap(function _callee6$(_context6) {
         while (1) {
           switch (_context6.prev = _context6.next) {
             case 0:
               _context6.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/projects/".concat(project.id), project, {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("".concat(_api_config__WEBPACK_IMPORTED_MODULE_2__.APISettings.baseURL, "/projects"), project, {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }
@@ -3553,21 +3561,21 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }, _callee6);
     }));
 
-    function updateProject(_x6) {
-      return _updateProject.apply(this, arguments);
+    function createProject(_x6) {
+      return _createProject.apply(this, arguments);
     }
 
-    return updateProject;
+    return createProject;
   }(),
-  deleteProject: function () {
-    var _deleteProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(projectId) {
+  updateProject: function () {
+    var _updateProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(project) {
       var response;
       return _regeneratorRuntime().wrap(function _callee7$(_context7) {
         while (1) {
           switch (_context7.prev = _context7.next) {
             case 0:
               _context7.next = 2;
-              return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("/api/projects/".concat(projectId), {
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().put("/api/projects/".concat(project.id), project, {
                 headers: {
                   'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
                 }
@@ -3585,11 +3593,107 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       }, _callee7);
     }));
 
-    function deleteProject(_x7) {
+    function updateProject(_x7) {
+      return _updateProject.apply(this, arguments);
+    }
+
+    return updateProject;
+  }(),
+  deleteProject: function () {
+    var _deleteProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee8(projectId) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+        while (1) {
+          switch (_context8.prev = _context8.next) {
+            case 0:
+              _context8.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("/api/projects/".concat(projectId), {
+                headers: {
+                  'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
+                }
+              });
+
+            case 2:
+              response = _context8.sent;
+              return _context8.abrupt("return", response);
+
+            case 4:
+            case "end":
+              return _context8.stop();
+          }
+        }
+      }, _callee8);
+    }));
+
+    function deleteProject(_x8) {
       return _deleteProject.apply(this, arguments);
     }
 
     return deleteProject;
+  }(),
+  archiveProject: function () {
+    var _archiveProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee9(body) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee9$(_context9) {
+        while (1) {
+          switch (_context9.prev = _context9.next) {
+            case 0:
+              _context9.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().post("/api/user/project/".concat(body.project_id, "/archive"), body, {
+                headers: {
+                  'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
+                }
+              });
+
+            case 2:
+              response = _context9.sent;
+              return _context9.abrupt("return", response);
+
+            case 4:
+            case "end":
+              return _context9.stop();
+          }
+        }
+      }, _callee9);
+    }));
+
+    function archiveProject(_x9) {
+      return _archiveProject.apply(this, arguments);
+    }
+
+    return archiveProject;
+  }(),
+  unarchiveProject: function () {
+    var _unarchiveProject = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee10(project_id) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee10$(_context10) {
+        while (1) {
+          switch (_context10.prev = _context10.next) {
+            case 0:
+              _context10.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default()["delete"]("/api/user/project/".concat(project_id, "/unarchive"), {
+                headers: {
+                  'Authorization': 'Bearer ' + _Store_index__WEBPACK_IMPORTED_MODULE_1__["default"].state.tokenStore.token
+                }
+              });
+
+            case 2:
+              response = _context10.sent;
+              return _context10.abrupt("return", response);
+
+            case 4:
+            case "end":
+              return _context10.stop();
+          }
+        }
+      }, _callee10);
+    }));
+
+    function unarchiveProject(_x10) {
+      return _unarchiveProject.apply(this, arguments);
+    }
+
+    return unarchiveProject;
   }()
 });
 

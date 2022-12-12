@@ -106,6 +106,18 @@ const routes = [
             middleware: [auth],
         }
     },
+
+    //archives
+
+    {
+        path: '/project/archives',
+        component: () => import('../components/project/ProjectArchived.vue'),
+        name: 'ProjectArchived',
+        meta: {
+            title: 'ProjectArchived',
+            middleware: [auth],
+        }
+    },
 ]
 
 export default routes;
