@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Project;
+use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
@@ -103,5 +104,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->hasMany(FeatureDelivery::class);
     }
 
-  
+    public function archives()
+    {
+        return $this->belongsToMany(Project::class, 'project_archived');
+    }
 }

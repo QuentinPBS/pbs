@@ -71,4 +71,8 @@ class Project extends Model
 
         return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
     }
+    public function archives()
+    {
+        return $this->belongsToMany(User::class, 'project_archived');
+    }
 }

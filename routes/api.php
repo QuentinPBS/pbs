@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadConversationController;
+use App\Http\Controllers\ProjectArchiveController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
 use App\Models\FeatureConversation;
@@ -77,6 +78,11 @@ Route::middleware(['jwt.verify'])->group(function ($router) {
 
     Route::put('user/{id}', [AuthController::class, 'updateUser'])->name('user.updateUser');
     Route::put('user/password/update', [AuthController::class, 'updatePassword'])->name('user.updatePassword');
+
+    //archive
+    Route::get('user/projects/archived', [ProjectArchiveController::class, 'handleGetArchivedProjects']);
+    Route::post('user/project/{id}/archive', [ProjectArchiveController::class, 'handleArchiveProject']);
+    Route::delete('user/project/{id}/unarchive', [ProjectArchiveController::class, 'handleUnarchiveProject']);
 });
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
 Route::post('login', [AuthController::class, 'login'])->name('auth.login');
