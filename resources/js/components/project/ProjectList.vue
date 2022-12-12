@@ -2,7 +2,7 @@
   <div class="project-list">
     <div class="project-list__btn">
       <button class="btn btn-primary" @click="state.showModal = true">
-        Créer un projet
+     {{ $t('create_project') }}
       </button>
     </div>
     <div class="project-list__content">
@@ -29,6 +29,7 @@
               <h2 class="card-title font-bold">
                 {{ project.project.name }}
               </h2>
+         
               <a
                 @click.prevent="archiveProject(project.project)"
                 title="archiver"
@@ -61,7 +62,7 @@
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
         <p class="text-xl font-bold">Vous n'avez aucun projet</p>
         <button class="btn btn-primary" @click="state.showModal = true">
-          Créer un projet
+       {{ $t('create_project') }}
         </button>
       </div>
     </div>

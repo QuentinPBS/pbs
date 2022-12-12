@@ -6,7 +6,7 @@
           ><img width="90" src="/images/logo.png" alt=""
         /></a>
 
-        <router-link to="/">Mes projets</router-link>
+        <router-link to="/">{{ $t("navbar.my_projects") }}</router-link>
 
         <div class="indicator">
           <span
@@ -14,10 +14,43 @@
             class="indicator-item badge-custome"
           ></span>
 
-          <router-link to="/devis">Devis reçus</router-link>
+          <router-link to="/devis">{{
+            $t("navbar.quotes_recieved")
+          }}</router-link>
         </div>
 
-        <router-link to="/project/archives">Archive</router-link>
+        <router-link to="/project/archives">
+          <p>{{ $t("navbar.archive") }}</p></router-link
+        >
+      </div>
+      <div class="flex-none gap-2">
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost">
+            <p>{{ $i18n.locale }}</p>
+          </label>
+          <ul
+            tabindex="0"
+            class="
+              mt-3
+              p-2
+              shadow
+              menu menu-compact
+              dropdown-content
+              bg-base-100
+              rounded-box
+              w-52
+            "
+          >
+            <li
+              v-for="locale in $i18n.availableLocales"
+              :key="`locale-${locale}`"
+            >
+              <a @click.prevent="$i18n.locale = locale">{{
+                locale.toUpperCase()
+              }}</a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div class="flex-none gap-2">
         <div class="dropdown dropdown-end">
