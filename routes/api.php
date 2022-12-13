@@ -69,7 +69,7 @@ Route::middleware(['jwt.verify'])->group(function ($router) {
     Route::post('feature/{id}/file/import', [FeatureDeliveryController::class, 'handleImportFile']);
     Route::post('feature/{id}/nullable/import', [FeatureDeliveryController::class, 'handleImportNullableFile']);
     Route::get('feature/{id}/delivery', [FeatureDeliveryController::class, 'handleGetDelivery']);
-    Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);
+   
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');
     Route::get('invites/get/{email}', [InviteController::class, 'getInvitations'])->name('invites.get');
@@ -92,3 +92,4 @@ Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEm
 Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
 Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
+Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);

@@ -233,8 +233,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: 'ProjectClientList',
-  props: ['projects', 'invitation'],
+  name: "ProjectClientList",
+  props: ["projects", "invitation"],
   components: {
     VueFinalModal: vue_final_modal__WEBPACK_IMPORTED_MODULE_1__.VueFinalModal,
     ModalsContainer: vue_final_modal__WEBPACK_IMPORTED_MODULE_1__.ModalsContainer
@@ -670,8 +670,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       href: "/project/".concat(project.project.slug),
       "class": "card card-compact bg-base-100 shadow-md w-1/4 mt-5"
     }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("figure", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("img", {
-      src: project.project.image,
-      alt: "Shoes",
+      src: project.project.image ? project.project.image : 'https://paybystep.s3.eu-west-3.amazonaws.com/bg-default.png',
+      alt: "",
       "class": "h-36 w-full object-cover"
     }, null, 8
     /* PROPS */
@@ -699,7 +699,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: _cache[1] || (_cache[1] = function ($event) {
           return $setup.state.showModal = false;
         })
-      }, " X "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.invitation[0].user.firstname) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.invitation[0].user.lastname) + " ", 1
+      }, "X"), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("span", _hoisted_15, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)((0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.invitation[0].user.firstname) + " " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.invitation[0].user.lastname) + " ", 1
       /* TEXT */
       ), _hoisted_16, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.invitation[0].project.name), 1
       /* TEXT */
@@ -708,18 +708,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
           return $options.handleRejectClick && $options.handleRejectClick.apply($options, arguments);
         }),
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
-          'loading': $setup.state.isLoadingNo
+          loading: $setup.state.isLoadingNo
         }, 'btn btn-link'])
-      }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.isLoading ? 'loading' : 'Non'), 3
+      }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.isLoading ? "loading" : "Non"), 3
       /* TEXT, CLASS */
       ), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", {
         onClick: _cache[3] || (_cache[3] = function () {
           return $options.handleAcceptClick && $options.handleAcceptClick.apply($options, arguments);
         }),
         "class": (0,vue__WEBPACK_IMPORTED_MODULE_0__.normalizeClass)([{
-          'loading': $setup.state.isLoadingYes
+          loading: $setup.state.isLoadingYes
         }, 'btn btn-primary'])
-      }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.isLoading ? 'loading' : 'Oui'), 3
+      }, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($setup.state.isLoading ? "loading" : "Oui"), 3
       /* TEXT, CLASS */
       )])];
     }),

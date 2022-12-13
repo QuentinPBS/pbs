@@ -97,5 +97,13 @@ export default {
         });
 
         return response;
+    },
+
+    downloadFile: async (feature) => {
+        const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/file/download`, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+
+        return response;
     }
 }
