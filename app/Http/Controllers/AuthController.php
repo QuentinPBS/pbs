@@ -59,6 +59,7 @@ class AuthController extends Controller
 
     public function respondWithToken($token)
     {
+        
         return $this->respond([
             'token' => $token,
             'access_type' => 'Bearer',

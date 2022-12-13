@@ -92,7 +92,7 @@
     import { required, email, minLength, maxLength } from '@vuelidate/validators';
 
     import { APISettings } from '../api/config';
-    import axios from 'axios';
+   
 
     export default {
         name: 'Register',

@@ -10,6 +10,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadConversationController;
+use App\Http\Controllers\ProjectArchiveController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
 use App\Models\FeatureConversation;
@@ -28,18 +29,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['api'])->group(function ($router) {
-    Route::post('login', [AuthController::class, 'login'])->name('auth.login');
-    Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
+Route::middleware(['jwt.verify'])->group(function ($router) {
+
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
-    Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');
-    Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
+    Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
 
-    Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
-    Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
-    Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-    Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
+
+
+
+
 
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::get('projects/user/{id}', [ProjectController::class, 'showByUserId'])->name('projects.showByUserId');
@@ -68,8 +67,9 @@ Route::middleware(['api'])->group(function ($router) {
     //feature delivery
     Route::post('feature/{id}/link/import', [FeatureDeliveryController::class, 'handleImportLink']);
     Route::post('feature/{id}/file/import', [FeatureDeliveryController::class, 'handleImportFile']);
+    Route::post('feature/{id}/nullable/import', [FeatureDeliveryController::class, 'handleImportNullableFile']);
     Route::get('feature/{id}/delivery', [FeatureDeliveryController::class, 'handleGetDelivery']);
-    Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);
+   
 
     Route::post('invites/send/{projectId}', [InviteController::class, 'sendInvitation'])->name('invites.send');
     Route::get('invites/get/{email}', [InviteController::class, 'getInvitations'])->name('invites.get');
@@ -78,5 +78,18 @@ Route::middleware(['api'])->group(function ($router) {
 
     Route::put('user/{id}', [AuthController::class, 'updateUser'])->name('user.updateUser');
     Route::put('user/password/update', [AuthController::class, 'updatePassword'])->name('user.updatePassword');
+
+    //archive
+    Route::get('user/projects/archived', [ProjectArchiveController::class, 'handleGetArchivedProjects']);
+    Route::post('user/project/{id}/archive', [ProjectArchiveController::class, 'handleArchiveProject']);
+    Route::delete('user/project/{id}/unarchive', [ProjectArchiveController::class, 'handleUnarchiveProject']);
 });
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
+Route::post('login', [AuthController::class, 'login'])->name('auth.login');
+Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');
+Route::post('logout', [AuthController::class, 'logout'])->name('auth.logout');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
+Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
+Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
+Route::get('feature/{id}/file/download', [FeatureDeliveryController::class, 'handleDownloadFile']);

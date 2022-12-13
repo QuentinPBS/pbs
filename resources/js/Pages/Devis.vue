@@ -25,6 +25,7 @@
           v-on:rejectStep="loadData()"
           v-on:fileDelivered="loadData()"
           v-on:linkDelivered="loadData()"
+          v-on:nullableFileDelivered="linkDelivered()"
           v-on:deliveryAccepted="loadData()"
         />
       </div>
@@ -77,6 +78,7 @@ export default {
         if (responseDevis.status === 200) {
           this.state.devis = responseDevis.data;
         }
+      
         //list the steps of a lead (devis)
         const responseFeatures = await featuresService.getFeaturesByLeadId(
           this.state.devis.id

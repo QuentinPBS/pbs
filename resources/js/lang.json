@@ -1,0 +1,23 @@
+ {
+    "en": {
+        "home":"Home",
+        "navbar" :{
+            "my_projects" : "My Projects",
+            "quotes_recieved" : "Quotes received",
+            "archive" : "Archive"
+          
+        },
+        "create_project" : "Create a project"
+       
+    },
+    "fr": {
+        "home":"Acceuil",
+        "navbar" :{
+            "my_projects" : "Mes Projets",
+            "quotes_recieved" : "Devis reçus",
+            "archive" : "Archive"
+        
+        },
+        "create_project" : " Créer un projet "
+    }
+}

@@ -13,7 +13,10 @@ class ShowProjectByUserIdAction
     public function execute($userId, $roleId)
     {
         // search Member owner by userId
-        return Member::where(['user_id' => $userId, 'role_id' => $roleId])->with(['user', 'project'])->get();
-       
+        return Member::query()
+            ->with(['user', 'project'])
+            ->where(['user_id' => $userId, 'role_id' => $roleId])
+            ->whereDoesntHave('project.archives')
+            ->get();
     }
 }

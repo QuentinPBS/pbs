@@ -12,6 +12,7 @@ class VerificationController extends Controller
         if (!$request->hasValidSignature()) {
             return $this->respondBadRequest(253);
         }
+        
 
         $user = User::findOrFail($userId);
 

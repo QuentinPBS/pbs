@@ -31,6 +31,8 @@ class SendInvitationMail extends Mailable
      */
     public function build()
     {
-        return $this->from('test@test.fr')->subject('Invitation projet')->view('mails.sendInvitation');
+        return $this->from('test@test.fr', config('mail.from.name'))
+            ->subject('Invitation projet')
+            ->view('mails.sendInvitation');
     }
 }

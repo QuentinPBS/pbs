@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\SendInvitationMail;
-use App\Models\Invitations;
+use App\Models\User;
 use App\Models\Member;
 use App\Models\Project;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Invitations;
 use Illuminate\Support\Str;
+use App\Jobs\SendInvitation;
+use Illuminate\Http\Request;
+use App\Mail\SendInvitationMail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class InviteController extends Controller
@@ -40,8 +41,8 @@ class InviteController extends Controller
         ]);
 
         $dataInvite = $project->invitations()->where('email', $request->email)->with(['project', 'user'])->first();
-        Mail::to($request->email)->send(new SendInvitationMail($dataInvite));
-
+        // Mail::to($request->email)->send(new SendInvitationMail($dataInvite));
+        SendInvitation::dispatch($request->email, $dataInvite);
         return response()->json(['success' => 'User invite user']);
     }
 

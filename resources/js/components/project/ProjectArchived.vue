@@ -1,10 +1,10 @@
 <template>
     <div v-if="state.isLoaded"  class="dashboard">
         <navbar />
-        <breadcrumb :items="[{link: '/', name: 'Accueil'}]" />
+        <breadcrumb :items="[{link: '/', name: 'Archive'}]" />
         <div class="wrapper">
             <div class="dashboard__content">
-                <project-list />
+                <project-archived-list />
             </div>
         </div>
     </div>
@@ -12,19 +12,19 @@
 
 <script>
 import { reactive } from 'vue';
-import UserService from '../services/userService';
+import UserService from '../../services/userService';
 
-import NavbarVue from '../components/Navbar.vue'
-import BreadcrumbVue from '../components/Breadcrumb.vue';
-import ProjectList from '../components/project/ProjectList.vue';
-import projectService from '../services/projectService';
+import NavbarVue from '../Navbar.vue'
+import BreadcrumbVue from '../Breadcrumb.vue';
+import ProjectArchivedList from '../project/ProjectArchivedList.vue';
+import projectService from '../../services/projectService';
 export default {
     name: 'Dashboard',
 
     components: {
         'navbar': NavbarVue,
         'breadcrumb': BreadcrumbVue,
-        'project-list': ProjectList,
+        'project-archived-list': ProjectArchivedList,
     },
 
     setup() {

@@ -45,7 +45,7 @@
                 <div class="text-lg">{{ feature.name }}</div>
                 <div class="text-sm">
                   <span class="font-bold">Deadline</span>:
-                  {{ feature.deadline }}
+                  {{ convertDeadline(feature.deadline) }}
                 </div>
               </div>
             </div>
@@ -55,7 +55,10 @@
                   >En attente de validation</span
                 >
                 <button
-                  :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
+                  :class="[
+                    { loading: featureIsLoading(feature) },
+                    'btn btn-primary',
+                  ]"
                   @click="validateBtn(feature)"
                   v-if="isWaitingClient(feature)"
                 >
@@ -208,7 +211,10 @@
         <button class="btn btn-link" @click="cancelForm()">Annuler</button>
         <button
           @click="handlePFeatureClick"
-          :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
+          :class="[
+            { loading: state.isLoadingCreateDelivery },
+            'btn btn-primary',
+          ]"
         >
           {{ state.isLoading ? "loading" : "Créer" }}
         </button>
@@ -297,6 +303,7 @@
           :feature="state.currentFeature"
           v-on:fileDelivered="fileDelivered()"
           v-on:linkDelivered="linkDelivered()"
+          v-on:nullableFileDelivered="nullableFileDelivered()"
           v-on:closeModal="state.showModalDelivred = false"
         />
       </div>
@@ -341,7 +348,10 @@
         </button>
         <button
           @click="handleRejectStep()"
-          :class="[{ loading: state.isLoadingDelivery }, 'btn btn-primary']"
+          :class="[
+            { loading: state.isLoadingRejectDelivery },
+            'btn btn-primary',
+          ]"
         >
           Valider
         </button>
@@ -394,7 +404,9 @@ export default {
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
-      isLoadingDelivery:false,
+      isLoadingCreateDelivery: false,
+      isLoadingDelivery: [],
+      isLoadingRejectDelivery: null,
       isSendEmailErrorCatch: false,
       showRejectStep: false,
       name: "",
@@ -483,17 +495,20 @@ export default {
     },
 
     async handleRejectStep() {
-      this.state.isLoadingDelivery = true;
+      this.state.isLoadingRejectDelivery = true;
       try {
         const response = await featureService.rejectStep(
           this.state.rejectedStep
         );
         if (response.status === 200) {
           this.state.showRejectStep = false;
+          this.state.isLoadingRejectDelivery = false;
+
           this.$emit("rejectStep");
         }
       } catch (error) {
         this.state.isLoadingDelivery = false;
+        this.state.isLoadingRejectDelivery = false;
         console.error(error);
       }
     },
@@ -578,7 +593,7 @@ export default {
     },
 
     async validateBtn(feature) {
-      this.state.isLoadingDelivery = true;
+      this.state.isLoadingDelivery.push(feature.id);
       try {
         const response = await featureService.updateStepTwo(feature);
         if (response.status === 200) {
@@ -586,6 +601,7 @@ export default {
         }
       } catch (error) {
         console.error(error);
+        this.clearLoadingDeliveries(feature);
       }
     },
 
@@ -607,7 +623,7 @@ export default {
       if (this.v$.$error) return;
 
       try {
-        this.state.isLoadingDelivery = true;
+        this.state.isLoadingCreateDelivery = true;
         const response = await featureService.createFeature({
           name: this.state.name,
           devis_id: this.devis.id,
@@ -621,7 +637,7 @@ export default {
       } catch (error) {
         console.error(error);
       } finally {
-        this.state.isLoadingDelivery = false;
+        this.state.isLoadingCreateDelivery = false;
       }
     },
 
@@ -685,6 +701,10 @@ export default {
       this.state.showModalDelivred = false;
       this.$emit("fileDelivered");
     },
+    nullableFileDelivered() {
+      this.state.showModalDelivred = false;
+      this.$emit("nullableFileDelivered");
+    },
     deliveryAccepted() {
       this.state.showModalIsDelivred = false;
       this.$emit("deliveryAccepted");
@@ -710,6 +730,22 @@ export default {
           );
         }
       }
+    },
+
+    convertDeadline(deadline) {
+      var date = new Date(deadline);
+      return date.toISOString().split("T")[0];
+    },
+
+    featureIsLoading(feature) {
+      return this.state.isLoadingDelivery.find(
+        (element) => element == feature.id
+      );
+    },
+    clearLoadingDeliveries(feature) {
+      this.state.isLoadingDelivery = this.state.isLoadingDelivery.filter(
+        (element) => element !== feature.id
+      );
     },
   },
 };

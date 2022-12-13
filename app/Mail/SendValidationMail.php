@@ -28,6 +28,8 @@ class SendValidationMail extends Mailable
      */
     public function build()
     {
-        return $this->from('test@test.fr')->subject('PayByStep, du nouveau sur votre projet')->view('mails.sendValidation');
+        return $this->from('test@test.fr',config('mail.from.name'))
+            ->subject('PayByStep, du nouveau sur votre projet')
+            ->view('mails.sendValidation');
     }
 }
