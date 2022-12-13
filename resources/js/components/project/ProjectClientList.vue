@@ -37,7 +37,7 @@
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
-        <p class="text-xl font-bold">Vous n'avez aucun devis</p>
+               <p class="text-xl font-bold">{{$t('no_quote_found')}}</p>
       </div>
     </div>
     <vue-final-modal

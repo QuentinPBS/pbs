@@ -1,6 +1,10 @@
  {
     "en": {
         "home":"Home",
+        "quote" : "Quote",
+        "create_quote" : "Create a quote",
+        "no_quote_found" : "No quote found",
+    
         "navbar" :{
             "my_projects" : "My Projects",
             "quotes_recieved" : "Quotes received",
@@ -12,6 +16,9 @@
     },
     "fr": {
         "home":"Acceuil",
+        "quote" : "Devis",
+        "create_quote" : "Créer un devis",
+        "no_quote_found" : "Vous n'avez aucun devis",
         "navbar" :{
             "my_projects" : "Mes Projets",
             "quotes_recieved" : "Devis reçus",

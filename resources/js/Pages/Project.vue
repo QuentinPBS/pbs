@@ -1,7 +1,7 @@
 <template>
     <div class="project" v-if="!state.isLoaded">
         <navbar />
-        <breadcrumb  :items="[{link: '/', name: 'Accueil'}, {link: `/project/${state.project.slug}`, name: `${state.project.name}`}]" />
+        <breadcrumb  :items="[{link: '/', name: $t('home')}, {link: `/project/${state.project.slug}`, name: `${state.project.name}`}]" />
         <div class="wrapper">
             <div class="project__content">
                 <devis-list :project="state.project" :devis="state.devis" />

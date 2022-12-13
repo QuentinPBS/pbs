@@ -1,7 +1,7 @@
 <template>
     <div v-if="state.isLoaded"  class="dashboard">
         <navbar />
-        <breadcrumb :items="[{link: '/', name: 'Archive'}]" />
+        <breadcrumb :items="[{link: '/', name: $t('navbar.archive')}]" />
         <div class="wrapper">
             <div class="dashboard__content">
                 <project-archived-list />

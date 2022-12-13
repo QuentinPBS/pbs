@@ -3,7 +3,7 @@
     <navbar />
     <breadcrumb
       :items="[
-        { link: '/', name: 'Accueil' },
+        { link: '/', name: $t('home') },
         {
           link: `/project/${state.devis.project.slug}`,
           name: `${state.devis.project.name}`,

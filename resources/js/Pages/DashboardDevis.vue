@@ -1,7 +1,7 @@
 <template>
     <div v-if="state.isLoaded"  class="dashboard">
         <navbar />
-        <breadcrumb :items="[{link: '/devis', name: 'Devis'}]" />
+        <breadcrumb :items="[{link: '/devis', name: $t('quote')}]" />
         <div class="wrapper">
             <div class="dashboard__content">
                 <project-client-list :projects="state.projects"  :invitation="state.invitation" />
