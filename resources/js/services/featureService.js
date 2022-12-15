@@ -101,7 +101,8 @@ export default {
 
     downloadFile: async (feature) => {
         const response = await axios.get(`${APISettings.baseURL}/feature/${feature.id}/file/download`, {
-            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token },
+            responseType: 'blob'
         });
 
         return response;
