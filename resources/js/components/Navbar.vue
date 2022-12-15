@@ -70,8 +70,8 @@
               w-52
             "
           >
-            <li><a href="/profile">Profile</a></li>
-            <li @click="logout"><a>Logout</a></li>
+            <li><router-link to="/profile">{{$t('navbar.profile')}}</router-link></li>
+            <li @click="logout"><a>{{$t('navbar.sign_out')}}</a></li>
           </ul>
         </div>
       </div>
@@ -116,7 +116,8 @@ export default {
     logout() {
       this.$store.commit("SET_TOKEN", "");
       this.$store.commit("SET_USER", null);
-      window.location = "/login";
+      this.$router.push('/login')
+      // window.location = "/login";
     },
   },
 };

@@ -1,7 +1,38 @@
 <template>
-    <div class="login">
+<div>
+    <div class="flex justify-end py-4 px-4">
+     <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost">
+            <p>{{ $i18n.locale }}</p>
+          </label>
+          <ul
+            tabindex="0"
+            class="
+              mt-3
+              p-2
+              shadow
+              menu menu-compact
+              dropdown-content
+              bg-base-100
+              rounded-box
+              w-52
+            "
+          >
+            <li
+              v-for="locale in $i18n.availableLocales"
+              :key="`locale-${locale}`"
+            >
+              <a @click.prevent="$i18n.locale = locale">{{
+                locale.toUpperCase()
+              }}</a>
+            </li>
+          </ul>
+        </div>
+    </div>
+   
+ <div class="login">
         <div class="login__block">
-            <h1 class="login__title">Login</h1>
+            <h1 class="login__title">{{$t('login.login')}}</h1>
             <div class="login__form">
                 <div v-if="state.error !== ''" class="alert alert-error shadow-xs">
                     <div>
@@ -16,23 +47,27 @@
                     </label>
                 </div>
                 <div class="form-control w-full">
-                    <label class="label">Mot de passe</label>
+                    <label class="label">{{$t('login.password')}}</label>
                     <input type="password" v-on:keyup.enter="handleLoginClick" :class="[{'input-error': v$.password.$error }, 'input input-bordered rounded-md w-full']" v-model="state.password" />
                     <label v-if="v$.password.$error" class="label">
                         <span class="label-text-alt text-red-400">{{ v$.password.$errors[0].$message }}</span>
                     </label>
                 </div>
                 <div class="form-control w-full my-2">
-                    <a class="underline text-primary text-left text-xs" href="/reset-password">Mot de passe oublié ? </a>
+                    <router-link class="underline text-primary text-left text-xs" to="/reset-password">{{$t('login.forgot_password_question')}}</router-link>
                 </div>
                 <div class="form-control w-full mt-6">
-                    <button @click="handleLoginClick" :class="[{'loading': state.isLoading}, 'btn btn-primary']">{{ state.isLoading ? 'chargement' : 'Se connecter' }}</button>
+                    <button @click="handleLoginClick" :class="[{'loading': state.isLoading}, 'btn btn-primary']">{{ state.isLoading ? $t('loading') : $t('login.sign_in') }}</button>
                 </div>
             </div>
-            <div class="divider">OU</div>
-            <p>Pas encore de compte ? <a class="underline text-primary" href="/register">Inscrivez-vous</a></p>
+            <div class="divider">{{$t('login.or')}}</div>
+            <p>{{$t('login.no_account')}} 
+                
+                <router-link class="underline text-primary" to="/register">{{$t('login.sign_up')}}</router-link></p>
         </div>
     </div>
+</div>
+   
 </template>
 
 <script>
@@ -82,7 +117,7 @@ export default {
 
                 if (response.status === 200) {
                     this.$store.commit('SET_TOKEN', response.data.data.token)
-                    this.$router.go('/')
+                    this.$router.push('/')
                 }
 
                 

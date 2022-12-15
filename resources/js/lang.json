@@ -4,11 +4,59 @@
         "quote" : "Quote",
         "create_quote" : "Create a quote",
         "no_quote_found" : "No quote found",
-    
+        "loading" : "Loading",
+        "login" : {
+        "login" : "Login",
+         "password" : "Password",
+         "sign_in" : "Sign in",
+         "or" : "Or",
+         "no_account" : "No account?",
+         "sign_up" : "Sign up",
+         "forgot_password_question": "Forgot your password ?"  
+        },
+        "sign_up" : {
+            "im": "I'm",
+            "particular":"Particular",
+            "professional": "Professional",
+            "first_name" : "First Name",
+            "last_name" : "Last Name",
+            "password" : "Password",
+            "password_confirmation" : "Confirm Password",
+            "or" :"Or",
+            "already_an_account" : "You already have an account ?",
+            "sign_up":"Sign up",
+            "activity_sector":"Activity sector",
+            "siren":"Siren number"
+        },
+        "profile" : {
+            "profile":"Profile",
+            "im": "I'm",
+            "particular":"Particular",
+            "professional": "Professional",
+            "first_name" : "First Name",
+            "last_name" : "Last Name",
+            "password" : "Password",
+            "password_confirmation" : "Confirm Password",
+            "or" :"Or",
+            "already_an_account" : "You already have an account ?",
+            "sign_up":"Sign up",
+            "activity_sector":"Activity sector",
+            "siren":"Siren number",
+            "edit_password":"Edit Password",
+            "edit_account":"Edit account"
+        },
+        "forgot_password" : {
+         "forgot_password" : "Forgot password",
+         "reset_password": "Reset password",
+         "or": "Or",
+         "sign_in" : "Sign in"   
+        },
         "navbar" :{
             "my_projects" : "My Projects",
             "quotes_recieved" : "Quotes received",
-            "archive" : "Archive"
+            "archive" : "Archive",
+            "profile":"Profile",
+            "sign_out":"Sign out"
           
         },
         "create_project" : "Create a project"
@@ -19,10 +67,60 @@
         "quote" : "Devis",
         "create_quote" : "Créer un devis",
         "no_quote_found" : "Vous n'avez aucun devis",
+        "loading" : "Chargement",
+        "login" : {
+            "login" : "S'authentifier",
+             "password" : "Mot de passe",
+             "sign_in" : "Se connecter",
+             "or" : "Ou",
+             "no_account" : "Pas encore de compte?",
+             "sign_up" : "Inscrivez vous",
+             "forgot_password_question": "Mot de passe oublié?"  
+            },
+            "sign_up" : {
+                "im": "Je suis",
+                "particular":"Particulier",
+                "professional": "Professionel",
+                "first_name" : "Prénom",
+                "last_name" : "Nom",
+                "password" : "Mot de passe",
+                "password_confirmation" : "Confirmation de mot de passe",
+                "or" :"Ou",
+                "already_an_account" : "Déja un compte ?",
+                "sign_up":"S'enregistrer",
+                "activity_sector":"Secteur d'activité",
+                "siren":"Siren"
+            },
+            "forgot_password" : {
+                "forgot_password" : "Mot de passe oublié",
+                "reset_password": "Réinitialiser le mot de passe",
+                "or": "Ou",
+                "sign_in" : "Connectez-vous"   
+               },
+
+               "profile" : {
+                "profile":"Profil",
+                "im": "Je suis",
+                "particular":"Particulier",
+                "professional": "Professionel",
+                "first_name" : "Prénom",
+                "last_name" : "Nom",
+                "password" : "Mot de passe",
+                "password_confirmation" : "Confirmation de mot de passe",
+                "or" :"Ou",
+                "activity_sector":"Activity sector",
+                "siren":"Siren number",
+                "already_an_account" : "Déja un compte ?",
+                "edit_password":"Edit Password",
+                "edit_account":"Edit account"
+         
+            },
         "navbar" :{
             "my_projects" : "Mes Projets",
             "quotes_recieved" : "Devis reçus",
-            "archive" : "Archive"
+            "archive" : "Archive",
+            "profile":"Profil",
+            "sign_out":"Déconnecter"
         
         },
         "create_project" : " Créer un projet "

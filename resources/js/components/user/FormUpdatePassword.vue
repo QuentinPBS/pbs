@@ -1,7 +1,7 @@
 <template>
     <div >
         <div class="form-control w-full mb-5">
-            <label class="label">Mot de passe</label>
+            <label class="label">{{$t('profile.password')}}</label>
             <input type="password"
                 :class="[{ 'input-error': v$.password.$error }, 'input input-bordered rounded-md w-full']"
                 v-model="state.password" />
@@ -10,7 +10,7 @@
             </label>
         </div>
         <div class="form-control w-full mb-5">
-            <label class="label">Confirmation de mot de passe</label>
+            <label class="label">{{$t('profile.password_confirmation')}}</label>
             <input type="password"
                 :class="[{ 'input-error': v$.password_confirmation.$error }, 'input input-bordered rounded-md w-full']"
                 v-model="state.password_confirmation" />
@@ -23,7 +23,7 @@
         <div class="form-control w-full mt-6">
             <button @click="handleChangePassword" :class="[{ 'loading': state.isLoading }, 'btn btn-primary']">{{
                     state.isLoading ?
-                        'chargement' : 'Modifier mon mot de passe'
+                        $t('loading') : $t('profile.edit_password')
             }}</button>
         </div>
     </div>
