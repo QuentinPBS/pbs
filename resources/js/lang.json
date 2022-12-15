@@ -5,6 +5,8 @@
         "create_quote" : "Create a quote",
         "no_quote_found" : "No quote found",
         "loading" : "Loading",
+        "cancel": "Cancel",
+        "create": "Create",
         "login" : {
         "login" : "Login",
          "password" : "Password",
@@ -51,6 +53,21 @@
          "or": "Or",
          "sign_in" : "Sign in"   
         },
+
+        "feature":{
+            "share": "Share",
+            "save": "Save",
+            "share_feature": "Share the feature",
+            "email": "Email",
+            "send_link": "Send link",
+            "step" : {
+                "create_step": "Create a step",
+                "step_name": "Name of step",
+                "price": "Price",
+                "not_found": "No steps found",
+                "deadline": "Deadline"
+            } 
+        },
         "navbar" :{
             "my_projects" : "My Projects",
             "quotes_recieved" : "Quotes received",
@@ -68,6 +85,8 @@
         "create_quote" : "Créer un devis",
         "no_quote_found" : "Vous n'avez aucun devis",
         "loading" : "Chargement",
+        "cancel": "Annuler",
+        "create": "Créer",
         "login" : {
             "login" : "S'authentifier",
              "password" : "Mot de passe",
@@ -108,13 +127,28 @@
                 "password" : "Mot de passe",
                 "password_confirmation" : "Confirmation de mot de passe",
                 "or" :"Ou",
-                "activity_sector":"Activity sector",
-                "siren":"Siren number",
+                "activity_sector":"Secteur d'activité",
+                "siren":"Siren",
                 "already_an_account" : "Déja un compte ?",
-                "edit_password":"Edit Password",
-                "edit_account":"Edit account"
+                "edit_password":"Modifier votre mot de passe",
+                "edit_account":"Modifier votre compte"
          
             },
+            "feature":{
+                "share": "Partager",
+                "save": "Enregistrer",
+                "share_feature": "Partager le devis",
+                "email": "Adresse mail",
+                "send_link": "Envoyer le lien",
+                "step" : {
+                    "create_step": "Créer une étape ",
+                    "step_name": "Nom de l'étape",
+                    "price": "Prix",
+                    "not_found": "Vous n'avez aucune étape",
+                    "deadline": "Deadline"
+                } 
+            },
+         
         "navbar" :{
             "my_projects" : "Mes Projets",
             "quotes_recieved" : "Devis reçus",

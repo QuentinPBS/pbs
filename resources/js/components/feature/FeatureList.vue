@@ -8,7 +8,7 @@
           class="btn btn-primary"
           @click="state.showModal = true"
         >
-          Créer une étape
+               {{$t('feature.step.create_step')}}
         </button>
       </div>
       <button
@@ -16,7 +16,7 @@
         class="btn btn-primary"
         @click="state.showModalShare = true"
       >
-        Partager
+        {{$t('feature.share')}}
       </button>
     </div>
     <div class="grid grid-cols-2 gap-6">
@@ -116,13 +116,13 @@
         </div>
         <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
           <img src="/images/logo_b&w.png" alt="logo paybystep" />
-          <p class="text-xl font-bold">Vous n'avez aucune étape</p>
+          <p class="text-xl font-bold">{{$t('feature.step.not_found')}}</p>
           <button
             class="btn btn-primary"
             @click="state.showModal = true"
             v-if="devis.is_owner"
           >
-            Créer un étape
+            {{$t('feature.step.create_step')}}
           </button>
         </div>
       </div>
@@ -153,11 +153,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Créer une étape</span>
+      <span class="modal__title">{{$t('feature.step.create_step')}}</span>
       <div class="modal__content">
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Nom de l'étape</label>
+            <label class="label">{{$t('feature.step.step_name')}}</label>
             <input
               type="text"
               :class="[
@@ -173,7 +173,7 @@
             </label>
           </div>
           <div class="form-control w-full">
-            <label class="label">Prix</label>
+            <label class="label">{{$t('feature.step.price')}}</label>
             <input
               type="text"
               :class="[
@@ -189,7 +189,7 @@
             </label>
           </div>
           <div class="form-control w-full">
-            <label class="label">Deadline</label>
+            <label class="label">{{$t('feature.step.deadline')}}</label>
             <input
               type="date"
               :class="[
@@ -208,7 +208,7 @@
         </div>
       </div>
       <div class="modal__action">
-        <button class="btn btn-link" @click="cancelForm()">Annuler</button>
+        <button class="btn btn-link" @click="cancelForm()">{{$t('cancel')}}</button>
         <button
           @click="handlePFeatureClick"
           :class="[
@@ -216,7 +216,7 @@
             'btn btn-primary',
           ]"
         >
-          {{ state.isLoading ? "loading" : "Créer" }}
+          {{ state.isLoading ? $t('loading'): $t('create') }}
         </button>
       </div>
     </vue-final-modal>
@@ -228,7 +228,7 @@
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
 
-      <span class="modal__title">Partager le devis</span>
+      <span class="modal__title">{{$t('feature.share_feature')}}</span>
       <div class="modal__content">
         <!-- <div class="project-list__form">
                     <div class="form-control w-full">
@@ -257,7 +257,7 @@
         </div>
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Adresse mail</label>
+            <label class="label">{{$t('feature.email')}}</label>
             <input
               type="email"
               :class="[
@@ -276,13 +276,13 @@
       </div>
       <div class="modal__action">
         <button class="btn btn-link" @click="cancelFormInvite()">
-          Annuler
+          {{$t('cancel')}}
         </button>
         <button
           @click="handleInvitationClick"
           :class="[{ loading: state.isLoadingInvite }, 'btn btn-primary']"
         >
-          {{ state.isLoadingInvite ? "loading" : "Envoyer le lien" }}
+          {{ state.isLoadingInvite ? $t('loading') : $t('feature.send_link') }}
         </button>
       </div>
     </vue-final-modal>
