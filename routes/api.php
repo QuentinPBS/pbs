@@ -84,6 +84,7 @@ Route::middleware(['api'])->group(function ($router) {
     Route::get('stripe/check/{type}', [StripeAccountController::class, 'check'])->name('stripe.check');
     Route::post('stripe/create', [StripeAccountController::class, 'createAccount'])->name('stripe.account.create');
     Route::put('stripe/validate', [StripeAccountController::class, 'validateAccount'])->name('stripe.account.validate');
+    Route::post('stripe/payment', [StripeAccountController::class, 'makePayment'])->name('stripe.account.payment');
 });
 
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');

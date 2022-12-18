@@ -114,7 +114,7 @@ const routes = [
             title: 'StripeCallback',
             middleware: [auth],
         }
-    },
+    }
 ]
 
 export default routes;

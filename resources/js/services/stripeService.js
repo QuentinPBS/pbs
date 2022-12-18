@@ -19,11 +19,38 @@ export default {
         });
     },
 
-    validateAccount: async (accountId) => {
+    validateAccount: async (accountId, sessionId) => {
         return await axios.put(`${APISettings.baseURL}/stripe/validate`, {
-            accountId: accountId
+            accountId: accountId,
+            sessionId: sessionId
         }, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
         });
-    }
+    },
+
+    validateCustomerAccount: async (sessionId) => {
+        return await axios.put(`${APISettings.baseURL}/stripe/validate/customer`, {
+            sessionId: sessionId
+        }, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+    },
+
+    getPaymentLink: async (project_id, lead_id, feature_id) => {
+        return await axios.post(`${APISettings.baseURL}/stripe/payementLink`, {
+            project_id: project_id,
+            lead_id: lead_id,
+            feature_id: feature_id
+        }, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+    },
+
+    makePayment: async (feature_id) => {
+        return await axios.post(`${APISettings.baseURL}/stripe/payment`, {
+            feature_id: feature_id
+        }, {
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+        });
+    },
 }

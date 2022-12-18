@@ -90,8 +90,7 @@ export default {
                 const accountId = this.$route.params.accountId;
                 const projectId = this.$route.query.pid;
                 const leadId = this.$route.query.lid;
-                const sessionId = this.$route.query.session_id;
-                const stripeAccount = await stripeService.validateAccount(accountId, sessionId);
+                const stripeAccount = await stripeService.validateAccount(accountId);
                 if (stripeAccount.status === 200 && stripeAccount.data.account.status === 'success') {
                     this.isSuccess = true;
                     this.loading = false;

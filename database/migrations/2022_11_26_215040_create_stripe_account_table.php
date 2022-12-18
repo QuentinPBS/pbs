@@ -17,6 +17,7 @@ class CreateStripeAccountTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('account_id', 255);
+            $table->string('payment_method_id', 255)->nullable();
             $table->enum('type', ['customer', 'presta'])->default('customer');
             $table->string('status', 50)->default('pending');
             $table->timestamps();
