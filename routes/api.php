@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FeatureConversationController;
 use App\Http\Controllers\FeatureDeliveryController;
 use App\Http\Controllers\FeaturesController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StripeAccountController;
 use App\Http\Controllers\ValidationController;
 use App\Http\Controllers\ForgotPasswordController;
@@ -85,6 +86,8 @@ Route::middleware(['api'])->group(function ($router) {
     Route::post('stripe/create', [StripeAccountController::class, 'createAccount'])->name('stripe.account.create');
     Route::put('stripe/validate', [StripeAccountController::class, 'validateAccount'])->name('stripe.account.validate');
     Route::post('stripe/payment', [StripeAccountController::class, 'makePayment'])->name('stripe.account.payment');
+
+    Route::get('payments', [PaymentController::class, 'index'])->name('payment.index');
 });
 
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');

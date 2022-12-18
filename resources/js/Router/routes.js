@@ -114,7 +114,16 @@ const routes = [
             title: 'StripeCallback',
             middleware: [auth],
         }
-    }
+    },
+    {
+        path: '/payments',
+        component: () => import('../Pages/Payments.vue'),
+        name: 'Payments',
+        meta: {
+            title: 'Payments',
+            middleware: [auth],
+        }
+    },
 ]
 
 export default routes;
