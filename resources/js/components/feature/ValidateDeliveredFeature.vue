@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLink">
-    <p class="my-5 mb-2">
-      Merci de cliquer sur le lien ci dessous pour vérifier le délivrable
+    <p class="my-5 mb-2 text-center">
+      {{$t('feature.step.check_link_message')}}
     </p>
     <div class="flex justify-center mb-4">
       <a
@@ -13,28 +13,28 @@
     </div>
   </div>
   <div v-if="isFile">
-    <p class="my-5 mb-2">
-      Merci de cliquer sur le bouton ci dessous pour vérifier le délivrable
+    <p class="my-5 mb-2 text-center">
+    {{$t('feature.step.delivrable_verification_text')}}
     </p>
     <div class="flex justify-center mb-4">
       <a @click.prevent="downloadFile()" class="btn bg-blue-500 text-white"
-        >Télécharger</a
+        >{{$t('download')}}</a
       >
     </div>
   </div>
 
   <div v-if="isNullable">
-    <p class="my-5 mb-2">Pas de livrable pour cette étape</p>
+    <p class="my-5 mb-2 text-center">{{$t('feature.step.no_delivrable')}}</p>
   </div>
   <div class="flex justify-end">
     <button @click="$emit('closeModal')" class="btn bg-red-500 text-white mr-2">
-      Annuler
+      {{$t('cancel')}}
     </button>
     <button
       @click="approvedIsDelivry()"
       :class="[{ loading: state.isLoading }, 'btn btn-primary']"
     >
-      Accepter
+        {{$t('accept')}}
     </button>
   </div>
 </template>

@@ -37,13 +37,13 @@
 
   <div class="flex justify-end py-4">
     <button class="btn bg-red-500 text-white mr-2" @click="$emit('closeModal')">
-      Annuler
+      {{$t('cancel')}}
     </button>
     <button
       :class="[{ loading: state.isLoading }, 'btn bg-green-500 text-white']"
       @click="uploadFile()"
     >
-      Valider
+           {{$t('feature.step.validate')}}
     </button>
   </div>
 </template>

@@ -72,11 +72,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Créer un projet</span>
+      <span class="modal__title">{{$t('project.create_project')}}</span>
       <div class="modal__content">
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Nom du projet</label>
+            <label class="label">{{$t('project.project_name')}}</label>
             <input
               type="text"
               :class="[
@@ -93,7 +93,7 @@
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >Description <span class="badge badge-sm">Optionnel</span></label
+              >{{$t('project.description')}} <span class="badge badge-sm">{{$t('optional')}}</span></label
             >
             <textarea
               class="textarea textarea-bordered"
@@ -102,7 +102,7 @@
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >Image <span class="badge badge-sm">Optionnel</span></label
+              >Image <span class="badge badge-sm">{{$t('optional')}}</span></label
             >
             <input
               type="file"
@@ -113,12 +113,12 @@
         </div>
       </div>
       <div class="modal__action">
-        <button class="btn btn-link" @click="cancelForm()">Annuler</button>
+        <button class="btn btn-link" @click="cancelForm()">{{$t('cancel')}}</button>
         <button
           @click="handleLoginClick"
           :class="[{ loading: state.isLoading }, 'btn btn-primary']"
         >
-          {{ state.isLoading ? "loading" : "Créer" }}
+          {{ state.isLoading ? $t('loading') : $t('create') }}
         </button>
       </div>
     </vue-final-modal>

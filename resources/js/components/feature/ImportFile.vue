@@ -8,8 +8,8 @@
       :maxFileSize="10000000"
     >
       <template v-slot:message>
-        <p class="p-4">Cliquer ici pour importer le fichier</p>
-        <small> Le fichier ne doit pas dépasser 10Mo </small>
+        <p class="p-4">{{$t('feature.step.click_here_to_import_file')}}</p>
+        <small> {{$t('feature.step.file_not_exceed_10')}} </small>
       </template>
     </DropZone>
   </div>
@@ -17,14 +17,14 @@
   <div class="flex justify-end py-4">
     
     <button class="btn bg-red-500 text-white mr-2" @click="$emit('closeModal')">
-      Annuler
+      {{$t('cancel')}}
     </button>
     <button
       :class="[{ loading: state.isLoading }, 'btn bg-green-500 text-white']"
       v-if="state.file"
       @click="uploadFile()"
     >
-      Valider
+          {{$t('feature.step.validate')}}
     </button>
   </div>
 </template>
