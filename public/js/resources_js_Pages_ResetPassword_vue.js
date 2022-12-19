@@ -2829,6 +2829,62 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }
 
     return deleteUser;
+  }(),
+  getUserDetails: function () {
+    var _getUserDetails = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee11(userId) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee11$(_context11) {
+        while (1) {
+          switch (_context11.prev = _context11.next) {
+            case 0:
+              _context11.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().get("/api/user/".concat(userId), {});
+
+            case 2:
+              response = _context11.sent;
+              return _context11.abrupt("return", response.data);
+
+            case 4:
+            case "end":
+              return _context11.stop();
+          }
+        }
+      }, _callee11);
+    }));
+
+    function getUserDetails(_x9) {
+      return _getUserDetails.apply(this, arguments);
+    }
+
+    return getUserDetails;
+  }(),
+  getUserProjects: function () {
+    var _getUserProjects = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee12(userId, page) {
+      var response;
+      return _regeneratorRuntime().wrap(function _callee12$(_context12) {
+        while (1) {
+          switch (_context12.prev = _context12.next) {
+            case 0:
+              _context12.next = 2;
+              return axios__WEBPACK_IMPORTED_MODULE_0___default().get("/api/user/".concat(userId, "/projects?page=").concat(page), {});
+
+            case 2:
+              response = _context12.sent;
+              return _context12.abrupt("return", response.data);
+
+            case 4:
+            case "end":
+              return _context12.stop();
+          }
+        }
+      }, _callee12);
+    }));
+
+    function getUserProjects(_x10, _x11) {
+      return _getUserProjects.apply(this, arguments);
+    }
+
+    return getUserProjects;
   }()
 });
 

@@ -1,22 +1,23 @@
 <?php
 
+use Illuminate\Http\Request;
+use App\Models\FeatureDelivery;
+use App\Models\FeatureConversation;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\FeatureConversationController;
-use App\Http\Controllers\FeatureDeliveryController;
-use App\Http\Controllers\FeaturesController;
-use App\Http\Controllers\ValidationController;
-use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\LeadController;
-use App\Http\Controllers\LeadConversationController;
-use App\Http\Controllers\ProjectArchiveController;
+use App\Http\Controllers\FeaturesController;
+use App\Http\Controllers\ValidationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
-use App\Models\FeatureConversation;
-use App\Models\FeatureDelivery;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ProjectArchiveController;
+use App\Http\Controllers\FeatureDeliveryController;
+use App\Http\Controllers\LeadConversationController;
+use App\Http\Controllers\FeatureConversationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,3 +93,6 @@ Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEm
 Route::post('password/reset', [ForgotPasswordController::class, 'reset'])->name('password.reset');
 Route::get('email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::get('email/verify/resend', [VerificationController::class, 'resend'])->name('verification.resend');
+//public profile
+Route::get('user/{id}', [UserController::class, 'handleGetUserDetails']);
+Route::get('user/{id}/projects', [UserController::class, 'handleGetUserProjects']);

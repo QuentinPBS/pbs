@@ -12,6 +12,8 @@ const routes = [
             middleware: [auth],
         }
     },
+
+    
     {
         path: '/about',
         component: () => import('../Pages/About.vue'),
@@ -39,6 +41,8 @@ const routes = [
             middleware: [noAuth],
         }
     },
+
+     
     {
         path: '/project/:slug',
         strict: true,
@@ -118,6 +122,18 @@ const routes = [
             middleware: [auth],
         }
     },
+ //user profile
+ {
+    path: '/user/:id/profile',
+    strict: true,
+    component: () => import('../Pages/Public/Profile.vue'),
+    name: 'Profile',
+    meta: {
+        title: 'Profile',
+
+    }
+},
+  
 ]
 
 export default routes;
