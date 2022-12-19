@@ -36,7 +36,7 @@
         <div class="register__form">
           <div v-if="state.isSuccess" class="alert alert-success shadow-sm">
             <div>
-              <span>Veuillez confirmer votre adresse mail</span>
+              <span>{{$t('email.confirm_email')}}</span>
             </div>
           </div>
           <div v-if="state.isError" class="alert alert-error shadow-sm">

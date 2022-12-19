@@ -123,9 +123,9 @@ export default {
                 
             } catch (e) {
                 if (e.response.status === 401) {
-                    this.state.error = 'Email ou mot de passe incorrect'
+                    this.state.error = this.$t('login.wrong_email_or_password') 
                 } else {
-                    this.state.error = 'Une erreur est survenue'
+                    this.state.error = this.$t('error') 
                 }
             } finally {
                 this.state.isLoading = false

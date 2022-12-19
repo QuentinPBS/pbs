@@ -14,7 +14,8 @@
         "error" : "An error has occured.",
         "email" : {
             "email_sent_message" : "Email has been sent",
-            "email_already_sent_message" : "Email already sent."
+            "email_already_sent_message" : "Email already sent.",
+            "confirm_email" : "Confirm email"
       
         },
         "login" : {
@@ -24,7 +25,8 @@
          "or" : "Or",
          "no_account" : "No account?",
          "sign_up" : "Sign up",
-         "forgot_password_question": "Forgot your password ?"  
+         "forgot_password_question": "Forgot your password ?"  ,
+         "wrong_email_or_password" : "Email or password incorrect" 
         },
         "sign_up" : {
             "im": "I'm",
@@ -39,6 +41,7 @@
             "sign_up":"Sign up",
             "activity_sector":"Activity sector",
             "siren":"Siren number"
+             
         },
         "profile" : {
             "profile":"Profile",
@@ -137,6 +140,7 @@
         "email" : {
             "email_sent_message" : "Un email vient d'être envoyé",
             "email_already_sent_message" : "Un email est déjà envoyé",
+            "confirm_email" : "Veuillez confirmer votre adresse mail",
             "error" : "Une erreure est survenu."
         },
       
@@ -147,7 +151,8 @@
              "or" : "Ou",
              "no_account" : "Pas encore de compte?",
              "sign_up" : "Inscrivez vous",
-             "forgot_password_question": "Mot de passe oublié?"  
+             "forgot_password_question": "Mot de passe oublié?",
+             "wrong_email_or_password" : "Email ou mot de passe incorrect" 
             },
             "sign_up" : {
                 "im": "Je suis",
