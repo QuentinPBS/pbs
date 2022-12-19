@@ -203,7 +203,7 @@ import useVuelidate from "@vuelidate/core";
 import { required, email, minLength, maxLength } from "@vuelidate/validators";
 
 import { APISettings } from "../api/config";
-
+import LangSwitch from "../components/LangSwitch.vue"
 export default {
   name: "Register",
 
@@ -244,7 +244,9 @@ export default {
       v$,
     };
   },
-
+components : {
+LangSwitch
+},
   methods: {
     handleStatusChange: function () {
       this.state.isProfessional = this.state.status === "professional";

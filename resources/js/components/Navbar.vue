@@ -24,33 +24,7 @@
         >
       </div>
       <div class="flex-none gap-2">
-        <div class="dropdown dropdown-end">
-          <label tabindex="0" class="btn btn-ghost">
-            <p>{{ $i18n.locale }}</p>
-          </label>
-          <ul
-            tabindex="0"
-            class="
-              mt-3
-              p-2
-              shadow
-              menu menu-compact
-              dropdown-content
-              bg-base-100
-              rounded-box
-              w-52
-            "
-          >
-            <li
-              v-for="locale in $i18n.availableLocales"
-              :key="`locale-${locale}`"
-            >
-              <a @click.prevent="$i18n.locale = locale">{{
-                locale.toUpperCase()
-              }}</a>
-            </li>
-          </ul>
-        </div>
+      <LangSwitch/>
       </div>
       <div class="flex-none gap-2">
         <div class="dropdown dropdown-end">
@@ -82,6 +56,7 @@
 <script>
 import { reactive } from "vue";
 import inviteService from "../services/inviteService";
+import LangSwitch from "./LangSwitch.vue"
 
 export default {
   name: "Navbar",
@@ -95,6 +70,10 @@ export default {
     return {
       state,
     };
+  },
+
+  components : {
+    LangSwitch
   },
 
   async created() {

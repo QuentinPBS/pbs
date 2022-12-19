@@ -1,33 +1,7 @@
 <template>
   <div>
     <div class="flex justify-end py-4 px-4">
-      <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-ghost">
-          <p>{{ $i18n.locale }}</p>
-        </label>
-        <ul
-          tabindex="0"
-          class="
-            mt-3
-            p-2
-            shadow
-            menu menu-compact
-            dropdown-content
-            bg-base-100
-            rounded-box
-            w-52
-          "
-        >
-          <li
-            v-for="locale in $i18n.availableLocales"
-            :key="`locale-${locale}`"
-          >
-            <a @click.prevent="$i18n.locale = locale">{{
-              locale.toUpperCase()
-            }}</a>
-          </li>
-        </ul>
-      </div>
+      <LangSwitch />
     </div>
     <div class="login">
       <div class="login__block">
@@ -81,7 +55,7 @@ import { reactive, computed } from "vue";
 import useVuelidate from "@vuelidate/core";
 import { required, email, minLength } from "@vuelidate/validators";
 import UserService from "../services/userService";
-
+import LangSwitch from "../components/LangSwitch.vue";
 export default {
   name: "Login",
 
@@ -104,7 +78,9 @@ export default {
       v$,
     };
   },
-
+  components: {
+    LangSwitch,
+  },
   methods: {
     handleLoginClick: async function () {
       this.v$.$validate();
