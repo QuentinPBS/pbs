@@ -3,9 +3,9 @@
         <div class="text-sm breadcrumbs wrapper">
             <ul>
                 <li v-for="(item, i) in items">
-                    <a class="underline" v-if="items.length - 1 !== i" :href="item.link">
+                    <router-link class="underline" v-if="items.length - 1 !== i" :to="item.link">
                         {{ item.name }}
-                    </a>
+                    </router-link>
                     <p v-else>{{ item.name }}</p>
                 </li>
             </ul>

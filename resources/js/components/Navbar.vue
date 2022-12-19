@@ -2,9 +2,9 @@
   <div class="bg-base-100">
     <div class="navbar wrapper border-b-2 border-gray-100">
       <div class="flex-1 flex gap-10 item-center">
-        <a href="/" class="normal-case text-xl text-yellow-600"
+        <router-link to="/" class="normal-case text-xl text-yellow-600"
           ><img width="90" src="/images/logo.png" alt=""
-        /></a>
+        /></router-link>
 
         <router-link to="/">{{ $t("navbar.my_projects") }}</router-link>
 
