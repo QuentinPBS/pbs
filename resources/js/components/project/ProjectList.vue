@@ -2,13 +2,13 @@
   <div class="project-list">
     <div class="project-list__btn">
       <button class="btn btn-primary" @click="state.showModal = true">
-     {{ $t('create_project') }}
+        {{ $t("create_project") }}
       </button>
     </div>
     <div class="project-list__content">
       <div class="project-list__content__item" v-if="state.projects.length > 0">
-        <a
-          :href="`/project/${project.project.slug}`"
+        <router-link
+          :to="`/project/${project.project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
           v-for="(project, key) in state.projects"
           :key="key"
@@ -29,7 +29,7 @@
               <h2 class="card-title font-bold">
                 {{ project.project.name }}
               </h2>
-         
+
               <a
                 @click.prevent="archiveProject(project.project)"
                 title="archiver"
@@ -56,13 +56,13 @@
 
             <p class="text-left">{{ project.project.description }}</p>
           </div>
-        </a>
+        </router-link>
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
         <p class="text-xl font-bold">Vous n'avez aucun projet</p>
         <button class="btn btn-primary" @click="state.showModal = true">
-       {{ $t('create_project') }}
+          {{ $t("create_project") }}
         </button>
       </div>
     </div>
@@ -72,11 +72,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Créer un projet</span>
+      <span class="modal__title">{{$t('project.create_project')}}</span>
       <div class="modal__content">
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Nom du projet</label>
+            <label class="label">{{$t('project.project_name')}}</label>
             <input
               type="text"
               :class="[
@@ -93,7 +93,7 @@
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >Description <span class="badge badge-sm">Optionnel</span></label
+              >{{$t('project.description')}} <span class="badge badge-sm">{{$t('optional')}}</span></label
             >
             <textarea
               class="textarea textarea-bordered"
@@ -102,7 +102,7 @@
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >Image <span class="badge badge-sm">Optionnel</span></label
+              >Image <span class="badge badge-sm">{{$t('optional')}}</span></label
             >
             <input
               type="file"
@@ -113,12 +113,12 @@
         </div>
       </div>
       <div class="modal__action">
-        <button class="btn btn-link" @click="cancelForm()">Annuler</button>
+        <button class="btn btn-link" @click="cancelForm()">{{$t('cancel')}}</button>
         <button
           @click="handleLoginClick"
           :class="[{ loading: state.isLoading }, 'btn btn-primary']"
         >
-          {{ state.isLoading ? "loading" : "Créer" }}
+          {{ state.isLoading ? $t('loading') : $t('create') }}
         </button>
       </div>
     </vue-final-modal>
@@ -201,7 +201,6 @@ export default {
       this.state.image = e.target.files[0];
     },
     async archiveProject(project) {
-      
       let body = new FormData();
       body.append("project_id", project.id);
       body.append("user_id", this.$store.state.userStore.user.id);

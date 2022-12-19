@@ -11,8 +11,8 @@
         >
       </div>
       <div class="project-list__content__item" v-if="projects.length > 0">
-        <a
-          :href="`/project/${project.project.slug}`"
+        <router-link
+          :to="`/project/${project.project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
           v-for="project in projects"
         >
@@ -33,11 +33,11 @@
             </h2>
             <p class="text-left">{{ project.project.description }}</p>
           </div>
-        </a>
+        </router-link>
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
-        <p class="text-xl font-bold">Vous n'avez aucun devis</p>
+               <p class="text-xl font-bold">{{$t('no_quote_found')}}</p>
       </div>
     </div>
     <vue-final-modal

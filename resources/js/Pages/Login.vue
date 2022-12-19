@@ -1,7 +1,12 @@
 <template>
-    <div class="login">
+<div>
+    <div class="flex justify-end py-4 px-4">
+    <LangSwitch/>
+    </div>
+   
+ <div class="login">
         <div class="login__block">
-            <h1 class="login__title">Login</h1>
+            <h1 class="login__title">{{$t('login.login')}}</h1>
             <div class="login__form">
                 <div v-if="state.error !== ''" class="alert alert-error shadow-xs">
                     <div>
@@ -16,23 +21,27 @@
                     </label>
                 </div>
                 <div class="form-control w-full">
-                    <label class="label">Mot de passe</label>
+                    <label class="label">{{$t('login.password')}}</label>
                     <input type="password" v-on:keyup.enter="handleLoginClick" :class="[{'input-error': v$.password.$error }, 'input input-bordered rounded-md w-full']" v-model="state.password" />
                     <label v-if="v$.password.$error" class="label">
                         <span class="label-text-alt text-red-400">{{ v$.password.$errors[0].$message }}</span>
                     </label>
                 </div>
                 <div class="form-control w-full my-2">
-                    <a class="underline text-primary text-left text-xs" href="/reset-password">Mot de passe oublié ? </a>
+                    <router-link class="underline text-primary text-left text-xs" to="/reset-password">{{$t('login.forgot_password_question')}}</router-link>
                 </div>
                 <div class="form-control w-full mt-6">
-                    <button @click="handleLoginClick" :class="[{'loading': state.isLoading}, 'btn btn-primary']">{{ state.isLoading ? 'chargement' : 'Se connecter' }}</button>
+                    <button @click="handleLoginClick" :class="[{'loading': state.isLoading}, 'btn btn-primary']">{{ state.isLoading ? $t('loading') : $t('login.sign_in') }}</button>
                 </div>
             </div>
-            <div class="divider">OU</div>
-            <p>Pas encore de compte ? <a class="underline text-primary" href="/register">Inscrivez-vous</a></p>
+            <div class="divider">{{$t('login.or')}}</div>
+            <p>{{$t('login.no_account')}} 
+                
+                <router-link class="underline text-primary" to="/register">{{$t('login.sign_up')}}</router-link></p>
         </div>
     </div>
+</div>
+   
 </template>
 
 <script>
@@ -42,7 +51,7 @@ import { required, email, minLength } from '@vuelidate/validators'
 
 import { APISettings } from '../api/config';
 import axios from 'axios';
-
+import LangSwitch from "../components/LangSwitch.vue"
 export default {
     name: 'Login',
 
@@ -68,7 +77,9 @@ export default {
             v$,
         }
     },
-
+components : {
+LangSwitch
+},
     methods: {
         handleLoginClick: async function () {
             this.v$.$validate()
@@ -82,15 +93,15 @@ export default {
 
                 if (response.status === 200) {
                     this.$store.commit('SET_TOKEN', response.data.data.token)
-                    this.$router.go('/')
+                    this.$router.push('/')
                 }
 
                 
             } catch (e) {
                 if (e.response.status === 401) {
-                    this.state.error = 'Email ou mot de passe incorrect'
+                    this.state.error = this.$t('login.wrong_email_or_password') 
                 } else {
-                    this.state.error = 'Une erreur est survenue'
+                    this.state.error = this.$t('error') 
                 }
             } finally {
                 this.state.isLoading = false

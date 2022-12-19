@@ -1,7 +1,7 @@
 <template>
   <div v-if="isLink">
-    <p class="my-5 mb-2">
-      Merci de cliquer sur le lien ci dessous pour vérifier le délivrable
+    <p class="my-5 mb-2 text-center">
+      {{$t('feature.step.check_link_message')}}
     </p>
     <div class="flex justify-center mb-4">
       <a
@@ -13,33 +13,28 @@
     </div>
   </div>
   <div v-if="isFile">
-    <p class="my-5 mb-2">
-      Merci de cliquer sur le bouton ci dessous pour vérifier le délivrable
+    <p class="my-5 mb-2 text-center">
+    {{$t('feature.step.delivrable_verification_text')}}
     </p>
     <div class="flex justify-center mb-4">
-      <a
-        :href="`/api/feature/${feature.id}/file/download`"
-        class="btn bg-blue-500 text-white"
-        >Télécharger</a
+      <a @click.prevent="downloadFile()" class="btn bg-blue-500 text-white"
+        >{{$t('download')}}</a
       >
     </div>
   </div>
 
-    <div v-if="isNullable">
-    <p class="my-5 mb-2">
-     Pas de livrable pour cette étape
-    </p>
-
+  <div v-if="isNullable">
+    <p class="my-5 mb-2 text-center">{{$t('feature.step.no_delivrable')}}</p>
   </div>
   <div class="flex justify-end">
     <button @click="$emit('closeModal')" class="btn bg-red-500 text-white mr-2">
-      Annuler
+      {{$t('cancel')}}
     </button>
     <button
       @click="approvedIsDelivry()"
       :class="[{ loading: state.isLoading }, 'btn btn-primary']"
     >
-      Accepter
+        {{$t('accept')}}
     </button>
   </div>
 </template>
@@ -101,6 +96,34 @@ export default {
         const response = await featureService.updateStepfour(this.feature);
         if (response.status === 200) {
           this.$emit("deliveryAccepted");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async downloadFile() {
+      // this.state.isLoading = true;
+
+      try {
+        const response = await featureService.downloadFile(this.feature);
+
+        if (response.status === 200) {
+          var fileURL = window.URL.createObjectURL(new Blob([response.data]));
+          let filename = response["headers"]["content-disposition"]
+            .split("filename=")[1]
+            .split(".")[0];
+          let extension = response["headers"]["content-disposition"]
+            .split(".")[1]
+            .split(";")[0];
+
+          var fileLink = document.createElement("a");
+
+          fileLink.href = fileURL;
+          fileLink.setAttribute("download", `${filename}.${extension}`);
+          document.body.appendChild(fileLink);
+
+          fileLink.click();
+          // this.$emit("deliveryAccepted");
         }
       } catch (error) {
         console.error(error);

@@ -1,10 +1,124 @@
  {
     "en": {
         "home":"Home",
+        "quote" : "Quote",
+        "create_quote" : "Create a quote",
+        "quote_name": "Quote name",
+        "no_quote_found" : "No quote found",
+        "loading" : "Loading",
+        "cancel": "Cancel",
+        "create": "Create",
+        "optional":"Optional",
+        "download" : "Download",
+        "accept": "Accept",
+        "error" : "An error has occured.",
+        "email" : {
+            "email_sent_message" : "Email has been sent",
+            "email_already_sent_message" : "Email already sent.",
+            "confirm_email" : "Confirm email"
+      
+        },
+        "login" : {
+        "login" : "Login",
+         "password" : "Password",
+         "sign_in" : "Sign in",
+         "or" : "Or",
+         "no_account" : "No account?",
+         "sign_up" : "Sign up",
+         "forgot_password_question": "Forgot your password ?"  ,
+         "wrong_email_or_password" : "Email or password incorrect" 
+        },
+        "sign_up" : {
+            "im": "I'm",
+            "particular":"Particular",
+            "professional": "Professional",
+            "first_name" : "First Name",
+            "last_name" : "Last Name",
+            "password" : "Password",
+            "password_confirmation" : "Confirm Password",
+            "or" :"Or",
+            "already_an_account" : "You already have an account ?",
+            "sign_up":"Sign up",
+            "activity_sector":"Activity sector",
+            "siren":"Siren number"
+             
+        },
+        "profile" : {
+            "profile":"Profile",
+            "im": "I'm",
+            "particular":"Particular",
+            "professional": "Professional",
+            "first_name" : "First Name",
+            "last_name" : "Last Name",
+            "password" : "Password",
+            "password_confirmation" : "Confirm Password",
+            "or" :"Or",
+            "already_an_account" : "You already have an account ?",
+            "sign_up":"Sign up",
+            "activity_sector":"Activity sector",
+            "siren":"Siren number",
+            "edit_password":"Edit Password",
+            "edit_account":"Edit account"
+        },
+        "forgot_password" : {
+         "forgot_password" : "Forgot password",
+         "reset_password": "Reset password",
+         "or": "Or",
+         "sign_in" : "Sign in"   
+        },
+
+        "feature":{
+            "share": "Share",
+            "save": "Save",
+            "share_feature": "Share the feature",
+            "email": "Email",
+            "send_link": "Send link",
+            "step" : {
+                "create_step": "Create a step",
+                "step_name": "Name of step",
+                "price": "Price",
+                "not_found": "No steps found",
+                "deadline": "Deadline",
+                "waiting_for_approval" : "Waiting to be approved",
+                "validate" : "Validate",
+                "refuse": "Refuse",
+                "deliver":"Deliver",
+                "waiting_for_delivrable" : "Waiting for delivrables",
+                "non_valid" : "Not validated",
+                "waiting_for_confirmation": "Waiting for confirmation",
+                "validate_delivrable": "Validate delivrables",
+                "confirmed": "Confirmed",
+                "accepted": "Accepted",
+                "refused": "Rejected" ,
+                "step_reject": "Reject step",
+                "step_reject_question": "Are you sure to reject this step?",
+                "delivrable_verification": "Delivrable verification",
+                "delivrable_verification_text" : "Please click the button below to verify the delivrable",
+                "no_delivrable" : "No delivrable for this step",
+                "type_of_receipt": "Type of receipt",
+                "select_receipt_type": " Select receipt type",
+                "link": "Link",
+                "file" :"File",
+                "no_delivrable_needed" : "No delivrable needed",
+                "click_here_to_import_file" : "Click here to import file",
+                "file_not_exceed_10": "The file must not exceed 10MO",
+                "check_link_message" : "Click the link below to verify the delivrable"
+
+
+            } 
+        },
+        "project":{
+                "create_project" : "Create a project",
+                "project_name": "Name of project",
+                "description": "Description",
+                "image": "Image"
+        },
         "navbar" :{
             "my_projects" : "My Projects",
             "quotes_recieved" : "Quotes received",
-            "archive" : "Archive"
+            "archive" : "Archive",
+            "profile":"Profile",
+            "sign_out":"Sign out"
           
         },
         "create_project" : "Create a project"
@@ -12,10 +126,123 @@
     },
     "fr": {
         "home":"Acceuil",
+        "quote" : "Devis",
+        "create_quote" : "Créer un devis",
+        "quote_name": "Nom du devis",
+        "no_quote_found" : "Vous n'avez aucun devis",
+        "loading" : "Chargement",
+        "cancel": "Annuler",
+        "create": "Créer",
+        "optional":"Optionnel",
+        "error" : "Une erreure est survenu.",
+        "download" : "Télécharger",
+        "accept": "Accepter",
+        "email" : {
+            "email_sent_message" : "Un email vient d'être envoyé",
+            "email_already_sent_message" : "Un email est déjà envoyé",
+            "confirm_email" : "Veuillez confirmer votre adresse mail",
+            "error" : "Une erreure est survenu."
+        },
+      
+        "login" : {
+            "login" : "S'authentifier",
+             "password" : "Mot de passe",
+             "sign_in" : "Se connecter",
+             "or" : "Ou",
+             "no_account" : "Pas encore de compte?",
+             "sign_up" : "Inscrivez vous",
+             "forgot_password_question": "Mot de passe oublié?",
+             "wrong_email_or_password" : "Email ou mot de passe incorrect" 
+            },
+            "sign_up" : {
+                "im": "Je suis",
+                "particular":"Particulier",
+                "professional": "Professionel",
+                "first_name" : "Prénom",
+                "last_name" : "Nom",
+                "password" : "Mot de passe",
+                "password_confirmation" : "Confirmation de mot de passe",
+                "or" :"Ou",
+                "already_an_account" : "Déja un compte ?",
+                "sign_up":"S'enregistrer",
+                "activity_sector":"Secteur d'activité",
+                "siren":"Siren"
+            },
+            "forgot_password" : {
+                "forgot_password" : "Mot de passe oublié",
+                "reset_password": "Réinitialiser le mot de passe",
+                "or": "Ou",
+                "sign_in" : "Connectez-vous"   
+               },
+
+               "profile" : {
+                "profile":"Profil",
+                "im": "Je suis",
+                "particular":"Particulier",
+                "professional": "Professionel",
+                "first_name" : "Prénom",
+                "last_name" : "Nom",
+                "password" : "Mot de passe",
+                "password_confirmation" : "Confirmation de mot de passe",
+                "or" :"Ou",
+                "activity_sector":"Secteur d'activité",
+                "siren":"Siren",
+                "already_an_account" : "Déja un compte ?",
+                "edit_password":"Modifier votre mot de passe",
+                "edit_account":"Modifier votre compte"
+         
+            },
+            "feature":{
+                "share": "Partager",
+                "save": "Enregistrer",
+                "share_feature": "Partager le devis",
+                "email": "Adresse mail",
+                "send_link": "Envoyer le lien",
+                "step" : {
+                    "create_step": "Créer une étape ",
+                    "step_name": "Nom de l'étape",
+                    "price": "Prix",
+                    "not_found": "Vous n'avez aucune étape",
+                    "deadline": "Deadline",
+                    "waiting_for_approval" : "En attente de validation",
+                    "validate" : "Valider",
+                    "refuse": "Refuser",
+                    "deliver":"Délivrer",
+                    "waiting_for_delivrable" : "En attente de délivrable",
+                    "non_valid" : "Non validée<",
+                    "waiting_for_confirmation": ">En attente de confirmation",
+                    "validate_delivrable": "Valider les délivrables",
+                    "confirmed": "Confirmé",
+                    "accepted": "Acceptée",
+                    "refused": "Refusée",
+                    "step_reject": "Refus de l'etape",
+                    "step_reject_question": "Etes vous sur de vouloir refuser cette etape?",
+                    "delivrable_verification": "Vérification du Délivrable",
+                    "delivrable_verification_text" : "Merci de cliquer sur le bouton ci dessous pour vérifier le délivrable.",
+                    "no_delivrable" : "Pas de livrable pour cette étape",
+                    "type_of_receipt": "Type de justificatif",
+                    "select_receipt_type": " Selectionner le type de justificatif",
+                    "link": "Lien",
+                    "file" :"Fichier",
+                    "no_delivrable_needed" : "Pas besoin de fournir de livrable",
+                    "click_here_to_import_file" : "Cliquer ici pour importer le fichier",
+                    "file_not_exceed_10": "Le fichier ne doit pas dépasser 10MO",
+                    "check_link_message" : " Merci de cliquer sur le lien ci dessous pour vérifier le délivrable"
+                } 
+            },
+            "project":{
+                "create_project" : "Créer un projet",
+                "project_name": "Nom du projet",
+                "description": "Description",
+                "image": "Image"
+        },
+         
         "navbar" :{
             "my_projects" : "Mes Projets",
             "quotes_recieved" : "Devis reçus",
-            "archive" : "Archive"
+            "archive" : "Archive",
+            "profile":"Profil",
+            "sign_out":"Déconnecter"
         
         },
         "create_project" : " Créer un projet "

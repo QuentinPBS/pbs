@@ -8,7 +8,7 @@
           class="btn btn-primary"
           @click="state.showModal = true"
         >
-          Créer une étape
+          {{ $t("feature.step.create_step") }}
         </button>
       </div>
       <button
@@ -16,7 +16,7 @@
         class="btn btn-primary"
         @click="state.showModalShare = true"
       >
-        Partager
+        {{ $t("feature.share") }}
       </button>
     </div>
     <div class="grid grid-cols-2 gap-6">
@@ -51,8 +51,10 @@
             </div>
             <div class="flex">
               <div>
-                <span class="text-secondary text-sm" v-if="isWaiting(feature)"
-                  >En attente de validation</span
+                <span
+                  class="text-secondary text-sm"
+                  v-if="isWaiting(feature)"
+                  >{{ $t("feature.step.waiting_for_approval") }}</span
                 >
                 <button
                   :class="[
@@ -62,7 +64,7 @@
                   @click="validateBtn(feature)"
                   v-if="isWaitingClient(feature)"
                 >
-                  Valider
+                  {{ $t("feature.step.validate") }}
                 </button>
 
                 <button
@@ -70,59 +72,66 @@
                   @click="openRejectStepModal(feature)"
                   v-if="isWaitingClient(feature)"
                 >
-                  Refuser
+                  {{ $t("feature.step.refuse") }}
                 </button>
                 <button
                   class="btn btn-primary"
                   @click="openDelivredModal(feature)"
                   v-if="isValidated(feature)"
                 >
-                  Délivrer
+                  {{ $t("feature.step.deliver") }}
                 </button>
                 <span
                   class="text-secondary text-sm"
                   v-if="isValidatedClient(feature)"
-                  >En attente de délivrable</span
                 >
-                <span class="text-red-500 text-sm" v-if="isCanceled(feature)"
-                  >Non validée</span
+                  {{ $t("feature.step.waiting_for_delivrable") }}</span
+                >
+                <span class="text-red-500 text-sm" v-if="isCanceled(feature)">
+                  {{ $t("feature.step.non_valid") }}</span
                 >
                 <span
                   class="text-danger text-sm"
                   v-if="isCanceledClient(feature)"
-                  >Non validée</span
                 >
-                <span class="text-secondary text-sm" v-if="isDelivered(feature)"
-                  >En attente de confirmation</span
+                  {{ $t("feature.step.non_valid") }}</span
+                >
+                <span
+                  class="text-secondary text-sm"
+                  v-if="isDelivered(feature)"
+                >
+                  {{ $t("feature.step.waiting_for_confirmation") }}</span
                 >
                 <button
                   class="btn btn-primary"
                   @click="openIsDelivredModal(feature)"
                   v-if="isDeliveredClient(feature)"
                 >
-                  Valider les délivrables
+                  {{ $t("feature.step.validate_delivrable") }}
                 </button>
-                <span class="text-danger text-sm" v-if="isSuccess(feature)"
-                  >Confirmé</span
+                <span class="text-danger text-sm" v-if="isSuccess(feature)">
+                  {{ $t("feature.step.confirmed") }}</span
                 >
-                <span class="text-sm" v-if="isSuccessClient(feature)"
-                  >Acceptée</span
+                <span class="text-sm" v-if="isSuccessClient(feature)">
+                  {{ $t("feature.step.accepted") }}</span
                 >
 
-                <span class="text-sm" v-if="isRejected(feature)">Refusée</span>
+                <span class="text-sm" v-if="isRejected(feature)">
+                  {{ $t("feature.step.refused") }}</span
+                >
               </div>
             </div>
           </div>
         </div>
         <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
           <img src="/images/logo_b&w.png" alt="logo paybystep" />
-          <p class="text-xl font-bold">Vous n'avez aucune étape</p>
+          <p class="text-xl font-bold">{{ $t("feature.step.not_found") }}</p>
           <button
             class="btn btn-primary"
             @click="state.showModal = true"
             v-if="devis.is_owner"
           >
-            Créer un étape
+            {{ $t("feature.step.create_step") }}
           </button>
         </div>
       </div>
@@ -153,11 +162,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Créer une étape</span>
+      <span class="modal__title">{{ $t("feature.step.create_step") }}</span>
       <div class="modal__content">
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Nom de l'étape</label>
+            <label class="label">{{ $t("feature.step.step_name") }}</label>
             <input
               type="text"
               :class="[
@@ -173,7 +182,7 @@
             </label>
           </div>
           <div class="form-control w-full">
-            <label class="label">Prix</label>
+            <label class="label">{{ $t("feature.step.price") }}</label>
             <input
               type="text"
               :class="[
@@ -189,7 +198,7 @@
             </label>
           </div>
           <div class="form-control w-full">
-            <label class="label">Deadline</label>
+            <label class="label">{{ $t("feature.step.deadline") }}</label>
             <input
               type="date"
               :class="[
@@ -208,7 +217,9 @@
         </div>
       </div>
       <div class="modal__action">
-        <button class="btn btn-link" @click="cancelForm()">Annuler</button>
+        <button class="btn btn-link" @click="cancelForm()">
+          {{ $t("cancel") }}
+        </button>
         <button
           @click="handlePFeatureClick"
           :class="[
@@ -216,7 +227,7 @@
             'btn btn-primary',
           ]"
         >
-          {{ state.isLoading ? "loading" : "Créer" }}
+          {{ state.isLoading ? $t("loading") : $t("create") }}
         </button>
       </div>
     </vue-final-modal>
@@ -228,7 +239,7 @@
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
 
-      <span class="modal__title">Partager le devis</span>
+      <span class="modal__title">{{ $t("feature.share_feature") }}</span>
       <div class="modal__content">
         <!-- <div class="project-list__form">
                     <div class="form-control w-full">
@@ -242,22 +253,22 @@
                 <div class="divider">OU</div> -->
         <div v-if="state.isSendEmail" class="alert alert-success my-5">
           <div>
-            <span>Un email vient d'être envoyé</span>
+            <span>{{ $t("email.email_sent_message") }}</span>
           </div>
         </div>
         <div v-if="state.isSendEmailError" class="alert alert-error my-5">
           <div>
-            <span>Un email est déjà envoyé</span>
+            <span>{{ $t("email.email_already_sent_message") }}</span>
           </div>
         </div>
         <div v-if="state.isSendEmailErrorCatch" class="alert alert-error my-5">
           <div>
-            <span>Une erreure est survenu.</span>
+            <span>{{ $t("error") }}</span>
           </div>
         </div>
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">Adresse mail</label>
+            <label class="label">{{ $t("feature.email") }}</label>
             <input
               type="email"
               :class="[
@@ -276,13 +287,13 @@
       </div>
       <div class="modal__action">
         <button class="btn btn-link" @click="cancelFormInvite()">
-          Annuler
+          {{ $t("cancel") }}
         </button>
         <button
           @click="handleInvitationClick"
           :class="[{ loading: state.isLoadingInvite }, 'btn btn-primary']"
         >
-          {{ state.isLoadingInvite ? "loading" : "Envoyer le lien" }}
+          {{ state.isLoadingInvite ? $t("loading") : $t("feature.send_link") }}
         </button>
       </div>
     </vue-final-modal>
@@ -293,7 +304,7 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">Vérification du Délivrable</span>
+        <span class="modal__title">{{$t('feature.step.delivrable_verification')}}</span>
         <button class="" @click="state.showModalDelivred = false">X</button>
       </div>
 
@@ -315,7 +326,7 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">Vérification du Délivrable</span>
+        <span class="modal__title">{{$t('feature.step.delivrable_verification')}}</span>
         <button class="" @click="state.showModalIsDelivred = false">X</button>
       </div>
 
@@ -335,16 +346,16 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">Refus de l'etape</span>
+      <span class="modal__title">{{$t('feature.step.step_reject')}}</span>
       <div class="modal__content">
-        <p class="my-5">Etes vous sur de vouloir refuser cette etape?</p>
+        <p class="my-5">{{$t('feature.step.step_reject_question')}}</p>
       </div>
       <div class="modal__action">
         <button
           @click="state.showRejectStep = false"
           class="btn btn-bg-black-500 text-white mr-2"
         >
-          Annuler
+          {{$t('cancel')}}
         </button>
         <button
           @click="handleRejectStep()"
@@ -353,7 +364,7 @@
             'btn btn-primary',
           ]"
         >
-          Valider
+          {{$t('feature.step.validate')}}
         </button>
       </div>
     </vue-final-modal>

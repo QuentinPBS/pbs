@@ -2,17 +2,17 @@
     <div class="form-update-profile">
         <div class="form-update-profile__content">
             <div class="form-update-profile__content__title">
-                <h1>Profile</h1>
+                <h1>{{$t('profile.profile')}}</h1>
             </div>
             <div class="form-update-profile__content__separator">
                 <div class="form-update-profile__content__form">
                     <form action="">
                         <div class="form-control w-full mb-5">
-                            <label class="label">Je suis</label>
+                            <label class="label">{{$t('profile.im')}}</label>
                             <select v-model="state.status" @change="handleStatusChange"
                                 class="select select-bordered w-full">
-                                <option value="individual" selected>Particulier</option>
-                                <option value="professional">Professionnel</option>
+                                <option value="individual" selected>{{$t('profile.particular')}}</option>
+                                <option value="professional">{{$t('profile.professional')}}</option>
                             </select>
                             <label v-if="v$.status.$error" class="label">
                                 <span class="label-text-alt text-red-400">{{ v$.status.$errors[0].$message }}</span>
@@ -20,7 +20,7 @@
                         </div>
                         <div class="register__form__flex">
                             <div class="form-control w-full mb-5">
-                                <label class="label">Nom</label>
+                                <label class="label">{{$t('profile.last_name')}}</label>
                                 <input type="text"
                                     :class="[{ 'input-error': v$.lastname.$error }, 'input input-bordered rounded-md w-full']"
                                     v-model="state.lastname" />
@@ -30,7 +30,7 @@
                                 </label>
                             </div>
                             <div class="form-control w-full mb-5">
-                                <label class="label">Prénom</label>
+                                <label class="label">{{$t('profile.first_name')}}</label>
                                 <input type="text"
                                     :class="[{ 'input-error': v$.firstname.$error }, 'input input-bordered rounded-md w-full']"
                                     v-model="state.firstname" />
@@ -47,7 +47,7 @@
                         </div>
                         <div class="register__form__flex" v-show="state.isProfessional">
                             <div class="form-control w-full mb-5">
-                                <label class="label">Secteur d'activité</label>
+                                <label class="label">{{$t('profile.activity_sector')}}</label>
                                 <input type="text"
                                     :class="[{ 'input-error': v$.area.$error }, 'input input-bordered rounded-md w-full']"
                                     v-model="state.area" />
@@ -56,7 +56,7 @@
                                 </label>
                             </div>
                             <div class="form-control w-full mb-5">
-                                <label class="label">Siren</label>
+                                <label class="label">{{$t('profile.siren')}}</label>
                                 <input type="text"
                                     :class="[{ 'input-error': v$.siren.$error }, 'input input-bordered rounded-md w-full']"
                                     v-model="state.siren" />
@@ -68,7 +68,7 @@
                         <div class="form-control w-full mt-6">
                             <button @click="handleUpdateClick()"
                                 :class="[{ 'loading': state.isLoading }, 'btn btn-primary']">{{ state.isLoading ?
-                                        'chargement' : 'Modifier mon compte'
+                                        $t('loading') : $t('profile.edit_account')
                                 }}</button>
                         </div>
                     </form>

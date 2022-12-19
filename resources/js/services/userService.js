@@ -63,5 +63,18 @@ export default {
             headers: {'Authorization': 'Bearer ' + store.state.tokenStore.token}
         });
         return response.data;
-    }
+    },
+    getUserDetails: async (userId) => {
+        const response = await axios.get(`/api/user/${userId}`, {
+       
+        });
+        return response.data;
+    },
+    getUserProjects: async (userId,page) => {
+        const response = await axios.get(`/api/user/${userId}/projects?page=${page}`, {
+            
+        });
+        return response.data;
+    },
+
 }

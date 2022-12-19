@@ -1,6 +1,7 @@
 <template>
-  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400"
-    >Type de justificatif</label
+  <label
+    class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-400"
+    >{{ $t("feature.step.type_of_receipt") }}</label
   >
   <select
     class="
@@ -22,11 +23,11 @@
     v-model="state.type"
   >
     <option selected value="" disabled>
-      Selectionner le type de justificatif
+      {{ $t("feature.step.select_receipt_type") }}
     </option>
-    <option value="1">Lien</option>
-    <option value="2">Fichier</option>
-    <option value="3">Pas besoin de fournir de livrable</option>
+    <option value="1">{{ $t("feature.step.link") }}</option>
+    <option value="2">{{ $t("feature.step.file") }}</option>
+    <option value="3">{{ $t("feature.step.no_delivrable_needed") }}</option>
   </select>
   <div class="mt-4">
     <ImportLink
@@ -83,7 +84,6 @@ export default {
     fileDelivered() {
       this.$emit("fileDelivered");
     },
- 
   },
 };
 </script>

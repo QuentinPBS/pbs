@@ -5,25 +5,25 @@
                 <h1>{{ project.name }}</h1>
                 <p>{{ project.description }}</p>
             </div>
-            <button class="btn btn-primary" @click="state.showModal = true">Créer un devis</button>
+            <button class="btn btn-primary" @click="state.showModal = true">{{$t('create_quote')}}</button>
         </div>
         <div class="devis-list__content">
             <div class="devis-list__content__item" v-if="devis.length > 0">
-                <a :href="`/project/${project.slug}/${item.slug}`" class="btn btn-wide"  v-for="item in devis">{{ item.name }}</a>
+                <router-link :to="`/project/${project.slug}/${item.slug}`" class="btn btn-wide"  v-for="item in devis">{{ item.name }}</router-link>
             </div>
             <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
                 <img src="/images/logo_b&w.png" alt="logo paybystep">
-                <p class="text-xl font-bold">Vous n'avez aucun devis</p>
-                <button class="btn btn-primary" @click="state.showModal = true">Créer un devis</button>
+                <p class="text-xl font-bold">{{$t('no_quote_found')}}</p>
+                <button class="btn btn-primary" @click="state.showModal = true">{{$t('create_quote')}}</button>
             </div>
         </div>
         <vue-final-modal v-model="state.showModal" classes="modal-container" content-class="modal-content">
             <button class="modal__close" @click="state.showModal = false">X</button>
-            <span class="modal__title">Créer un Devis</span>
+            <span class="modal__title">{{$t('create_quote')}}</span>
             <div class="modal__content">
                 <div class="project-list__form">
                     <div class="form-control w-full">
-                        <label class="label">Nom du devis</label>
+                        <label class="label">{{$t('quote_name')}}</label>
                         <input type="text"
                             :class="[{ 'input-error': v$.name.$error }, 'input input-bordered rounded-md w-full']"
                             v-model="state.name" />
@@ -34,9 +34,9 @@
                 </div>
             </div>
             <div class="modal__action">
-                <button class="btn btn-link" @click="cancelForm()">Annuler</button>
+                <button class="btn btn-link" @click="cancelForm()">{{$t('cancel')}}</button>
                 <button @click="handleProjectClick" :class="[{ 'loading': state.isLoading }, 'btn btn-primary']">{{
-                        state.isLoading ? 'loading' : 'Créer'
+                        state.isLoading ? $t('loading') : $t('create')
                 }}</button>
             </div>
         </vue-final-modal>
