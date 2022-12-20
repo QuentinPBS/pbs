@@ -13,7 +13,7 @@ const routes = [
         }
     },
 
-    
+
     {
         path: '/about',
         component: () => import('../Pages/About.vue'),
@@ -42,7 +42,7 @@ const routes = [
         }
     },
 
-     
+
     {
         path: '/project/:slug',
         strict: true,
@@ -122,18 +122,18 @@ const routes = [
             middleware: [auth],
         }
     },
- //user profile
- {
-    path: '/user/:id/profile',
-    strict: true,
-    component: () => import('../Pages/Public/Profile.vue'),
-    name: 'Profile',
-    meta: {
-        title: 'Profile',
+    //user profile
+    {
+        path: '/user/:id/profile',
+        strict: true,
+        component: () => import('../Pages/Public/Profile.vue'),
+        name: 'User profile',
+        meta: {
+            title: 'User profile',
 
-    }
-},
-  
+        }
+    },
+
 ]
 
 export default routes;
