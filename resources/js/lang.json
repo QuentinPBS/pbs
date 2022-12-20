@@ -111,7 +111,8 @@
                 "create_project" : "Create a project",
                 "project_name": "Name of project",
                 "description": "Description",
-                "image": "Image"
+                "image": "Image",
+                "no_project_found" : "You have no projects"
         },
         "navbar" :{
             "my_projects" : "My Projects",
@@ -234,7 +235,8 @@
                 "create_project" : "Créer un projet",
                 "project_name": "Nom du projet",
                 "description": "Description",
-                "image": "Image"
+                "image": "Image",
+                "no_project_found" : "Vous n'avez aucun projet"
         },
          
         "navbar" :{
