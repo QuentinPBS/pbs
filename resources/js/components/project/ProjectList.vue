@@ -60,7 +60,7 @@
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
-        <p class="text-xl font-bold">Vous n'avez aucun projet</p>
+        <p class="text-xl font-bold">{{$t('project.no_project_found')}}</p>
         <button class="btn btn-primary" @click="state.showModal = true">
           {{ $t("create_project") }}
         </button>
