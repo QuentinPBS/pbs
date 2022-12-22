@@ -7,20 +7,20 @@
         class="alert alert-info shadow-sm w-72 cursor-pointer"
       >
         <span class="text-center text-white font-bold"
-          >Vous avez une demande de devis</span
+          >{{$t('quote_request_message')}}</span
         >
       </div>
       <div class="project-list__content__item" v-if="projects.length > 0">
         <router-link
-          :to="`/project/${project.project.slug}`"
+          :to="`/project/${project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
           v-for="project in projects"
         >
           <figure>
             <img
               :src="
-                project.project.image
-                  ? project.project.image
+                project.image
+                  ? project.image
                   : 'https://paybystep.s3.eu-west-3.amazonaws.com/bg-default.png'
               "
               alt=""
@@ -29,9 +29,9 @@
           </figure>
           <div class="card-body">
             <h2 class="card-title font-bold text-left">
-              {{ project.project.name }}
+              {{ project.name }}
             </h2>
-            <p class="text-left">{{ project.project.description }}</p>
+            <p class="text-left">{{ project.description }}</p>
           </div>
         </router-link>
       </div>
@@ -49,7 +49,7 @@
       <button class="modal__close" @click="state.showModal = false">X</button>
       <span class="modal__title text-center"
         >{{ invitation[0].user.firstname }} {{ invitation[0].user.lastname }}
-        <span class="font-normal">vous invite à son projet</span>
+        <span class="font-normal">{{$t('project.project_invite_message')}}</span>
         {{ invitation[0].project.name }}</span
       >
       <div class="modal__content"></div>
@@ -58,13 +58,13 @@
           @click="handleRejectClick"
           :class="[{ loading: state.isLoadingNo }, 'btn btn-link']"
         >
-          {{ state.isLoading ? "loading" : "Non" }}
+          {{ state.isLoading ? $t('loading') : $t('no') }}
         </button>
         <button
           @click="handleAcceptClick"
           :class="[{ loading: state.isLoadingYes }, 'btn btn-primary']"
         >
-          {{ state.isLoading ? "loading" : "Oui" }}
+          {{ state.isLoading ? $t('loading') : $t('yes') }}
         </button>
       </div>
     </vue-final-modal>

@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Lead extends Model
 {
@@ -93,5 +94,10 @@ class Lead extends Model
     public function messages()
     {
         return $this->hasMany(LeadConversation::class);
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'lead_user');
     }
 }

@@ -89,7 +89,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     /* The member that belong to the user. */
     public function leads()
     {
-        return $this->belongsToMany(Lead::class);
+        return $this->belongsToMany(Lead::class,'lead_user');
     }
 
     /* Get invitations for the user. */
@@ -108,4 +108,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return $this->belongsToMany(Project::class, 'project_archived');
     }
+
+   
 }

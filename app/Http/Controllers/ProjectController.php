@@ -125,9 +125,19 @@ class ProjectController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showByCientId($id, ShowProjectByUserIdAction $showProjectByUserIdAction)
+    public function showByCientId($id)
     {
-        $projects = $showProjectByUserIdAction->execute($id, 2);
+        //list projects for clients  (devis)
+        $projects =  Project::query()
+            ->whereHas(
+                'leads',
+                fn ($qLeads) =>
+                $qLeads->whereHas('users', fn ($qUsers) => $qUsers->where('users.id', auth()->id()))
+            )
+
+            ->whereDoesntHave('archives')
+            ->get();
+
         return response()->json($projects, 200);
     }
 
