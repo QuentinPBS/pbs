@@ -10,7 +10,7 @@
       </button>
     </div>
     <div class="devis-list__content">
-      <div class="devis-list__content__item" v-if="devis.length > 0">
+      <div class="flex gap-2 flex-wrap" v-if="devis.length > 0">
         <router-link
           :to="`/project/${project.slug}/${item.slug}`"
           class="btn btn-wide"
