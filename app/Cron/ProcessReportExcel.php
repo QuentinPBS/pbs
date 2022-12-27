@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Storage;
 class ProcessReportExcel
 {
 
-    private $fileName = "reportExcel.xlsx";
     public function __invoke()
     {
+        $fileName = config('report.filename');
+        $emailTo = config('report.email');
 
-
-        Excel::store(new ReportExport, $this->fileName);
-        Mail::to("email@email.comI")->send(new ProcessReportExcelMail($this->fileName));
-        Storage::delete($this->fileName);
+        Excel::store(new ReportExport, $fileName);
+        Mail::to($emailTo)->send(new ProcessReportExcelMail($fileName));
+        Storage::delete($fileName);
     }
 }
