@@ -27,6 +27,12 @@ class InviteController extends Controller
 
     public function sendInvitation($projectId, Request $request)
     {
+
+        $validatedData = $request->validate([
+            'email' => 'required',
+            'userId' => 'required|exists:users,id',
+            'lead_id' => 'required|exists:leads,id',
+        ]);
         $project = Project::find($projectId);
         if (!$project) return response()->json(['error' => 'Project not found']);
 
@@ -34,10 +40,12 @@ class InviteController extends Controller
         if ($invitation) return response()->json(['error' => 'Invitation already sent']);
 
         $project->invitations()->create([
-            'email' => $request->email,
+            'email' => $validatedData['email'],
             'token' => Str::random(60),
             'project_id' => $projectId,
-            'user_id' => $request->userId,
+            'lead_id' => $validatedData['lead_id'],
+            'user_id' => $validatedData['userId']
+
         ]);
 
         $dataInvite = $project->invitations()->where('email', $request->email)->with(['project', 'user'])->first();
@@ -65,6 +73,7 @@ class InviteController extends Controller
             'project_id' => $invitation->project_id,
             'role_id' => 2
         ]);
+        $user->leads()->attach($invitation->lead_id);
         $invitation->delete();
         return response()->json(['success' => 'Invitation accepted']);
     }
@@ -81,6 +90,7 @@ class InviteController extends Controller
     public function getInvitations($email)
     {
         $invitations = Invitations::where('email', $email)->with(['user', 'project'])->get();
+       
         if (!$invitations) return response()->json(['error' => 'No invitations']);
 
         return response()->json($invitations, 200);

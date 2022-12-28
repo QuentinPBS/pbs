@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
-use App\Models\User;
-use Illuminate\Auth\Events\Verified;
+use App\Actions\User\UpdateLastLoginAtAction;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -47,26 +50,27 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function login(AuthLoginRequest $request): JsonResponse
+    public function login(AuthLoginRequest $request, UpdateLastLoginAtAction $action): JsonResponse
     {
         $credentials = $request->validated();
         if (!$token = auth()->attempt($credentials)) {
             return $this->respondUnAuthenticate(251);
         }
-
+        //update user last login
+        $action->execute();
         return $this->respondWithToken($token);
-    } 
+    }
 
     public function respondWithToken($token)
     {
-        
+
         return $this->respond([
             'token' => $token,
             'access_type' => 'Bearer',
             'expires_in' => auth()->factory()->getTTL() * 60,
         ]);
     }
-    
+
     /**
      * Logout a user.
      *

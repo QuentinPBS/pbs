@@ -8,7 +8,7 @@
     <div class="project-list__content">
       <div class="project-list__content__item" v-if="state.projects.length > 0">
         <router-link
-          :to="`/project/${project.project.slug}`"
+          :to="`/project/${project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
           v-for="(project, key) in state.projects"
           :key="key"
@@ -16,8 +16,8 @@
           <figure>
             <img
               :src="
-                project.project.image
-                  ? project.project.image
+                project.image
+                  ? project.image
                   : 'https://paybystep.s3.eu-west-3.amazonaws.com/bg-default.png'
               "
               alt="Shoes"
@@ -27,11 +27,11 @@
           <div class="card-body">
             <div class="flex justify-between items-center">
               <h2 class="card-title font-bold">
-                {{ project.project.name }}
+                {{ project.name }}
               </h2>
 
               <a
-                @click.prevent="archiveProject(project.project)"
+                @click.prevent="archiveProject(project)"
                 title="archiver"
               >
                 <svg
@@ -54,7 +54,7 @@
               </a>
             </div>
 
-            <p class="text-left">{{ project.project.description }}</p>
+            <p class="text-left">{{ project.description }}</p>
           </div>
         </router-link>
       </div>

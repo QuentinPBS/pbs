@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Lead;
 use App\Models\User;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
@@ -74,5 +75,10 @@ class Project extends Model
     public function archives()
     {
         return $this->belongsToMany(User::class, 'project_archived');
+    }
+
+    public function leads()
+    {
+        return $this->hasMany(Lead::class);
     }
 }

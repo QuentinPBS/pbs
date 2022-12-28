@@ -5,6 +5,7 @@
         "create_quote" : "Create a quote",
         "quote_name": "Quote name",
         "no_quote_found" : "No quote found",
+        "quote_request_message" : "You have a new quote request",
         "loading" : "Loading",
         "cancel": "Cancel",
         "create": "Create",
@@ -12,6 +13,8 @@
         "download" : "Download",
         "accept": "Accept",
         "error" : "An error has occured.",
+        "yes" : "Yes",
+        "no": "No",
         "email" : {
             "email_sent_message" : "Email has been sent",
             "email_already_sent_message" : "Email already sent.",
@@ -112,7 +115,8 @@
                 "project_name": "Name of project",
                 "description": "Description",
                 "image": "Image",
-                "no_project_found" : "You have no projects"
+                "no_project_found" : "You have no projects",
+                "project_invite_message": "invites you to"
         },
         "navbar" :{
             "my_projects" : "My Projects",
@@ -131,6 +135,7 @@
         "create_quote" : "Créer un devis",
         "quote_name": "Nom du devis",
         "no_quote_found" : "Vous n'avez aucun devis",
+          "quote_request_message" : "Vous avez une demande de devis",
         "loading" : "Chargement",
         "cancel": "Annuler",
         "create": "Créer",
@@ -138,6 +143,8 @@
         "error" : "Une erreure est survenu.",
         "download" : "Télécharger",
         "accept": "Accepter",
+        "yes" : "Yes",
+        "no": "No",
         "email" : {
             "email_sent_message" : "Un email vient d'être envoyé",
             "email_already_sent_message" : "Un email est déjà envoyé",
@@ -236,7 +243,8 @@
                 "project_name": "Nom du projet",
                 "description": "Description",
                 "image": "Image",
-                "no_project_found" : "Vous n'avez aucun projet"
+                "no_project_found" : "Vous n'avez aucun projet",
+                "project_invite_message": "vous invite à son projet"
         },
          
         "navbar" :{

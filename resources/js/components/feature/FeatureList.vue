@@ -663,6 +663,7 @@ export default {
         const response = await inviteService.sendInvite(this.devis.project_id, {
           email: this.state.email,
           userId: this.$store.state.userStore.user.id,
+          lead_id : this.devis.id
         });
         if (response.data.success) this.state.isSendEmail = true;
         else this.state.isSendEmailError = true;

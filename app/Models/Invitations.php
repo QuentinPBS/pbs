@@ -9,13 +9,11 @@ class Invitations extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'email',
-        'token',
-        'project_id',
-        'user_id',
+    protected $guarded = [
+        'id'
+
     ];
-    
+
     public function project()
     {
         return $this->belongsTo(Project::class);

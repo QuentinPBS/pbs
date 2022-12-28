@@ -1,8 +1,12 @@
 <?php
 
-use App\Mail\SendValidationMail;
+use App\Exports\ReportExport;
 use Illuminate\Http\Response;
+use App\Cron\ProcessReportExcel;
+use App\Mail\SendValidationMail;
+use App\Mail\ProcessReportExcelMail;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
