@@ -304,7 +304,9 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">{{$t('feature.step.delivrable_verification')}}</span>
+        <span class="modal__title">{{
+          $t("feature.step.delivrable_verification")
+        }}</span>
         <button class="" @click="state.showModalDelivred = false">X</button>
       </div>
 
@@ -326,7 +328,9 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">{{$t('feature.step.delivrable_verification')}}</span>
+        <span class="modal__title">{{
+          $t("feature.step.delivrable_verification")
+        }}</span>
         <button class="" @click="state.showModalIsDelivred = false">X</button>
       </div>
 
@@ -346,16 +350,16 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">{{$t('feature.step.step_reject')}}</span>
+      <span class="modal__title">{{ $t("feature.step.step_reject") }}</span>
       <div class="modal__content">
-        <p class="my-5">{{$t('feature.step.step_reject_question')}}</p>
+        <p class="my-5">{{ $t("feature.step.step_reject_question") }}</p>
       </div>
       <div class="modal__action">
         <button
           @click="state.showRejectStep = false"
           class="btn btn-bg-black-500 text-white mr-2"
         >
-          {{$t('cancel')}}
+          {{ $t("cancel") }}
         </button>
         <button
           @click="handleRejectStep()"
@@ -364,7 +368,7 @@
             'btn btn-primary',
           ]"
         >
-          {{$t('feature.step.validate')}}
+          {{ $t("feature.step.validate") }}
         </button>
       </div>
     </vue-final-modal>
@@ -663,7 +667,7 @@ export default {
         const response = await inviteService.sendInvite(this.devis.project_id, {
           email: this.state.email,
           userId: this.$store.state.userStore.user.id,
-          lead_id : this.devis.id
+          lead_id: this.devis.id,
         });
         if (response.data.success) this.state.isSendEmail = true;
         else this.state.isSendEmailError = true;
@@ -745,8 +749,7 @@ export default {
     },
 
     convertDeadline(deadline) {
-      var date = new Date(deadline);
-      return date.toISOString().split("T")[0];
+      return deadline.split(" ")[0];
     },
 
     featureIsLoading(feature) {
