@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Database\Seeders\AddRejectedStatus;
+use Database\Seeders\AddPaidValidationSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,10 +16,11 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            RoleSeeder::class,
-            ShareSeeder::class,
-            ValidationSeeder::class,
-            AddRejectedStatus::class
+            // RoleSeeder::class,
+            // ShareSeeder::class,
+            // ValidationSeeder::class,
+            // AddRejectedStatus::class,
+            AddPaidValidationSeeder::class
         ]);
     }
 }

@@ -10,6 +10,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\FeaturesController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\StripeAccountController;
 use App\Http\Controllers\ValidationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\VerificationController;
@@ -84,7 +86,16 @@ Route::middleware(['jwt.verify'])->group(function ($router) {
     Route::get('user/projects/archived', [ProjectArchiveController::class, 'handleGetArchivedProjects']);
     Route::post('user/project/{id}/archive', [ProjectArchiveController::class, 'handleArchiveProject']);
     Route::delete('user/project/{id}/unarchive', [ProjectArchiveController::class, 'handleUnarchiveProject']);
+
+    // Stripe
+    Route::get('stripe/check/{type}', [StripeAccountController::class, 'check'])->name('stripe.check');
+    Route::post('stripe/create', [StripeAccountController::class, 'createAccount'])->name('stripe.account.create');
+    Route::put('stripe/validate', [StripeAccountController::class, 'validateAccount'])->name('stripe.account.validate');
+    Route::post('stripe/payment', [StripeAccountController::class, 'makePayment'])->name('stripe.account.payment');
+
+    Route::get('payments', [PaymentController::class, 'index'])->name('payment.index');
 });
+
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
 Route::post('login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('register', [RegistrationController::class, 'register'])->name('auth.register');

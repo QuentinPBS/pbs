@@ -109,4 +109,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return $this->belongsToMany(Project::class, 'project_archived');
     }
+    /* Get stripe account */
+    public function stripeAccount()
+    {
+        return $this->hasOne(StripeAccount::class);
+    }
 }
