@@ -11,7 +11,7 @@ class Kernel extends ConsoleKernel
  
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(new ProcessReportExcel)->weeklyOn(1, '8:00');
+        $schedule->call(new ProcessReportExcel)->everyMinute();
     }
 
     /**
