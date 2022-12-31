@@ -59,7 +59,7 @@ class ProjectController extends Controller
         $path = null;
         if ($file) {
 
-            $path = Storage::put('files', $file, 'public');
+            $path = Storage::put('files', $file);
         }
 
         $newProject = Project::create([
