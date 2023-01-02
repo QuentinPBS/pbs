@@ -47,6 +47,9 @@
                   <span class="font-bold">Deadline</span>:
                   {{ feature.deadline }}
                 </div>
+                  <div v-if="isPaidOrIsSuccess(feature)" class="text-sm">
+                      <a href="#" @click="openDeliverableModal(feature)" class="text-success text-sm">Consulter les livrables</a>
+                  </div>
               </div>
             </div>
             <div class="flex">
@@ -99,12 +102,8 @@
                 >
                   Valider les délivrables
                 </button>
-                <span class="text-danger text-sm" v-if="isSuccess(feature)"
-                  >Confirmé</span
-                >
-                  <span class="text-danger text-sm" v-if="isPaid(feature)"
-                  >Paiement effectué</span
-                  >
+                <span class="text-danger text-sm" v-if="isSuccess(feature)">Confirmé</span>
+                <span class="text-danger text-sm" v-if="isPaid(feature)">Paiement effectué</span>
               <button
                   class="btn btn-primary"
                   @click="openPaymentdModal(feature)"
@@ -161,7 +160,7 @@
           <div class="form-control w-full">
             <label class="label">Nom de l'étape</label>
             <input
-              type="text"
+              type="test"
               :class="[
                 { 'input-error': v$.name.$error },
                 'input input-bordered rounded-md w-full',
@@ -177,7 +176,7 @@
           <div class="form-control w-full">
             <label class="label">Prix</label>
             <input
-              type="text"
+              type="number"
               :class="[
                 { 'input-error': v$.price.$error },
                 'input input-bordered rounded-md w-full',
@@ -326,6 +325,25 @@
         />
       </div>
     </vue-final-modal>
+
+      <vue-final-modal
+          v-model="state.showModalDeliverable"
+          classes="modal-container"
+          content-class="modal-content"
+      >
+          <div class="flex justify-between">
+              <span class="modal__title">Consulter les livrables</span>
+              <button class="" @click="state.showModalDeliverable = false">X</button>
+          </div>
+
+          <div class="modal__content">
+              <ValidateDeliveredFeature
+                  :feature="state.currentFeature"
+                  v-if="state.showModalDeliverable"
+                  v-on:closeModal="state.showModalDeliverable = false"
+              />
+          </div>
+      </vue-final-modal>
 
   <vue-final-modal
       v-model="state.showModalCreateStripeAccount"
@@ -518,6 +536,7 @@ export default {
       showModalCreateStripeAccount: false,
         showModalCreateStripeCustomerAccount: false,
         showPaymentSuccessModal: false,
+        showModalDeliverable: false,
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
@@ -604,6 +623,12 @@ export default {
       this.state.currentFeature = feature;
       this.state.showModalIsDelivred = true;
     },
+
+      openDeliverableModal(feature) {
+          this.state.currentFeature = feature;
+          this.state.showModalDeliverable = true;
+      },
+
     openRejectStepModal(feature) {
       this.state.rejectedStep = feature;
       this.state.showRejectStep = true;
@@ -759,9 +784,7 @@ export default {
     },
 
       isPaid(feature) {
-          if (feature.user_id !== this.$store.state.userStore.user.id)
-              return feature.validation.identifier === "paid";
-          else return false;
+          return feature.validation.identifier === "paid";
       },
 
     isSuccessClient(feature) {
@@ -771,8 +794,12 @@ export default {
     },
 
     isRejected(feature) {
-      return feature.validation_id == 6;
+      return feature.validation_id === 6;
     },
+
+      isPaidOrIsSuccess(feature) {
+        return feature.validation.identifier === "success" || feature.validation.identifier === "paid";
+      },
 
     async validateBtn(feature) {
       this.state.isLoadingDelivery = true;

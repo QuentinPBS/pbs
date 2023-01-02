@@ -23,7 +23,7 @@
       >
     </div>
   </div>
-  <div class="flex justify-end">
+  <div v-if="feature.validation_id === 4" class="flex justify-end">
     <button @click="$emit('closeModal')" class="btn bg-red-500 text-white mr-2">
       Annuler
     </button>

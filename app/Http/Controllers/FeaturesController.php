@@ -6,6 +6,7 @@ use App\Actions\Feature\ShowFeatureByLeadIdAction;
 use App\Actions\Feature\ShowFeatureBySlugAction;
 use App\Actions\Feature\StoreFeatureAction;
 use App\Actions\Lead\StoreLeadAction;
+use App\Http\Requests\StoreFeatureRequest;
 use Illuminate\Http\Request;
 
 class FeaturesController extends Controller
@@ -36,7 +37,7 @@ class FeaturesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, StoreFeatureAction $storeFeatureAction)
+    public function store(StoreFeatureRequest $request, StoreFeatureAction $storeFeatureAction)
     {
         $feature = $storeFeatureAction->execute($request, auth()->id(), 1);
 
