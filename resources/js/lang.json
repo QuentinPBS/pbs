@@ -15,6 +15,7 @@
         "error" : "An error has occured.",
         "yes" : "Yes",
         "no": "No",
+        "save": "Save",
         "email" : {
             "email_sent_message" : "Email has been sent",
             "email_already_sent_message" : "Email already sent.",
@@ -76,6 +77,7 @@
             "share_feature": "Share the feature",
             "email": "Email",
             "send_link": "Send link",
+            "description" : "Discussion",
             "step" : {
                 "create_step": "Create a step",
                 "step_name": "Name of step",
@@ -132,7 +134,7 @@
        
     },
     "fr": {
-        "home":"Acceuil",
+        "home":"Accueil",
         "quote" : "Devis",
         "create_quote" : "Créer un devis",
         "quote_name": "Nom du devis",
@@ -147,6 +149,7 @@
         "accept": "Accepter",
         "yes" : "Yes",
         "no": "No",
+        "save": "Sauvegarder",
         "email" : {
             "email_sent_message" : "Un email vient d'être envoyé",
             "email_already_sent_message" : "Un email est déjà envoyé",
@@ -208,6 +211,7 @@
                 "share_feature": "Partager le devis",
                 "email": "Adresse mail",
                 "send_link": "Envoyer le lien",
+                "description": "Votre espace de discussion",
                 "step" : {
                     "create_step": "Créer une étape ",
                     "step_name": "Nom de l'étape",
@@ -218,20 +222,20 @@
                     "validate" : "Valider",
                     "refuse": "Refuser",
                     "deliver":"Délivrer",
-                    "waiting_for_delivrable" : "En attente de délivrable",
-                    "non_valid" : "Non validée<",
-                    "waiting_for_confirmation": ">En attente de confirmation",
-                    "validate_delivrable": "Valider les délivrables",
+                    "waiting_for_delivrable" : "En attente de livrable",
+                    "non_valid" : "Non validée",
+                    "waiting_for_confirmation": "En attente de confirmation",
+                    "validate_delivrable": "Valider les livrables",
                     "pay": "Effectuer le paiement",
                     "confirmed": "Confirmé",
                     "accepted": "Acceptée",
                     "refused": "Refusée",
                     "paid" : "Paiement effectué",
-                    "step_reject": "Refus de l'etape",
-                    "step_reject_question": "Etes vous sur de vouloir refuser cette etape?",
-                    "delivrable_verification": "Vérification du Délivrable",
-                    "delivrable_verification_text" : "Merci de cliquer sur le bouton ci dessous pour vérifier le délivrable.",
-                    "no_delivrable" : "Pas de livrable pour cette étape",
+                    "step_reject": "Refus de l'étape",
+                    "step_reject_question": "Etes-vous sûr de vouloir refuser cette étape ?",
+                    "delivrable_verification": "Vérification du livrable",
+                    "delivrable_verification_text" : "Merci de cliquer sur le bouton ci dessous pour vérifier le livrable.",
+                    "no_delivrable" : "Cette étape ne nécessitait pas de livrable",
                     "type_of_receipt": "Type de justificatif",
                     "select_receipt_type": " Selectionner le type de justificatif",
                     "link": "Lien",
@@ -239,7 +243,7 @@
                     "no_delivrable_needed" : "Pas besoin de fournir de livrable",
                     "click_here_to_import_file" : "Cliquer ici pour importer le fichier",
                     "file_not_exceed_10": "Le fichier ne doit pas dépasser 10MO",
-                    "check_link_message" : " Merci de cliquer sur le lien ci dessous pour vérifier le délivrable"
+                    "check_link_message" : " Merci de cliquer sur le lien ci dessous pour vérifier le livrable"
                 } 
             },
             "project":{

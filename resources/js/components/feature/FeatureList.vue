@@ -147,7 +147,7 @@
         </div>
       </div>
       <div class="devis-list__description">
-        <p class="mb-1 text-sm">Description</p>
+        <p class="mb-1 text-sm">{{ $t("feature.description") }}</p>
         <QuillEditor
           ref="myEditor"
           theme="snow"
@@ -160,7 +160,7 @@
           @click="sendMessage"
           :class="[{ loading: state.isLoading }, 'btn bg-blue-400 mt-2']"
         >
-          save
+          {{$t('save')}}
         </button>
 
         <!-- <LeadConversation :leadConversation="leadConversation" /> -->
@@ -585,6 +585,13 @@ export default {
   props: ["devis", "features", "conversation"],
 
   mounted() {
+    // window.document.onkeydown = function (e) {
+    //   if (e.keyCode == 17 || e.key == 17) {
+    //     // alert("Not Allowed!");
+    //     // e.stop();
+    //     this.processDom()
+    //   }
+    // };
     window.userId = this.$store.state.userStore.user.id;
     var Block = Quill.import("blots/block");
 
