@@ -45,6 +45,7 @@
             "
           >
             <li><router-link to="/profile">{{$t('navbar.profile')}}</router-link></li>
+             <li><a href="/payments">Mes paiements</a></li>
             <li @click="logout"><a>{{$t('navbar.sign_out')}}</a></li>
           </ul>
         </div>

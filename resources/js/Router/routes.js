@@ -134,6 +134,24 @@ const routes = [
         }
     },
 
+    {
+        path: '/stripe/callback/:accountId',
+        component: () => import('../Pages/StripeCallback.vue'),
+        name: 'StripeCallback',
+        meta: {
+            title: 'StripeCallback',
+            middleware: [auth],
+        }
+    },
+    {
+        path: '/payments',
+        component: () => import('../Pages/Payments.vue'),
+        name: 'Payments',
+        meta: {
+            title: 'Payments',
+            middleware: [auth],
+        }
+    },
 ]
 
 export default routes;
