@@ -147,8 +147,8 @@
         "error" : "Une erreure est survenu.",
         "download" : "Télécharger",
         "accept": "Accepter",
-        "yes" : "Yes",
-        "no": "No",
+        "yes" : "Oui",
+        "no": "Non",
         "save": "Sauvegarder",
         "email" : {
             "email_sent_message" : "Un email vient d'être envoyé",
