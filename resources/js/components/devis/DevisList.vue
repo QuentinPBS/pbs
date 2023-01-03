@@ -45,9 +45,9 @@
               ]"
               v-model="state.name"
             />
-            <label v-if="v$.name.$error" class="label">
+            <label v-if="state.errors?.name" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.name.$errors[0].$message
+                state.errors.name.join(", ")
               }}</span>
             </label>
           </div>
@@ -83,6 +83,7 @@ export default {
     const state = reactive({
       showModal: false,
       name: "",
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -103,26 +104,34 @@ export default {
     ModalsContainer,
     VueFinalModal,
   },
-
+  watch: {
+    "state.showModal"(val) {
+      this.state.errors = {};
+    },
+  },
   methods: {
     async handleProjectClick() {
-      this.v$.$validate();
-      if (this.v$.$error) return;
+      // this.v$.$validate();
+      // if (this.v$.$error) return;
 
       try {
         this.state.isLoading = true;
-        const response = await LeadService.createLead({
-          name: this.state.name,
-          project_id: this.project.id,
-        });
+        const response = await LeadService.createLead(
+          {
+            name: this.state.name,
+            project_id: this.project.id,
+          },
+          this.$i18n.locale
+        );
 
         if (response.status === 201) {
           this.state.showModal = false;
           this.state.name = "";
           this.$emit("featureCreated");
         }
-      } catch (error) {
-        console.error(error);
+      } catch (e) {
+        console.error(e);
+        this.state.errors = e.response.data.errors;
       } finally {
         this.state.isLoading = false;
       }

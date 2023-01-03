@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Lead\ShowLeadByProjectIdAction;
-use App\Actions\Lead\ShowLeadBySlugAction;
-use App\Actions\Lead\StoreLeadAction;
+use App\Models\Lead;
 use Illuminate\Http\Request;
+use App\Actions\Lead\StoreLeadAction;
+use App\Http\Requests\StoreLeadRequest;
+use App\Actions\Lead\ShowLeadBySlugAction;
+use App\Actions\Lead\ShowLeadByProjectIdAction;
 
 class LeadController extends Controller
 {
@@ -35,10 +37,17 @@ class LeadController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, StoreLeadAction $storeLeadAction)
+    public function store(StoreLeadRequest $request, StoreLeadAction $storeLeadAction)
     {
-        $lead = $storeLeadAction->execute($request, auth()->id(), $request->project_id, 1, 1);
-
+        // $lead = $storeLeadAction->execute($request, auth()->id(), $request->project_id, 1, 1);
+        $validatedData = $request->validated();
+        $lead = Lead::create([
+            'name' => $validatedData['name'],
+            'user_id' => auth()->id(),
+            'project_id' => $validatedData['project_id'],
+            'validation_id' => 1,
+            'share_id' => 1,
+        ]);
         $response = [
             'message' => 'Lead created successfully',
             'lead' => $lead

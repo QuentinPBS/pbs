@@ -20,6 +20,7 @@ use App\Http\Controllers\ProjectArchiveController;
 use App\Http\Controllers\FeatureDeliveryController;
 use App\Http\Controllers\LeadConversationController;
 use App\Http\Controllers\FeatureConversationController;
+use App\Http\Controllers\LanguageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +33,7 @@ use App\Http\Controllers\FeatureConversationController;
 |
 */
 
-Route::middleware(['jwt.verify'])->group(function ($router) {
+Route::middleware(['jwt.verify', 'lang'])->group(function ($router) {
 
     Route::get('me', [AuthController::class, 'me'])->name('auth.me');
     Route::post('refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
@@ -94,6 +95,9 @@ Route::middleware(['jwt.verify'])->group(function ($router) {
     Route::post('stripe/payment', [StripeAccountController::class, 'makePayment'])->name('stripe.account.payment');
 
     Route::get('payments', [PaymentController::class, 'index'])->name('payment.index');
+
+    //Language
+    Route::post('language/set', [LanguageController::class, 'handleSetLanguage']);
 });
 
 Route::get('dashboard', [AuthController::class, 'dashboard'])->middleware('auth:sanctum');
