@@ -107,7 +107,7 @@
               <button
                   class="btn btn-primary"
                   @click="openPaymentdModal(feature)"
-                  v-if="isSuccessClient(feature)"
+                  v-if="isSuccessClient(feature) && feature.price > 0"
               >Effectuer le paiement</button>
 
                 <span class="text-sm" v-if="isRejected(feature)">Refusée</span>
@@ -778,7 +778,7 @@ export default {
     },
 
     isSuccess(feature) {
-      if (feature.user_id === this.$store.state.userStore.user.id)
+      if (feature.user_id === this.$store.state.userStore.user.id || feature.price === 0)
         return feature.validation.identifier === "success";
       else return false;
     },
@@ -794,7 +794,7 @@ export default {
     },
 
     isRejected(feature) {
-      return feature.validation_id === 6;
+      return feature.validation.identifier === "rejected";
     },
 
       isPaidOrIsSuccess(feature) {

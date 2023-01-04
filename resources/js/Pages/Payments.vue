@@ -45,8 +45,8 @@
                               </div>
                               <div class="flex">
                                   <div>
-                                    <span class="text-secondary text-sm" v-if="isOwner(payment)">Paiment reçu</span>
-                                    <span class="text-secondary text-sm" v-else>Paiment envoyé</span>
+                                    <span class="text-secondary text-sm" v-if="isOwner(payment)">Paiement reçu</span>
+                                    <span class="text-secondary text-sm" v-else>Paiement envoyé</span>
                                   </div>
                               </div>
                           </div>

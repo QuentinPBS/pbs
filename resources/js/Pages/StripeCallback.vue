@@ -30,7 +30,7 @@
                         <p class="">
                             <img src="data:image/png;base64,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">
                         </p>
-                        <p class="text-2xl md:text-3xl lg:text-5xl font-bold tracking-wider text-gray-500 mt-4">Une erreur est survenu !</p>
+                        <p class="text-2xl md:text-3xl lg:text-5xl font-bold tracking-wider text-gray-500 mt-4">Une erreur est survenue !</p>
                         <p class="text-gray-500 mt-4 pb-4 border-b-2 text-center">Veuillez contacter notre support pour résoudre ce problème. Merci.</p>
                         <a href="/" class="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-gray-100 px-4 py-2 mt-6 rounded transition duration-150" title="Return Home">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -100,9 +100,8 @@ export default {
                     this.loading = false;
                     this.account = stripeAccount.data.account;
                     this.redirectUrl = (localStorage.stripeRedirect) ? localStorage.stripeRedirect : '/';
-                    console.log(this.redirectUrl);
                     setTimeout(function() {
-                       window.location = this.redirectUrl;
+                       window.location = (localStorage.stripeRedirect) ? localStorage.stripeRedirect : '/';
                     }, 5000);
                 } else {
                     this.isSuccess = false;
