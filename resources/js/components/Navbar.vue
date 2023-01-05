@@ -24,7 +24,7 @@
         >
       </div>
       <div class="flex-none gap-2">
-      <LangSwitch/>
+        <LangSwitch />
       </div>
       <div class="flex-none gap-2">
         <div class="dropdown dropdown-end">
@@ -44,9 +44,15 @@
               w-52
             "
           >
-            <li><router-link to="/profile">{{$t('navbar.profile')}}</router-link></li>
-             <li><a href="/payments">Mes paiements</a></li>
-            <li @click="logout"><a>{{$t('navbar.sign_out')}}</a></li>
+            <li>
+              <router-link to="/profile">{{
+                $t("navbar.profile")
+              }}</router-link>
+            </li>
+            <li><a href="/payments">Mes paiements</a></li>
+            <li @click="logout">
+              <a>{{ $t("navbar.sign_out") }}</a>
+            </li>
           </ul>
         </div>
       </div>
@@ -57,11 +63,11 @@
 <script>
 import { reactive } from "vue";
 import inviteService from "../services/inviteService";
-import LangSwitch from "./LangSwitch.vue"
+import LangSwitch from "./LangSwitch.vue";
 
 export default {
   name: "Navbar",
-
+  props: ["reload"],
   setup() {
     const state = reactive({
       user: null,
@@ -73,31 +79,43 @@ export default {
     };
   },
 
-  components : {
-    LangSwitch
+  components: {
+    LangSwitch,
   },
 
   async created() {
-    this.state.user = `${this.$store.state.userStore.user.firstname} ${this.$store.state.userStore.user.lastname}`;
-
-    try {
-      const response = await inviteService.getInvites(
-        this.$store.state.userStore.user.email
-      );
-      if (response.data.length > 0) {
-        this.state.notification += 1;
+    this.loadInvites();
+  },
+  watch: {
+    reload(val) {
+      if (val) {
+        this.loadInvites();
       }
-    } catch (e) {
-      console.error(e);
-    }
+    },
   },
 
   methods: {
     logout() {
       this.$store.commit("SET_TOKEN", "");
       this.$store.commit("SET_USER", null);
-      this.$router.push('/login')
+      this.$router.push("/login");
       // window.location = "/login";
+    },
+    async loadInvites() {
+      this.state.user = `${this.$store.state.userStore.user.firstname} ${this.$store.state.userStore.user.lastname}`;
+
+      try {
+        const response = await inviteService.getInvites(
+          this.$store.state.userStore.user.email
+        );
+        if (response.data.length > 0) {
+          this.state.notification += 1;
+        } else {
+          this.state.notification = 0;
+        }
+      } catch (e) {
+        console.error(e);
+      }
     },
   },
 };
