@@ -926,12 +926,9 @@ export default {
         );
 
         if (response.status === 201) {
-
-          this.state.showModal = false;
-          this.state.name = "";
-          this.state.price = "";
-          this.state.deadline = "";
+       
           this.$emit("stepCreated");
+             this.cancelForm();
         }
       } catch (error) {
         console.error(error);
