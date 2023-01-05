@@ -315,6 +315,8 @@
       v-model="state.showModalDelivred"
       classes="modal-container"
       content-class="modal-content"
+       :max-width="Infinity"
+    :max-height="Infinity"
     >
       <div class="flex justify-between">
         <span class="modal__title">{{

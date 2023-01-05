@@ -24,7 +24,7 @@
   </div>
 
   <div v-if="isNullable">
-    <p class="my-5 mb-2 py-3">{{$t('feature.step.no_delivrable')}}</p>
+    <p class="my-5 py-5">{{$t('feature.step.no_delivrable')}}</p>
   </div>
   <div class="flex justify-end">
     <button @click="$emit('closeModal')" class="btn bg-red-500 text-white mr-2">
