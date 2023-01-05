@@ -9,8 +9,10 @@ export default {
         return response.data;
     },
 
-    resetPasswordUser: async (email) => {
-        const response = await axios.post(`${APISettings.baseURL}/password/email`, { email });
+    resetPasswordUser: async (email, locale) => {
+        const response = await axios.post(`${APISettings.baseURL}/password/email`, { email }, {
+            headers: { 'locale': locale }
+        });
         return response.data;
     },
 

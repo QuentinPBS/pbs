@@ -9,6 +9,12 @@
           {{ $t("forgot_password.forgot_password") }}
         </h1>
         <div class="login__form">
+          <div v-if="state.success" class="alert alert-success my-5">
+            <div>
+              <span>{{ $t("forgot_password.success") }}</span>
+            </div>
+          </div>
+
           <div class="form-control w-full">
             <label class="label">Email</label>
             <input
@@ -20,9 +26,9 @@
               ]"
               v-model="state.email"
             />
-            <label v-if="v$.email.$error" class="label">
+            <label v-if="state.errors?.email" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.email.$errors[0].$message
+                state.errors.email.join(", ")
               }}</span>
             </label>
           </div>
@@ -57,12 +63,14 @@ import { required, email, minLength } from "@vuelidate/validators";
 import UserService from "../services/userService";
 import LangSwitch from "../components/LangSwitch.vue";
 export default {
-  name: "Login",
+  name: "Reset Password",
 
   setup() {
     const state = reactive({
       email: "",
       isLoading: false,
+      success: false,
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -82,19 +90,21 @@ export default {
     LangSwitch,
   },
   methods: {
-    handleLoginClick: async function () {
-      this.v$.$validate();
-      if (this.v$.$error) return;
+    async handleLoginClick() {
       try {
         this.state.isLoading = true;
-        const response = UserService.resetPasswordUser(this.state.email);
+        const response = await UserService.resetPasswordUser(
+          this.state.email,
+          this.$i18n.locale
+        );
 
-        console.log(response);
-
-        if (response.status === 200) {
+        if (response.success) {
+          this.state.errors = false;
+          this.state.success = true;
         }
       } catch (e) {
-        console.error("ici", e);
+        this.state.success = false;
+        this.state.errors = e.response.data.errors;
       } finally {
         this.state.isLoading = false;
       }

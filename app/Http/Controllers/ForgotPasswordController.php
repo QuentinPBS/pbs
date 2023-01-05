@@ -12,7 +12,7 @@ class ForgotPasswordController extends Controller
     public function sendResetLinkEmail(Request $request)
     {
         $credentials = $request->validate(['email' => 'required|email']);
-
+      
         Password::sendResetLink($credentials);
 
         return $this->respondWithMessage('Password reset link has been sent to your email.');
@@ -21,8 +21,8 @@ class ForgotPasswordController extends Controller
     public function reset(ResetPasswordRequest $request)
     {
 
-        $email_password_status = Password::reset($request->validated(), function($user, $password) {
-            $user->password = Hash::make($password) ;
+        $email_password_status = Password::reset($request->validated(), function ($user, $password) {
+            $user->password = Hash::make($password);
             $user->save();
         });
 

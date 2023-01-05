@@ -69,7 +69,8 @@
          "forgot_password" : "Forgot password",
          "reset_password": "Reset password",
          "or": "Or",
-         "sign_in" : "Sign in"   
+         "sign_in" : "Sign in",
+         "success" : "Mail has been sent"   
         },
         "password_update" : {
             "success" : "Password updated successfuly" 
@@ -188,7 +189,8 @@
                 "forgot_password" : "Mot de passe oublié",
                 "reset_password": "Réinitialiser le mot de passe",
                 "or": "Ou",
-                "sign_in" : "Connectez-vous"   
+                "sign_in" : "Connectez-vous",   
+                "success" : "Un e-mail a été envoyé avec succés"   
                },
                "password_update" : {
                 "success" : "Mot de passe a été modifié avec succés" 
