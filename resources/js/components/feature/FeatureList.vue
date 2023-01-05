@@ -47,6 +47,14 @@
                   <span class="font-bold">Deadline</span>:
                   {{ convertDeadline(feature.deadline) }}
                 </div>
+                <div v-if="isPaidOrIsSuccess(feature)" class="text-sm">
+                  <a
+                    href="#"
+                    @click="openDeliverableModal(feature)"
+                    class="text-success text-sm"
+                    >{{ $t("feature.step.check_delivrable") }}</a
+                  >
+                </div>
               </div>
             </div>
             <div class="flex">
@@ -109,20 +117,20 @@
                 >
                   {{ $t("feature.step.validate_delivrable") }}
                 </button>
+
                 <span class="text-danger text-sm" v-if="isSuccess(feature)">
                   {{ $t("feature.step.confirmed") }}</span
                 >
-                <span class="text-sm" v-if="isSuccessClient(feature)">
-                  {{ $t("feature.step.accepted") }}</span
-                >
+
                 <span class="text-danger text-sm" v-if="isPaid(feature)">
                   {{ $t("feature.step.paid") }}</span
                 >
                 &nbsp;
+
                 <button
                   class="btn btn-primary"
                   @click="openPaymentdModal(feature)"
-                  v-if="isSuccessClient(feature)"
+                  v-if="isSuccessClient(feature) && feature.price > 0"
                 >
                   {{ $t("feature.step.pay") }}
                 </button>
@@ -184,7 +192,7 @@
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.step.step_name") }}</label>
             <input
-              type="text"
+              type="test"
               :class="[
                 { 'input-error': v$.name.$error },
                 'input input-bordered rounded-md w-full',
@@ -200,7 +208,7 @@
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.step.price") }}</label>
             <input
-              type="text"
+              type="number"
               :class="[
                 { 'input-error': v$.price.$error },
                 'input input-bordered rounded-md w-full',
@@ -365,10 +373,30 @@
     </vue-final-modal>
 
     <vue-final-modal
-      v-model="state.showModalCreateStripeAccount"
+      v-model="state.showModalDeliverable"
       classes="modal-container"
       content-class="modal-content"
     >
+      <div class="flex justify-between">
+        <span class="modal__title">{{
+          $t("feature.step.check_delivrable")
+        }}</span>
+        <button class="" @click="state.showModalDeliverable = false">X</button>
+      </div>
+
+      <div class="modal__content">
+        <ValidateDeliveredFeature
+          :feature="state.currentFeature"
+          v-if="state.showModalDeliverable"
+          v-on:closeModal="state.showModalDeliverable = false"
+        />
+      </div>
+    </vue-final-modal>
+
+    <vue-final-modal
+      >>>>>>> features/stripe-integration
+      v-model="state.showModalCreateStripeAccount" classes="modal-container"
+      content-class="modal-content" >
       <div class="flex justify-between">
         <span class="modal__title">Créer votre compte de paiement</span>
         <button class="" @click="state.showModalCreateStripeAccount = false">
@@ -514,7 +542,7 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">Paiement</span>
+        <span class="modal__title">{{ $t("payment") }}</span>
         <button class="" @click="state.showPaymentModal = false">X</button>
       </div>
 
@@ -523,9 +551,9 @@
         v-if="state.currentFeature && state.currentFeature.price"
       >
         <p class="my-5">
-          Pour valider et passer à l'étape suivante, il est necessaire
-          d'effectuer le paiement de {{ state.currentFeature.price }} EUR au
-          prestataire.
+          {{ $t("feature.step.payment_message") }}
+          {{ state.currentFeature.price }} EUR
+          {{ $t("feature.step.to_provider") }}
         </p>
       </div>
       <div class="modal__action">
@@ -533,10 +561,10 @@
           @click="state.showPaymentModal = false"
           class="btn btn-bg-black-500 text-white mr-2"
         >
-          Annuler
+          {{ $t("cancel") }}
         </button>
         <button @click="handlePayment()" class="btn btn-primary">
-          Effectuer le paiement
+          {{ $t("feature.step.pay") }}
         </button>
       </div>
     </vue-final-modal>
@@ -625,8 +653,10 @@ export default {
       showModalIsDelivred: false,
       showPaymentModal: false,
       showModalCreateStripeAccount: false,
+
       showModalCreateStripeCustomerAccount: false,
       showPaymentSuccessModal: false,
+      showModalDeliverable: false,
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
@@ -723,6 +753,12 @@ export default {
       this.state.currentFeature = feature;
       this.state.showModalIsDelivred = true;
     },
+
+    openDeliverableModal(feature) {
+      this.state.currentFeature = feature;
+      this.state.showModalDeliverable = true;
+    },
+
     openRejectStepModal(feature) {
       this.state.rejectedStep = feature;
       this.state.showRejectStep = true;
@@ -871,7 +907,10 @@ export default {
     },
 
     isSuccess(feature) {
-      if (feature.user_id === this.$store.state.userStore.user.id)
+      if (
+        feature.user_id === this.$store.state.userStore.user.id ||
+        feature.price === 0
+      )
         return feature.validation.identifier === "success";
       else return false;
     },
@@ -887,7 +926,14 @@ export default {
     },
 
     isRejected(feature) {
-      return feature.validation_id == 6;
+      return feature.validation.identifier === "rejected";
+    },
+
+    isPaidOrIsSuccess(feature) {
+      return (
+        feature.validation.identifier === "success" ||
+        feature.validation.identifier === "paid"
+      );
     },
 
     async validateBtn(feature) {

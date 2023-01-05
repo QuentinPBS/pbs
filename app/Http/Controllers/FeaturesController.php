@@ -39,6 +39,7 @@ class FeaturesController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(StoreFeatureRequest $request, StoreFeatureAction $storeFeatureAction)
+
     {
         // $feature = $storeFeatureAction->execute($request, auth()->id(), 1);
         $validatedData = $request->validated();

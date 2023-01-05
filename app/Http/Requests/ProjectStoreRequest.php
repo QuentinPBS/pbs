@@ -28,7 +28,7 @@ class ProjectStoreRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
-            'image' => 'nullable|mimes:jpeg,png,jpg,gif|max:2000'
+            'image' => 'bail|nullable|mimes:jpeg,png,jpg,gif|max:2000'
         ];
     }
 

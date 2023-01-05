@@ -21,7 +21,7 @@
                             </svg>
                         </p>
                         <p class="text-2xl md:text-3xl lg:text-5xl font-bold tracking-wider text-gray-500 mt-4">Votre compte est confirmé !</p>
-                        <p class="text-gray-500 mt-4 pb-4 border-b-2 text-center">Vous serez rediriger dans 5 secondes ...</p>
+                        <p class="text-gray-500 mt-4 pb-4 border-b-2 text-center">Vous serez redirigé dans 5 secondes ...</p>
                     </div>
                 </div>
                 <div v-if="!isSuccess && !loading" class="bg-gray-200 w-full px-16 md:px-0 h-screen flex items-center justify-center">
