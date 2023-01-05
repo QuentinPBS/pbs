@@ -582,7 +582,7 @@ import DeliverFeature from "../feature/DeliverFeature.vue";
 import ValidateDeliveredFeature from "../feature/ValidateDeliveredFeature.vue";
 import stripeService from "../../services/stripeService";
 export default {
-  name: "DevisList",
+  name: "Feature List",
 
   props: ["devis", "features", "conversation"],
 
@@ -926,7 +926,12 @@ export default {
         );
 
         if (response.status === 201) {
-          location.reload();
+
+          this.state.showModal = false;
+          this.state.name = "";
+          this.state.price = "";
+          this.state.deadline = "";
+          this.$emit("stepCreated");
         }
       } catch (error) {
         console.error(error);

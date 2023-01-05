@@ -27,6 +27,7 @@
           v-on:linkDelivered="loadData()"
           v-on:nullableFileDelivered="linkDelivered()"
           v-on:deliveryAccepted="loadData()"
+          v-on:stepCreated="loadData()"
         />
       </div>
     </div>
