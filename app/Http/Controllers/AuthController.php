@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 use App\Actions\User\UpdateLastLoginAtAction;
+use App\Http\Requests\UpdateUserRequest;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 class AuthController extends Controller
@@ -120,17 +122,20 @@ class AuthController extends Controller
         return response()->json($response, 200);
     }
 
-    public function updateUser(Request $request): JsonResponse
+    public function updateUser(UpdateUserRequest $request)
     {
+       
+        $validatedData = $request->validated();
         $user = auth()->user();
-        $user->update($request->all());
+        $user->update($validatedData);
         return $this->respond($user);
     }
 
-    public function updatePassword(Request $request): JsonResponse
+    public function updatePassword(UpdatePasswordRequest $request)
     {
+        $validatedData = $request->validated();
         $user = auth()->user();
-        $user->password = Hash::make($request->input('password'));
+        $user->password = Hash::make($validatedData['password']);
         $user->update();
         return $this->respond($user);
     }

@@ -14,6 +14,13 @@ return [
 
         "name" => "Nom de l'étape",
         "price" => "Prix"
+    ],
+    "user" =>  [
+
+        "firstname" => "Prénom",
+        "lastname" => "Nom",
+        "area" => "Secteur d'activité",
+        "siren" => "Siren"
     ]
 
 ];

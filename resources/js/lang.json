@@ -62,7 +62,8 @@
             "activity_sector":"Activity sector",
             "siren":"Siren number",
             "edit_password":"Edit Password",
-            "edit_account":"Edit account"
+            "edit_account":"Edit account",
+            "updated" : "Profile updated successfuly"
         },
         "forgot_password" : {
          "forgot_password" : "Forgot password",
@@ -70,7 +71,9 @@
          "or": "Or",
          "sign_in" : "Sign in"   
         },
-
+        "password_update" : {
+            "success" : "Password updated successfuly" 
+           },
         "feature":{
             "share": "Share",
             "save": "Save",
@@ -187,6 +190,9 @@
                 "or": "Ou",
                 "sign_in" : "Connectez-vous"   
                },
+               "password_update" : {
+                "success" : "Mot de passe a été modifié avec succés" 
+               },
 
                "profile" : {
                 "profile":"Profil",
@@ -202,7 +208,8 @@
                 "siren":"Siren",
                 "already_an_account" : "Déja un compte ?",
                 "edit_password":"Modifier votre mot de passe",
-                "edit_account":"Modifier votre compte"
+                "edit_account":"Modifier votre compte",
+                "updated" : "Profil modifié avec succés"
          
             },
             "feature":{

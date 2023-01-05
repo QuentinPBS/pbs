@@ -14,6 +14,13 @@ return [
 
         "name" => "Name of step",
         "price" => "Price"
+    ],
+    "user" =>  [
+
+        "firstname" => "First name",
+        "lastname" => "Last name",
+        "area" => "Activiy sector",
+        "siren" => "Siren number"
     ]
 
 ];
