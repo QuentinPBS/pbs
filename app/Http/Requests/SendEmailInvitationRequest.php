@@ -4,10 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProjectStoreRequest extends FormRequest
+class SendEmailInvitationRequest extends FormRequest
 {
-
-    protected  $stopOnFirstFailure = true;
+    protected $stopOnFirstFailure = true;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -26,16 +25,9 @@ class ProjectStoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'image' => 'nullable|mimes:jpeg,png,jpg,gif|max:2000'
-        ];
-    }
-
-    public function attributes()
-    {
-        return [
-            'name' => trans('pbs.project.name'),
+            'email' => 'required',
+            'userId' => 'required|exists:users,id',
+            'lead_id' => 'required|exists:leads,id',
         ];
     }
 }

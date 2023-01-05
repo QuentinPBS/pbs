@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Mail\SendInvitationMail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Requests\SendEmailInvitationRequest;
 
 class InviteController extends Controller
 {
@@ -25,18 +26,14 @@ class InviteController extends Controller
         return response()->json(['success' => 'User invited to project']);
     }
 
-    public function sendInvitation($projectId, Request $request)
+    public function sendInvitation($projectId, SendEmailInvitationRequest $request)
     {
 
-        $validatedData = $request->validate([
-            'email' => 'required',
-            'userId' => 'required|exists:users,id',
-            'lead_id' => 'required|exists:leads,id',
-        ]);
+        $validatedData = $request->validated();
         $project = Project::find($projectId);
         if (!$project) return response()->json(['error' => 'Project not found']);
 
-        $invitation = $project->invitations()->where('email', $request->email)->first();
+        $invitation = $project->invitations()->where('email', $validatedData['email'])->first();
         if ($invitation) return response()->json(['error' => 'Invitation already sent']);
 
         $project->invitations()->create([
@@ -90,7 +87,7 @@ class InviteController extends Controller
     public function getInvitations($email)
     {
         $invitations = Invitations::where('email', $email)->with(['user', 'project'])->get();
-       
+
         if (!$invitations) return response()->json(['error' => 'No invitations']);
 
         return response()->json($invitations, 200);

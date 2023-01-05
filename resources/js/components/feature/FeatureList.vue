@@ -186,9 +186,9 @@
               ]"
               v-model="state.name"
             />
-            <label v-if="v$.name.$error" class="label">
+            <label v-if="state.errors?.name" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.name.$errors[0].$message
+                state.errors.name.join(", ")
               }}</span>
             </label>
           </div>
@@ -202,9 +202,9 @@
               ]"
               v-model="state.price"
             />
-            <label v-if="v$.price.$error" class="label">
+            <label v-if="state.errors?.price" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.price.$errors[0].$message
+                state.errors.price.join(", ")
               }}</span>
             </label>
           </div>
@@ -219,9 +219,9 @@
               v-model="state.deadline"
               :min="new Date().toISOString().split('T')[0]"
             />
-            <label v-if="v$.deadline.$error" class="label">
+            <label v-if="state.errors?.deadline" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.deadline.$errors[0].$message
+                state.errors.deadline.join(", ")
               }}</span>
             </label>
           </div>
@@ -248,7 +248,9 @@
       classes="modal-container"
       content-class="modal-content"
     >
-      <button class="modal__close" @click="state.showModal = false">X</button>
+      <button class="modal__close" @click="state.showModalShare = false">
+        X
+      </button>
 
       <span class="modal__title">{{ $t("feature.share_feature") }}</span>
       <div class="modal__content">
@@ -272,11 +274,11 @@
             <span>{{ $t("email.email_already_sent_message") }}</span>
           </div>
         </div>
-        <div v-if="state.isSendEmailErrorCatch" class="alert alert-error my-5">
+        <!-- <div v-if="state.isSendEmailErrorCatch" class="alert alert-error my-5">
           <div>
             <span>{{ $t("error") }}</span>
           </div>
-        </div>
+        </div> -->
         <div class="project-list__form">
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.email") }}</label>
@@ -288,9 +290,9 @@
               ]"
               v-model="state.email"
             />
-            <label v-if="vEmail$.email.$error" class="label">
+            <label v-if="state.errors?.email" class="label">
               <span class="label-text-alt text-red-400">{{
-                vEmail$.email.$errors[0].$message
+                state.errors.email.join(", ")
               }}</span>
             </label>
           </div>
@@ -642,6 +644,7 @@ export default {
       currentFeature: null,
       rejectedStep: null,
       content: "",
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -680,6 +683,15 @@ export default {
   computed: {
     test() {
       return `${process.env.MIX_APP_URL}/invite/${this.devis.project_id}/${this.devis.user_id}`;
+    },
+  },
+
+  watch: {
+    "state.showModal"(newVal) {
+      this.state.errors = {};
+    },
+    "state.showModalShare"(newVal) {
+      this.state.errors = {};
     },
   },
 
@@ -898,45 +910,56 @@ export default {
     },
 
     async handlePFeatureClick() {
-      this.v$.$validate();
-      if (this.v$.$error) return;
+      // this.v$.$validate();
+      // if (this.v$.$error) return;
 
       try {
         this.state.isLoadingCreateDelivery = true;
-        const response = await featureService.createFeature({
-          name: this.state.name,
-          devis_id: this.devis.id,
-          price: this.state.price,
-          deadline: this.state.deadline,
-        });
+        const response = await featureService.createFeature(
+          {
+            name: this.state.name,
+            devis_id: this.devis.id,
+            price: this.state.price,
+            deadline: this.state.deadline,
+          },
+          this.$i18n.locale
+        );
 
         if (response.status === 201) {
           location.reload();
         }
       } catch (error) {
         console.error(error);
+        this.state.errors = error.response.data.errors;
       } finally {
         this.state.isLoadingCreateDelivery = false;
       }
     },
 
     async handleInvitationClick() {
-      this.vEmail$.$validate();
-      if (this.vEmail$.$error) return;
+      // this.vEmail$.$validate();
+      // if (this.vEmail$.$error) return;
       this.state.isLoadingInvite = true;
       this.state.isSendEmail = false;
       this.state.isSendEmailError = false;
       this.state.isSendEmailErrorCatch = false;
       try {
-        const response = await inviteService.sendInvite(this.devis.project_id, {
-          email: this.state.email,
-          userId: this.$store.state.userStore.user.id,
-          lead_id: this.devis.id,
-        });
-        if (response.data.success) this.state.isSendEmail = true;
-        else this.state.isSendEmailError = true;
+        const response = await inviteService.sendInvite(
+          this.devis.project_id,
+          {
+            email: this.state.email,
+            userId: this.$store.state.userStore.user.id,
+            lead_id: this.devis.id,
+          },
+          this.$i18n.locale
+        );
+        if (response.data.success) {
+          this.state.isSendEmail = true;
+          this.state.errors = {};
+        } else this.state.isSendEmailError = true;
       } catch (error) {
         this.state.isSendEmailErrorCatch = true;
+        this.state.errors = error.response.data.errors;
         console.error(error);
       } finally {
         this.state.isLoadingInvite = false;

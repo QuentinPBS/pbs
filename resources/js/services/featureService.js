@@ -35,9 +35,9 @@ export default {
         return response;
     },
 
-    createFeature: async (feature) => {
+    createFeature: async (feature, locale) => {
         const response = await axios.post(`${APISettings.baseURL}/features`, feature, {
-            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token, 'locale': locale }
         });
 
         return response;
