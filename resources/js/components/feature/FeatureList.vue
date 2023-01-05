@@ -156,6 +156,11 @@
           style="height: 250px"
           contentType="html"
         />
+        <label v-if="state.errors?.message" class="label">
+          <span class="label-text-alt text-red-400">{{
+            state.errors.message.join(", ")
+          }}</span>
+        </label>
         <button
           @click="sendMessage"
           :class="[{ loading: state.isLoading }, 'btn bg-blue-400 mt-2']"
@@ -315,8 +320,8 @@
       v-model="state.showModalDelivred"
       classes="modal-container"
       content-class="modal-content"
-       :max-width="Infinity"
-    :max-height="Infinity"
+      :max-width="Infinity"
+      :max-height="Infinity"
     >
       <div class="flex justify-between">
         <span class="modal__title">{{
@@ -928,9 +933,8 @@ export default {
         );
 
         if (response.status === 201) {
-       
           this.$emit("stepCreated");
-             this.cancelForm();
+          this.cancelForm();
         }
       } catch (error) {
         console.error(error);
@@ -993,17 +997,22 @@ export default {
 
         try {
           const response =
-            await leadConversationService.storeLeadConversationMessage({
-              message: message,
-              lead_id: this.devis.id,
-              user_id: this.$store.state.userStore.user.id,
-            });
+            await leadConversationService.storeLeadConversationMessage(
+              {
+                message: message,
+                lead_id: this.devis.id,
+                user_id: this.$store.state.userStore.user.id,
+              },
+              this.$i18n.locale
+            );
           if (response.status == 201) {
             this.$emit("sendMessage");
             this.state.isLoading = false;
           }
         } catch (error) {
           console.error(error);
+          this.state.isLoading = false;
+          this.state.errors = error.response.data.errors;
         }
       }
     },

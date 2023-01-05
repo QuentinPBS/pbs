@@ -24,7 +24,7 @@ class StoreLeadConversationRequest extends FormRequest
     public function rules()
     {
         return [
-            'message' => 'required|max:1000',
+            'message' => 'required|max:100000',
             'lead_id' => 'required|exists:leads,id',
             'user_id' => 'required|exists:users,id'
         ];
