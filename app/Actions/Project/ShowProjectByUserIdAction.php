@@ -30,6 +30,6 @@ class ShowProjectByUserIdAction
             // )
 
             ->whereDoesntHave('archives')
-            ->get();
+            ->paginate(10);
     }
 }

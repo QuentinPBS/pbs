@@ -6,11 +6,14 @@
       </button>
     </div>
     <div class="project-list__content">
-      <div class="project-list__content__item" v-if="state.projects.length > 0">
+      <div
+        class="project-list__content__item"
+        v-if="state.projects.data.length > 0"
+      >
         <router-link
           :to="`/project/${project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
-          v-for="(project, key) in state.projects"
+          v-for="(project, key) in state.projects.data"
           :key="key"
         >
           <figure>
@@ -61,6 +64,12 @@
         <button class="btn btn-primary" @click="state.showModal = true">
           {{ $t("create_project") }}
         </button>
+      </div>
+      <div class="py-5">
+        <TailwindPagination
+          :data="state.projects"
+          @pagination-change-page="loadProjects"
+        />
       </div>
     </div>
     <vue-final-modal
@@ -146,7 +155,7 @@ import { required, email, minLength } from "@vuelidate/validators";
 import { $vfm, VueFinalModal, ModalsContainer } from "vue-final-modal";
 
 import FormCreateProjectVue from "./FormCreateProject.vue";
-
+import { TailwindPagination } from "laravel-vue-pagination";
 export default {
   name: "ProjectList",
 
@@ -157,7 +166,7 @@ export default {
       image: "",
       showModal: false,
       isLoading: false,
-      projects: [],
+      projects: {},
       errors: {},
     });
 
@@ -179,13 +188,12 @@ export default {
     VueFinalModal,
     ModalsContainer,
     FormCreateProjectVue,
+    TailwindPagination,
   },
   watch: {
     "state.showModal"(newVal) {
-      this.state.errors = {}
-  
+      this.state.errors = {};
     },
-    
   },
   methods: {
     async handleLoginClick() {
@@ -205,7 +213,11 @@ export default {
         );
 
         if (response.status === 201) {
-          location.reload();
+          this.loadProjects();
+          this.state.showModal = false;
+          this.state.name = "";
+          this.state.description = "";
+          this.state.image = "";
         }
       } catch (e) {
         this.state.errors = e.response.data.errors;
@@ -232,10 +244,12 @@ export default {
         this.loadProjects();
       }
     },
-    async loadProjects() {
+    async loadProjects(page = 1) {
       const response = await ProjectService.getProjectsByUserId(
-        this.$store.state.userStore.user.id
+        this.$store.state.userStore.user.id,
+        page
       );
+      console.log(response.data.data);
       this.state.projects = response.data;
     },
   },
