@@ -160,7 +160,7 @@
           @click="sendMessage"
           :class="[{ loading: state.isLoading }, 'btn bg-blue-400 mt-2']"
         >
-          {{$t('save')}}
+          {{ $t("save") }}
         </button>
 
         <!-- <LeadConversation :leadConversation="leadConversation" /> -->
@@ -599,6 +599,8 @@ export default {
       static create(value) {
         let node = super.create();
         node.setAttribute("class", `user-${window.userId}`);
+        node.setAttribute("style", "outline:none;");
+        node.setAttribute("contenteditable", "true");
         return node;
       }
     }
@@ -633,7 +635,7 @@ export default {
         modules: {
           toolbar: ["bold", "italic", "underline"],
         },
-        readOnly: false,
+        readOnly: true,
         theme: "snow",
         contentType: "html",
       },
@@ -942,17 +944,25 @@ export default {
     },
     // send lead conversation message
     async sendMessage() {
-      if (this.state.content) {
-        this.state.isLoading = true;
-        let message = this.state.content.replaceAll(
-          'contenteditable="false"',
-          ""
-        );
+      let content = window.document.querySelector(".ql-editor").innerHTML;
 
-        message = message.replaceAll(
-          'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
-          ""
-        );
+      // // content = content.replace(/<p class="user-.*">.*<br.*>.*<\/p>/g, "");
+      // const newHtml = content.replace(/<p class="user-\d+"><br><\/p>/g, "");
+
+      // console.log(newHtml);
+
+      // return;
+      if (content) {
+        this.state.isLoading = true;
+
+        let message = content.replaceAll('contenteditable="true"', "");
+        // let lol = message.match(/<p class="user-.*">.*<br.*>.*<\/p>/g);
+        // console.log(lol);
+        // return;
+        // message = message.replaceAll(
+        //   'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
+        //   ""
+        // );
 
         try {
           const response =
@@ -992,22 +1002,37 @@ export default {
       let oldContent = this.conversation.content;
       if (oldContent) {
         oldContent = oldContent.concat(
-          `<p class="user-${this.$store.state.userStore.user.id}"></p>`
+          `<p class="user-${this.$store.state.userStore.user.id}" style="outline:none;"></p>`
         );
         this.state.content = oldContent;
         this.$refs.myEditor.setHTML(oldContent);
-        let elements = window.document.querySelectorAll(
+        //auth user content
+        let authElements = window.document.querySelectorAll(
+          `.user-${this.$store.state.userStore.user.id}`
+        ); //matches all
+
+        for (let i = 0; i < authElements.length; i++) {
+          authElements[i].setAttribute("contenteditable", true);
+        }
+
+        //other user content
+
+        let otherElements = window.document.querySelectorAll(
           `.ql-editor>p:not([class^='user-${this.$store.state.userStore.user.id}'])`
         ); //matches all
 
-        for (let i = 0; i < elements.length; i++) {
-          elements[i].setAttribute("contenteditable", false);
-          elements[i].setAttribute(
+        for (let i = 0; i < otherElements.length; i++) {
+          otherElements[i].setAttribute("contenteditable", false);
+          otherElements[i].setAttribute(
             "style",
-            " user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"
+            "user-select:none;outline:none;"
           );
         }
       }
+
+      //remove ql-disabled class in order to use toolbar
+      var qlContainer = document.querySelector(".ql-container");
+      qlContainer.classList.remove("ql-disabled");
     },
 
     convertDeadline(deadline) {
