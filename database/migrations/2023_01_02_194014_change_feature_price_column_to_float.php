@@ -14,7 +14,7 @@ class ChangeFeaturePriceColumnToFloat extends Migration
     public function up()
     {
         Schema::table('features', function (Blueprint $table) {
-            $table->float('price')->change();
+            $table->float('price')->default(0)->change();
         });
     }
 
