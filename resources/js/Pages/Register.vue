@@ -1,6 +1,6 @@
 <template>
   <div>
-      <div class="flex justify-end py-4 px-4">
+    <div class="flex justify-end py-4 px-4">
       <LangSwitch />
     </div>
 
@@ -227,6 +227,11 @@ export default {
   },
   components: {
     LangSwitch,
+  },
+  watch : {
+    'state.status'(val)  {
+      this.state.errors = {}
+    }
   },
   methods: {
     handleStatusChange: function () {
