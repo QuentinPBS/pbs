@@ -166,7 +166,7 @@ class StripeAccountController extends Controller
         try {
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount'                 => $feature->price * 100,
-                'application_fee_amount' => ($feature->price * 0.6),
+                'application_fee_amount' => intval($feature->price * 0.6) * 10,
                 'currency'               => 'EUR',
                 'payment_method_types'   => ['card'],
                 'confirm'                => true,

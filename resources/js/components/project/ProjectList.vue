@@ -6,11 +6,14 @@
       </button>
     </div>
     <div class="project-list__content">
-      <div class="project-list__content__item" v-if="state.projects.length > 0">
+      <div
+        class="project-list__content__item"
+        v-if="state.projects.data.length > 0"
+      >
         <router-link
           :to="`/project/${project.slug}`"
           class="card card-compact bg-base-100 shadow-md w-1/4 mt-5"
-          v-for="(project, key) in state.projects"
+          v-for="(project, key) in state.projects.data"
           :key="key"
         >
           <figure>
@@ -30,10 +33,7 @@
                 {{ project.name }}
               </h2>
 
-              <a
-                @click.prevent="archiveProject(project)"
-                title="archiver"
-              >
+              <a @click.prevent="archiveProject(project)" title="archiver">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="icon icon-tabler icon-tabler-archive"
@@ -60,10 +60,16 @@
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
-        <p class="text-xl font-bold">{{$t('project.no_project_found')}}</p>
+        <p class="text-xl font-bold">{{ $t("project.no_project_found") }}</p>
         <button class="btn btn-primary" @click="state.showModal = true">
           {{ $t("create_project") }}
         </button>
+      </div>
+      <div class="py-5">
+        <TailwindPagination
+          :data="state.projects"
+          @pagination-change-page="loadProjects"
+        />
       </div>
     </div>
     <vue-final-modal
@@ -72,11 +78,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title">{{$t('project.create_project')}}</span>
+      <span class="modal__title">{{ $t("project.create_project") }}</span>
       <div class="modal__content">
         <div class="project-list__form">
           <div class="form-control w-full">
-            <label class="label">{{$t('project.project_name')}}</label>
+            <label class="label">{{ $t("project.project_name") }}</label>
             <input
               type="text"
               :class="[
@@ -85,24 +91,32 @@
               ]"
               v-model="state.name"
             />
-            <label v-if="v$.name.$error" class="label">
+            <label v-if="state.errors?.name" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.name.$errors[0].$message
+                state.errors.name.join(", ")
               }}</span>
             </label>
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >{{$t('project.description')}} <span class="badge badge-sm">{{$t('optional')}}</span></label
+              >{{ $t("project.description") }}
+              <span class="badge badge-sm">{{ $t("optional") }}</span></label
             >
             <textarea
               class="textarea textarea-bordered"
               v-model="state.description"
             ></textarea>
+
+            <label v-if="state.errors?.description" class="label">
+              <span class="label-text-alt text-red-400">{{
+                state.errors.description.join(", ")
+              }}</span>
+            </label>
           </div>
           <div class="form-control w-full">
             <label class="label justify-start gap-3"
-              >Image <span class="badge badge-sm">{{$t('optional')}}</span></label
+              >Image
+              <span class="badge badge-sm">{{ $t("optional") }}</span></label
             >
             <input
               type="file"
@@ -110,15 +124,23 @@
               @change="uploadImage($event)"
             />
           </div>
+
+          <label v-if="state.errors?.image" class="label">
+            <span class="label-text-alt text-red-400">{{
+              state.errors.image.join(", ")
+            }}</span>
+          </label>
         </div>
       </div>
       <div class="modal__action">
-        <button class="btn btn-link" @click="cancelForm()">{{$t('cancel')}}</button>
+        <button class="btn btn-link" @click="cancelForm()">
+          {{ $t("cancel") }}
+        </button>
         <button
           @click="handleLoginClick"
           :class="[{ loading: state.isLoading }, 'btn btn-primary']"
         >
-          {{ state.isLoading ? $t('loading') : $t('create') }}
+          {{ state.isLoading ? $t("loading") : $t("create") }}
         </button>
       </div>
     </vue-final-modal>
@@ -133,7 +155,7 @@ import { required, email, minLength } from "@vuelidate/validators";
 import { $vfm, VueFinalModal, ModalsContainer } from "vue-final-modal";
 
 import FormCreateProjectVue from "./FormCreateProject.vue";
-
+import { TailwindPagination } from "laravel-vue-pagination";
 export default {
   name: "ProjectList",
 
@@ -144,7 +166,8 @@ export default {
       image: "",
       showModal: false,
       isLoading: false,
-      projects: [],
+      projects: {},
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -165,12 +188,17 @@ export default {
     VueFinalModal,
     ModalsContainer,
     FormCreateProjectVue,
+    TailwindPagination,
   },
-
+  watch: {
+    "state.showModal"(newVal) {
+      this.state.errors = {};
+    },
+  },
   methods: {
     async handleLoginClick() {
-      this.v$.$validate();
-      if (this.v$.$error) return;
+      // this.v$.$validate();
+      // if (this.v$.$error) return;
 
       try {
         this.state.isLoading = true;
@@ -179,13 +207,20 @@ export default {
         body.append("description", this.state.description);
         body.append("image", this.state.image);
 
-        const response = await ProjectService.createProject(body);
+        const response = await ProjectService.createProject(
+          body,
+          this.$i18n.locale
+        );
 
         if (response.status === 201) {
-          location.reload();
+          this.loadProjects();
+          this.state.showModal = false;
+          this.state.name = "";
+          this.state.description = "";
+          this.state.image = "";
         }
       } catch (e) {
-        console.error("ici", e);
+        this.state.errors = e.response.data.errors;
       } finally {
         this.state.isLoading = false;
       }
@@ -209,10 +244,12 @@ export default {
         this.loadProjects();
       }
     },
-    async loadProjects() {
+    async loadProjects(page = 1) {
       const response = await ProjectService.getProjectsByUserId(
-        this.$store.state.userStore.user.id
+        this.$store.state.userStore.user.id,
+        page
       );
+      console.log(response.data.data);
       this.state.projects = response.data;
     },
   },

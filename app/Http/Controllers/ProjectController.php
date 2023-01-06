@@ -53,6 +53,7 @@ class ProjectController extends Controller
     public function store(ProjectStoreRequest $request)
     {
 
+      
         $validatedData = $request->validated();
 
         $file = $validatedData['image'];

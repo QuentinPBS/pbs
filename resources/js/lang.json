@@ -13,9 +13,12 @@
         "download" : "Download",
         "accept": "Accept",
         "error" : "An error has occured.",
+   
         "yes" : "Yes",
         "no": "No",
         "save": "Save",
+        "payment" : "Payment",
+        
         "email" : {
             "email_sent_message" : "Email has been sent",
             "email_already_sent_message" : "Email already sent.",
@@ -39,7 +42,7 @@
             "first_name" : "First Name",
             "last_name" : "Last Name",
             "password" : "Password",
-            "password_confirmation" : "Confirm Password",
+            "password_confirmation" : "Password confirmation",
             "or" :"Or",
             "already_an_account" : "You already have an account ?",
             "sign_up":"Sign up",
@@ -62,15 +65,22 @@
             "activity_sector":"Activity sector",
             "siren":"Siren number",
             "edit_password":"Edit Password",
-            "edit_account":"Edit account"
+            "edit_account":"Edit account",
+            "updated" : "Profile updated successfuly"
         },
         "forgot_password" : {
          "forgot_password" : "Forgot password",
          "reset_password": "Reset password",
          "or": "Or",
-         "sign_in" : "Sign in"   
+         "sign_in" : "Sign in",
+         "success" : "Mail has been sent",
+         "change_password" : "Change password",
+         "new_password" : "New Password",
+         "updated": "Password has been updated successfully"     
         },
-
+        "password_update" : {
+            "success" : "Password updated successfuly" 
+           },
         "feature":{
             "share": "Share",
             "save": "Save",
@@ -109,8 +119,10 @@
                 "no_delivrable_needed" : "No delivrable needed",
                 "click_here_to_import_file" : "Click here to import file",
                 "file_not_exceed_10": "The file must not exceed 10MO",
-                "check_link_message" : "Click the link below to verify the delivrable"
-
+                "check_link_message" : "Click the link below to verify the delivrable",
+                "check_delivrable" : "Check delivrables",
+                "payment_message" : "To validate and go to the next step, it is necessary to make the payment of",
+                "to_provider" : "to provider."
 
             } 
         },
@@ -150,6 +162,7 @@
         "yes" : "Oui",
         "no": "Non",
         "save": "Sauvegarder",
+        "payment" : "Paiement",
         "email" : {
             "email_sent_message" : "Un email vient d'être envoyé",
             "email_already_sent_message" : "Un email est déjà envoyé",
@@ -185,7 +198,14 @@
                 "forgot_password" : "Mot de passe oublié",
                 "reset_password": "Réinitialiser le mot de passe",
                 "or": "Ou",
-                "sign_in" : "Connectez-vous"   
+                "sign_in" : "Connectez-vous",   
+                "success" : "Un e-mail a été envoyé avec succés",   
+                "change_password" : "Changer mon mot de passe",
+                "new_password" : "Nouveau mot de passe" ,
+                "updated": "Mot de passe a été modifié avec succés"     
+               },
+               "password_update" : {
+                "success" : "Mot de passe a été modifié avec succés" 
                },
 
                "profile" : {
@@ -202,7 +222,8 @@
                 "siren":"Siren",
                 "already_an_account" : "Déja un compte ?",
                 "edit_password":"Modifier votre mot de passe",
-                "edit_account":"Modifier votre compte"
+                "edit_account":"Modifier votre compte",
+                "updated" : "Profil modifié avec succés"
          
             },
             "feature":{
@@ -243,7 +264,10 @@
                     "no_delivrable_needed" : "Pas besoin de fournir de livrable",
                     "click_here_to_import_file" : "Cliquer ici pour importer le fichier",
                     "file_not_exceed_10": "Le fichier ne doit pas dépasser 10MO",
-                    "check_link_message" : " Merci de cliquer sur le lien ci dessous pour vérifier le livrable"
+                    "check_link_message" : " Merci de cliquer sur le lien ci dessous pour vérifier le livrable",
+                    "check_delivrable" : "Consulter les livrables",
+                    "payment_message" : "  Pour valider et passer à l'étape suivante, il est necessaire d'effectuer le paiement de",
+                    "to_provider" : "au prestataire.."
                 } 
             },
             "project":{
@@ -264,5 +288,6 @@
         
         },
         "create_project" : " Créer un projet "
+       
     }
 }

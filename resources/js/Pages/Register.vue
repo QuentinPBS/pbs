@@ -1,42 +1,16 @@
 <template>
   <div>
-    <div class="flex justify-end py-4 px-4">
-      <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-ghost">
-          <p>{{ $i18n.locale }}</p>
-        </label>
-        <ul
-          tabindex="0"
-          class="
-            mt-3
-            p-2
-            shadow
-            menu menu-compact
-            dropdown-content
-            bg-base-100
-            rounded-box
-            w-52
-          "
-        >
-          <li
-            v-for="locale in $i18n.availableLocales"
-            :key="`locale-${locale}`"
-          >
-            <a @click.prevent="$i18n.locale = locale">{{
-              locale.toUpperCase()
-            }}</a>
-          </li>
-        </ul>
-      </div>
+      <div class="flex justify-end py-4 px-4">
+      <LangSwitch />
     </div>
 
     <div class="register">
       <div class="register__block">
-        <h1 class="register__title">{{$t('sign_up.sign_up')}}</h1>
+        <h1 class="register__title">{{ $t("sign_up.sign_up") }}</h1>
         <div class="register__form">
           <div v-if="state.isSuccess" class="alert alert-success shadow-sm">
             <div>
-              <span>{{$t('email.confirm_email')}}</span>
+              <span>{{ $t("email.confirm_email") }}</span>
             </div>
           </div>
           <div v-if="state.isError" class="alert alert-error shadow-sm">
@@ -45,24 +19,28 @@
             </div>
           </div>
           <div class="form-control w-full mb-5">
-            <label class="label">{{$t('sign_up.im')}}</label>
+            <label class="label">{{ $t("sign_up.im") }}</label>
             <select
               v-model="state.status"
               @change="handleStatusChange"
               class="select select-bordered w-full"
             >
-              <option value="individual" selected>{{$t('sign_up.particular')}}</option>
-              <option value="professional">{{$t('sign_up.professional')}}</option>
+              <option value="individual" selected>
+                {{ $t("sign_up.particular") }}
+              </option>
+              <option value="professional">
+                {{ $t("sign_up.professional") }}
+              </option>
             </select>
-            <label v-if="v$.status.$error" class="label">
+            <label v-if="state.errors?.status" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.status.$errors[0].$message
+                state.errors.status.join(", ")
               }}</span>
             </label>
           </div>
           <div class="register__form__flex">
             <div class="form-control w-full mb-5">
-              <label class="label">{{$t('sign_up.last_name')}}</label>
+              <label class="label">{{ $t("sign_up.last_name") }}</label>
               <input
                 type="text"
                 :class="[
@@ -71,14 +49,14 @@
                 ]"
                 v-model="state.lastname"
               />
-              <label v-if="v$.lastname.$error" class="label">
+              <label v-if="state.errors?.lastname" class="label">
                 <span class="label-text-alt text-red-400">{{
-                  v$.lastname.$errors[0].$message
+                  state.errors.lastname.join(", ")
                 }}</span>
               </label>
             </div>
             <div class="form-control w-full mb-5">
-              <label class="label">{{$t('sign_up.first_name')}}</label>
+              <label class="label">{{ $t("sign_up.first_name") }}</label>
               <input
                 type="text"
                 :class="[
@@ -87,9 +65,9 @@
                 ]"
                 v-model="state.firstname"
               />
-              <label v-if="v$.firstname.$error" class="label">
+              <label v-if="state.errors?.firstname" class="label">
                 <span class="label-text-alt text-red-400">{{
-                  v$.firstname.$errors[0].$message
+                  state.errors.firstname.join(", ")
                 }}</span>
               </label>
             </div>
@@ -104,15 +82,15 @@
               ]"
               v-model="state.email"
             />
-            <label v-if="v$.email.$error" class="label">
+            <label v-if="state.errors?.email" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.email.$errors[0].$message
+                state.errors.email.join(", ")
               }}</span>
             </label>
           </div>
           <div class="register__form__flex" v-show="state.isProfessional">
             <div class="form-control w-full mb-5">
-              <label class="label">{{$t('sign_up.activity_sector')}}</label>
+              <label class="label">{{ $t("sign_up.activity_sector") }}</label>
               <input
                 type="text"
                 :class="[
@@ -121,14 +99,14 @@
                 ]"
                 v-model="state.area"
               />
-              <label v-if="v$.area.$error" class="label">
+              <label v-if="state.errors?.area" class="label">
                 <span class="label-text-alt text-red-400">{{
-                  v$.area.$errors[0].$message
+                  state.errors.area.join(", ")
                 }}</span>
               </label>
             </div>
             <div class="form-control w-full mb-5">
-              <label class="label">{{$t('sign_up.siren')}}</label>
+              <label class="label">{{ $t("sign_up.siren") }}</label>
               <input
                 type="text"
                 :class="[
@@ -137,15 +115,15 @@
                 ]"
                 v-model="state.siren"
               />
-              <label v-if="v$.siren.$error" class="label">
+              <label v-if="state.errors?.siren" class="label">
                 <span class="label-text-alt text-red-400">{{
-                  v$.siren.$errors[0].$message
+                  state.errors.siren.join(", ")
                 }}</span>
               </label>
             </div>
           </div>
           <div class="form-control w-full mb-5">
-            <label class="label">{{$t('sign_up.password')}}</label>
+            <label class="label">{{ $t("sign_up.password") }}</label>
             <input
               type="password"
               :class="[
@@ -154,14 +132,16 @@
               ]"
               v-model="state.password"
             />
-            <label v-if="v$.password.$error" class="label">
+            <label v-if="state.errors?.password" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.password.$errors[0].$message
+                state.errors.password.join(", ")
               }}</span>
             </label>
           </div>
           <div class="form-control w-full mb-5">
-            <label class="label">{{$t('sign_up.password_confirmation')}}</label>
+            <label class="label">{{
+              $t("sign_up.password_confirmation")
+            }}</label>
             <input
               type="password"
               :class="[
@@ -170,9 +150,9 @@
               ]"
               v-model="state.password_confirmation"
             />
-            <label v-if="v$.password_confirmation.$error" class="label">
+            <label v-if="state.errors?.password_confirmation" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.password_confirmation.$errors[0].$message
+                state.errors.password_confirmation.join(", ")
               }}</span>
             </label>
           </div>
@@ -181,13 +161,13 @@
               @click="handleRegisterClick"
               :class="[{ loading: state.isLoading }, 'btn btn-primary']"
             >
-              {{ state.isLoading ? $t('loading') : $t('sign_up.sign_up') }}
+              {{ state.isLoading ? $t("loading") : $t("sign_up.sign_up") }}
             </button>
           </div>
         </div>
-        <div class="divider">{{$t('sign_up.or')}}</div>
+        <div class="divider">{{ $t("sign_up.or") }}</div>
         <p>
-          {{$t('sign_up.already_an_account')}}
+          {{ $t("sign_up.already_an_account") }}
           <router-link class="underline text-primary" to="/login">{{
             $t("login.sign_in")
           }}</router-link>
@@ -203,7 +183,7 @@ import useVuelidate from "@vuelidate/core";
 import { required, email, minLength, maxLength } from "@vuelidate/validators";
 
 import { APISettings } from "../api/config";
-import LangSwitch from "../components/LangSwitch.vue"
+import LangSwitch from "../components/LangSwitch.vue";
 export default {
   name: "Register",
 
@@ -222,6 +202,7 @@ export default {
       isSuccess: false,
       isError: false,
       errorMessage: "",
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -244,9 +225,9 @@ export default {
       v$,
     };
   },
-components : {
-LangSwitch
-},
+  components: {
+    LangSwitch,
+  },
   methods: {
     handleStatusChange: function () {
       this.state.isProfessional = this.state.status === "professional";
@@ -257,29 +238,37 @@ LangSwitch
       this.state.isError = false;
       this.state.errorMessage = "";
 
-      this.v$.$validate();
-      if (this.v$.$invalid) return;
+      // this.v$.$validate();
+      // if (this.v$.$invalid) return;
 
       try {
         this.state.isLoading = true;
-        const response = await axios.post(APISettings.baseURL + "/register", {
-          status: this.state.status,
-          lastname: this.state.lastname,
-          firstname: this.state.firstname,
-          email: this.state.email,
-          siren: this.state.siren,
-          password: this.state.password,
-          password_confirmation: this.state.password_confirmation,
-        });
+        const response = await axios.post(
+          APISettings.baseURL + "/register",
+          {
+            status: this.state.status,
+            lastname: this.state.lastname,
+            firstname: this.state.firstname,
+            email: this.state.email,
+            siren: this.state.siren,
+            area: this.state.area,
+            password: this.state.password,
+            password_confirmation: this.state.password_confirmation,
+          },
+          {
+            headers: {
+              locale: this.$i18n.locale,
+            },
+          }
+        );
 
         if (response.status === 200) {
           this.state.isSuccess = true;
+          this.state.errors = {};
         }
       } catch (e) {
-        if (e.response.status === 422) {
-          this.state.isError = true;
-          this.state.errorMessage = e.response.data.message;
-        }
+        
+        this.state.errors = e.response.data.errors;
       } finally {
         this.state.isLoading = false;
       }

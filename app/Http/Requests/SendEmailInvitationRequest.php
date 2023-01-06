@@ -4,8 +4,9 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreLeadConversationRequest extends FormRequest
+class SendEmailInvitationRequest extends FormRequest
 {
+    protected $stopOnFirstFailure = true;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,9 +25,9 @@ class StoreLeadConversationRequest extends FormRequest
     public function rules()
     {
         return [
-            'message' => 'required|max:100000',
+            'email' => 'required',
+            'userId' => 'required|exists:users,id',
             'lead_id' => 'required|exists:leads,id',
-            'user_id' => 'required|exists:users,id'
         ];
     }
 }

@@ -47,6 +47,14 @@
                   <span class="font-bold">Deadline</span>:
                   {{ convertDeadline(feature.deadline) }}
                 </div>
+                <div v-if="isPaidOrIsSuccess(feature)" class="text-sm">
+                  <a
+                    href="#"
+                    @click="openDeliverableModal(feature)"
+                    class="text-success text-sm"
+                    >{{ $t("feature.step.check_delivrable") }}</a
+                  >
+                </div>
               </div>
             </div>
             <div class="flex">
@@ -109,20 +117,20 @@
                 >
                   {{ $t("feature.step.validate_delivrable") }}
                 </button>
+
                 <span class="text-danger text-sm" v-if="isSuccess(feature)">
                   {{ $t("feature.step.confirmed") }}</span
                 >
-                <span class="text-sm" v-if="isSuccessClient(feature)">
-                  {{ $t("feature.step.accepted") }}</span
-                >
+
                 <span class="text-danger text-sm" v-if="isPaid(feature)">
                   {{ $t("feature.step.paid") }}</span
                 >
                 &nbsp;
+
                 <button
                   class="btn btn-primary"
                   @click="openPaymentdModal(feature)"
-                  v-if="isSuccessClient(feature)"
+                  v-if="isSuccessClient(feature) && feature.price > 0"
                 >
                   {{ $t("feature.step.pay") }}
                 </button>
@@ -156,11 +164,16 @@
           style="height: 250px"
           contentType="html"
         />
+        <label v-if="state.errors?.message" class="label">
+          <span class="label-text-alt text-red-400">{{
+            state.errors.message.join(", ")
+          }}</span>
+        </label>
         <button
           @click="sendMessage"
           :class="[{ loading: state.isLoading }, 'btn bg-blue-400 mt-2']"
         >
-          {{$t('save')}}
+          {{ $t("save") }}
         </button>
 
         <!-- <LeadConversation :leadConversation="leadConversation" /> -->
@@ -179,32 +192,32 @@
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.step.step_name") }}</label>
             <input
-              type="text"
+              type="test"
               :class="[
                 { 'input-error': v$.name.$error },
                 'input input-bordered rounded-md w-full',
               ]"
               v-model="state.name"
             />
-            <label v-if="v$.name.$error" class="label">
+            <label v-if="state.errors?.name" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.name.$errors[0].$message
+                state.errors.name.join(", ")
               }}</span>
             </label>
           </div>
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.step.price") }}</label>
             <input
-              type="text"
+              type="number"
               :class="[
                 { 'input-error': v$.price.$error },
                 'input input-bordered rounded-md w-full',
               ]"
               v-model="state.price"
             />
-            <label v-if="v$.price.$error" class="label">
+            <label v-if="state.errors?.price" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.price.$errors[0].$message
+                state.errors.price.join(", ")
               }}</span>
             </label>
           </div>
@@ -219,9 +232,9 @@
               v-model="state.deadline"
               :min="new Date().toISOString().split('T')[0]"
             />
-            <label v-if="v$.deadline.$error" class="label">
+            <label v-if="state.errors?.deadline" class="label">
               <span class="label-text-alt text-red-400">{{
-                v$.deadline.$errors[0].$message
+                state.errors.deadline.join(", ")
               }}</span>
             </label>
           </div>
@@ -248,7 +261,9 @@
       classes="modal-container"
       content-class="modal-content"
     >
-      <button class="modal__close" @click="state.showModal = false">X</button>
+      <button class="modal__close" @click="state.showModalShare = false">
+        X
+      </button>
 
       <span class="modal__title">{{ $t("feature.share_feature") }}</span>
       <div class="modal__content">
@@ -272,11 +287,11 @@
             <span>{{ $t("email.email_already_sent_message") }}</span>
           </div>
         </div>
-        <div v-if="state.isSendEmailErrorCatch" class="alert alert-error my-5">
+        <!-- <div v-if="state.isSendEmailErrorCatch" class="alert alert-error my-5">
           <div>
             <span>{{ $t("error") }}</span>
           </div>
-        </div>
+        </div> -->
         <div class="project-list__form">
           <div class="form-control w-full">
             <label class="label">{{ $t("feature.email") }}</label>
@@ -288,9 +303,9 @@
               ]"
               v-model="state.email"
             />
-            <label v-if="vEmail$.email.$error" class="label">
+            <label v-if="state.errors?.email" class="label">
               <span class="label-text-alt text-red-400">{{
-                vEmail$.email.$errors[0].$message
+                state.errors.email.join(", ")
               }}</span>
             </label>
           </div>
@@ -313,6 +328,8 @@
       v-model="state.showModalDelivred"
       classes="modal-container"
       content-class="modal-content"
+      :max-width="Infinity"
+      :max-height="Infinity"
     >
       <div class="flex justify-between">
         <span class="modal__title">{{
@@ -356,10 +373,30 @@
     </vue-final-modal>
 
     <vue-final-modal
-      v-model="state.showModalCreateStripeAccount"
+      v-model="state.showModalDeliverable"
       classes="modal-container"
       content-class="modal-content"
     >
+      <div class="flex justify-between">
+        <span class="modal__title">{{
+          $t("feature.step.check_delivrable")
+        }}</span>
+        <button class="" @click="state.showModalDeliverable = false">X</button>
+      </div>
+
+      <div class="modal__content">
+        <ValidateDeliveredFeature
+          :feature="state.currentFeature"
+          v-if="state.showModalDeliverable"
+          v-on:closeModal="state.showModalDeliverable = false"
+        />
+      </div>
+    </vue-final-modal>
+
+    <vue-final-modal
+      >>>>>>> features/stripe-integration
+      v-model="state.showModalCreateStripeAccount" classes="modal-container"
+      content-class="modal-content" >
       <div class="flex justify-between">
         <span class="modal__title">Créer votre compte de paiement</span>
         <button class="" @click="state.showModalCreateStripeAccount = false">
@@ -505,7 +542,7 @@
       content-class="modal-content"
     >
       <div class="flex justify-between">
-        <span class="modal__title">Paiement</span>
+        <span class="modal__title">{{ $t("payment") }}</span>
         <button class="" @click="state.showPaymentModal = false">X</button>
       </div>
 
@@ -514,9 +551,9 @@
         v-if="state.currentFeature && state.currentFeature.price"
       >
         <p class="my-5">
-          Pour valider et passer à l'étape suivante, il est necessaire
-          d'effectuer le paiement de {{ state.currentFeature.price }} EUR au
-          prestataire.
+          {{ $t("feature.step.payment_message") }}
+          {{ state.currentFeature.price }} EUR
+          {{ $t("feature.step.to_provider") }}
         </p>
       </div>
       <div class="modal__action">
@@ -524,10 +561,10 @@
           @click="state.showPaymentModal = false"
           class="btn btn-bg-black-500 text-white mr-2"
         >
-          Annuler
+          {{ $t("cancel") }}
         </button>
         <button @click="handlePayment()" class="btn btn-primary">
-          Effectuer le paiement
+          {{ $t("feature.step.pay") }}
         </button>
       </div>
     </vue-final-modal>
@@ -580,7 +617,7 @@ import DeliverFeature from "../feature/DeliverFeature.vue";
 import ValidateDeliveredFeature from "../feature/ValidateDeliveredFeature.vue";
 import stripeService from "../../services/stripeService";
 export default {
-  name: "DevisList",
+  name: "Feature List",
 
   props: ["devis", "features", "conversation"],
 
@@ -599,6 +636,8 @@ export default {
       static create(value) {
         let node = super.create();
         node.setAttribute("class", `user-${window.userId}`);
+        node.setAttribute("style", "outline:none;");
+        node.setAttribute("contenteditable", "true");
         return node;
       }
     }
@@ -614,8 +653,10 @@ export default {
       showModalIsDelivred: false,
       showPaymentModal: false,
       showModalCreateStripeAccount: false,
+
       showModalCreateStripeCustomerAccount: false,
       showPaymentSuccessModal: false,
+      showModalDeliverable: false,
       isSendEmail: false,
       isSendEmailError: false,
       isLoadingInvite: false,
@@ -633,13 +674,14 @@ export default {
         modules: {
           toolbar: ["bold", "italic", "underline"],
         },
-        readOnly: false,
+        readOnly: true,
         theme: "snow",
         contentType: "html",
       },
       currentFeature: null,
       rejectedStep: null,
       content: "",
+      errors: {},
     });
 
     const rules = computed(() => {
@@ -681,6 +723,15 @@ export default {
     },
   },
 
+  watch: {
+    "state.showModal"(newVal) {
+      this.state.errors = {};
+    },
+    "state.showModalShare"(newVal) {
+      this.state.errors = {};
+    },
+  },
+
   methods: {
     async openDelivredModal(feature) {
       try {
@@ -702,6 +753,12 @@ export default {
       this.state.currentFeature = feature;
       this.state.showModalIsDelivred = true;
     },
+
+    openDeliverableModal(feature) {
+      this.state.currentFeature = feature;
+      this.state.showModalDeliverable = true;
+    },
+
     openRejectStepModal(feature) {
       this.state.rejectedStep = feature;
       this.state.showRejectStep = true;
@@ -850,7 +907,10 @@ export default {
     },
 
     isSuccess(feature) {
-      if (feature.user_id === this.$store.state.userStore.user.id)
+      if (
+        feature.user_id === this.$store.state.userStore.user.id ||
+        feature.price === 0
+      )
         return feature.validation.identifier === "success";
       else return false;
     },
@@ -866,7 +926,14 @@ export default {
     },
 
     isRejected(feature) {
-      return feature.validation_id == 6;
+      return feature.validation.identifier === "rejected";
+    },
+
+    isPaidOrIsSuccess(feature) {
+      return (
+        feature.validation.identifier === "success" ||
+        feature.validation.identifier === "paid"
+      );
     },
 
     async validateBtn(feature) {
@@ -896,45 +963,57 @@ export default {
     },
 
     async handlePFeatureClick() {
-      this.v$.$validate();
-      if (this.v$.$error) return;
+      // this.v$.$validate();
+      // if (this.v$.$error) return;
 
       try {
         this.state.isLoadingCreateDelivery = true;
-        const response = await featureService.createFeature({
-          name: this.state.name,
-          devis_id: this.devis.id,
-          price: this.state.price,
-          deadline: this.state.deadline,
-        });
+        const response = await featureService.createFeature(
+          {
+            name: this.state.name,
+            devis_id: this.devis.id,
+            price: this.state.price,
+            deadline: this.state.deadline,
+          },
+          this.$i18n.locale
+        );
 
         if (response.status === 201) {
-          location.reload();
+          this.$emit("stepCreated");
+          this.cancelForm();
         }
       } catch (error) {
         console.error(error);
+        this.state.errors = error.response.data.errors;
       } finally {
         this.state.isLoadingCreateDelivery = false;
       }
     },
 
     async handleInvitationClick() {
-      this.vEmail$.$validate();
-      if (this.vEmail$.$error) return;
+      // this.vEmail$.$validate();
+      // if (this.vEmail$.$error) return;
       this.state.isLoadingInvite = true;
       this.state.isSendEmail = false;
       this.state.isSendEmailError = false;
       this.state.isSendEmailErrorCatch = false;
       try {
-        const response = await inviteService.sendInvite(this.devis.project_id, {
-          email: this.state.email,
-          userId: this.$store.state.userStore.user.id,
-          lead_id: this.devis.id,
-        });
-        if (response.data.success) this.state.isSendEmail = true;
-        else this.state.isSendEmailError = true;
+        const response = await inviteService.sendInvite(
+          this.devis.project_id,
+          {
+            email: this.state.email,
+            userId: this.$store.state.userStore.user.id,
+            lead_id: this.devis.id,
+          },
+          this.$i18n.locale
+        );
+        if (response.data.success) {
+          this.state.isSendEmail = true;
+          this.state.errors = {};
+        } else this.state.isSendEmailError = true;
       } catch (error) {
         this.state.isSendEmailErrorCatch = true;
+        this.state.errors = error.response.data.errors;
         console.error(error);
       } finally {
         this.state.isLoadingInvite = false;
@@ -942,31 +1021,44 @@ export default {
     },
     // send lead conversation message
     async sendMessage() {
-      if (this.state.content) {
-        this.state.isLoading = true;
-        let message = this.state.content.replaceAll(
-          'contenteditable="false"',
-          ""
-        );
+      let content = window.document.querySelector(".ql-editor").innerHTML;
 
-        message = message.replaceAll(
-          'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
-          ""
-        );
+      // // content = content.replace(/<p class="user-.*">.*<br.*>.*<\/p>/g, "");
+      // const newHtml = content.replace(/<p class="user-\d+"><br><\/p>/g, "");
+
+      // console.log(newHtml);
+
+      // return;
+      if (content) {
+        this.state.isLoading = true;
+
+        let message = content.replaceAll('contenteditable="true"', "");
+        // let lol = message.match(/<p class="user-.*">.*<br.*>.*<\/p>/g);
+        // console.log(lol);
+        // return;
+        // message = message.replaceAll(
+        //   'style=" user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"',
+        //   ""
+        // );
 
         try {
           const response =
-            await leadConversationService.storeLeadConversationMessage({
-              message: message,
-              lead_id: this.devis.id,
-              user_id: this.$store.state.userStore.user.id,
-            });
+            await leadConversationService.storeLeadConversationMessage(
+              {
+                message: message,
+                lead_id: this.devis.id,
+                user_id: this.$store.state.userStore.user.id,
+              },
+              this.$i18n.locale
+            );
           if (response.status == 201) {
             this.$emit("sendMessage");
             this.state.isLoading = false;
           }
         } catch (error) {
           console.error(error);
+          this.state.isLoading = false;
+          this.state.errors = error.response.data.errors;
         }
       }
     },
@@ -992,22 +1084,37 @@ export default {
       let oldContent = this.conversation.content;
       if (oldContent) {
         oldContent = oldContent.concat(
-          `<p class="user-${this.$store.state.userStore.user.id}"></p>`
+          `<p class="user-${this.$store.state.userStore.user.id}" style="outline:none;"></p>`
         );
         this.state.content = oldContent;
         this.$refs.myEditor.setHTML(oldContent);
-        let elements = window.document.querySelectorAll(
+        //auth user content
+        let authElements = window.document.querySelectorAll(
+          `.user-${this.$store.state.userStore.user.id}`
+        ); //matches all
+
+        for (let i = 0; i < authElements.length; i++) {
+          authElements[i].setAttribute("contenteditable", true);
+        }
+
+        //other user content
+
+        let otherElements = window.document.querySelectorAll(
           `.ql-editor>p:not([class^='user-${this.$store.state.userStore.user.id}'])`
         ); //matches all
 
-        for (let i = 0; i < elements.length; i++) {
-          elements[i].setAttribute("contenteditable", false);
-          elements[i].setAttribute(
+        for (let i = 0; i < otherElements.length; i++) {
+          otherElements[i].setAttribute("contenteditable", false);
+          otherElements[i].setAttribute(
             "style",
-            " user-select: none;-webkit-user-select: none;-khtml-user-select: none; -moz-user-select: none;-ms-user-select: none"
+            "user-select:none;outline:none;"
           );
         }
       }
+
+      //remove ql-disabled class in order to use toolbar
+      var qlContainer = document.querySelector(".ql-container");
+      qlContainer.classList.remove("ql-disabled");
     },
 
     convertDeadline(deadline) {

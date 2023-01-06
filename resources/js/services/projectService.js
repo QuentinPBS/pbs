@@ -3,8 +3,8 @@ import store from "../Store/index"
 import { APISettings } from '../api/config';
 
 export default {
-    getProjectsByUserId: async (userId) => {
-        const response = await axios.get(`/api/projects/user/${userId}`, {
+    getProjectsByUserId: async (userId, page) => {
+        const response = await axios.get(`/api/projects/user/${userId}?page=${page}`, {
             headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
         });
         return response;
@@ -38,9 +38,9 @@ export default {
         return response;
     },
 
-    createProject: async (project) => {
+    createProject: async (project, locale) => {
         const response = await axios.post(`${APISettings.baseURL}/projects`, project, {
-            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token }
+            headers: { 'Authorization': 'Bearer ' + store.state.tokenStore.token, 'locale': locale }
         });
         return response;
     },

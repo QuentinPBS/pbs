@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreLeadConversationRequest extends FormRequest
+class StoreLeadRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,9 +24,15 @@ class StoreLeadConversationRequest extends FormRequest
     public function rules()
     {
         return [
-            'message' => 'required|max:100000',
-            'lead_id' => 'required|exists:leads,id',
-            'user_id' => 'required|exists:users,id'
+            'name' => 'required|max:500',
+            'project_id' => 'required|exists:projects,id'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'name' => trans('pbs.quote.name'),
         ];
     }
 }

@@ -4,15 +4,10 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProjectStoreRequest extends FormRequest
+class StoreFeatureRequest extends FormRequest
 {
-
     protected  $stopOnFirstFailure = true;
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
+
     public function authorize()
     {
         return true;
@@ -26,16 +21,18 @@ class ProjectStoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'image' => 'bail|nullable|mimes:jpeg,png,jpg,gif|max:2000'
+            'name' => 'required',
+            'price' => 'bail|required|numeric|min:0',
+            'deadline' => 'bail|required|date',
+            'devis_id' => 'required|exists:leads,id'
         ];
     }
 
     public function attributes()
     {
         return [
-            'name' => trans('pbs.project.name'),
+            'name' => trans('pbs.step.name'),
+            'price' => trans('pbs.step.price')
         ];
     }
 }

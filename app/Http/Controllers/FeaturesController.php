@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Feature\ShowFeatureByLeadIdAction;
-use App\Actions\Feature\ShowFeatureBySlugAction;
-use App\Actions\Feature\StoreFeatureAction;
-use App\Actions\Lead\StoreLeadAction;
+use App\Models\Feature;
 use Illuminate\Http\Request;
+use App\Actions\Lead\StoreLeadAction;
+use App\Http\Requests\StoreFeatureRequest;
+use App\Actions\Feature\StoreFeatureAction;
+use App\Actions\Feature\ShowFeatureBySlugAction;
+use App\Actions\Feature\ShowFeatureByLeadIdAction;
 
 class FeaturesController extends Controller
 {
@@ -36,10 +38,19 @@ class FeaturesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, StoreFeatureAction $storeFeatureAction)
-    {
-        $feature = $storeFeatureAction->execute($request, auth()->id(), 1);
+    public function store(StoreFeatureRequest $request, StoreFeatureAction $storeFeatureAction)
 
+    {
+        // $feature = $storeFeatureAction->execute($request, auth()->id(), 1);
+        $validatedData = $request->validated();
+        $feature = Feature::create([
+            'name' => $validatedData['name'],
+            'price' => $validatedData['price'],
+            'deadline' => $validatedData['deadline'],
+            'user_id' => auth()->id(),
+            'validation_id' => 1,
+            'lead_id' => $validatedData['devis_id']
+        ]);
         $response = [
             'message' => 'Feature created successfully',
             'feature' => $feature

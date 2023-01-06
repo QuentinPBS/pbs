@@ -2,13 +2,13 @@
   <div class="project-list">
     <div class="project-list__content">
       <div
-        v-if="invitation"
+        v-if="invitation.length > 0"
         @click="state.showModal = true"
         class="alert alert-info shadow-sm w-72 cursor-pointer"
       >
-        <span class="text-center text-white font-bold"
-          >{{$t('quote_request_message')}}</span
-        >
+        <span class="text-center text-white font-bold">{{
+          $t("quote_request_message")
+        }}</span>
       </div>
       <div class="project-list__content__item" v-if="projects.length > 0">
         <router-link
@@ -37,7 +37,7 @@
       </div>
       <div class="flex flex-col items-center w-full mt-28 gap-4" v-else>
         <img src="/images/logo_b&w.png" alt="logo paybystep" />
-               <p class="text-xl font-bold">{{$t('no_quote_found')}}</p>
+        <p class="text-xl font-bold">{{ $t("no_quote_found") }}</p>
       </div>
     </div>
     <vue-final-modal
@@ -47,9 +47,11 @@
       content-class="modal-content"
     >
       <button class="modal__close" @click="state.showModal = false">X</button>
-      <span class="modal__title text-center"
+      <span class="modal__title text-center" v-if="invitation.length > 0"
         >{{ invitation[0].user.firstname }} {{ invitation[0].user.lastname }}
-        <span class="font-normal">{{$t('project.project_invite_message')}}</span>
+        <span class="font-normal">{{
+          $t("project.project_invite_message")
+        }}</span>
         {{ invitation[0].project.name }}</span
       >
       <div class="modal__content"></div>
@@ -58,13 +60,13 @@
           @click="handleRejectClick"
           :class="[{ loading: state.isLoadingNo }, 'btn btn-link']"
         >
-          {{ state.isLoading ? $t('loading') : $t('no') }}
+          {{ state.isLoading ? $t("loading") : $t("no") }}
         </button>
         <button
           @click="handleAcceptClick"
           :class="[{ loading: state.isLoadingYes }, 'btn btn-primary']"
         >
-          {{ state.isLoading ? $t('loading') : $t('yes') }}
+          {{ state.isLoading ? $t("loading") : $t("yes") }}
         </button>
       </div>
     </vue-final-modal>
@@ -103,7 +105,8 @@ export default {
       this.state.isLoadingYes = true;
       try {
         await inviteService.acceptedInvite(this.invitation[0].token);
-        location.reload();
+        this.$emit("loadClientProjects");
+        this.state.showModal = false;
       } catch (error) {
         console.error(error);
       }
@@ -113,7 +116,9 @@ export default {
       this.state.isLoadingNo = true;
       try {
         await inviteService.rejectInvite(this.invitation[0].token);
-        location.reload();
+
+        this.$emit("loadClientProjects");
+        this.state.showModal = false;
       } catch (error) {
         console.error(error);
       }
