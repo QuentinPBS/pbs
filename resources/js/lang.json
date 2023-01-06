@@ -13,10 +13,12 @@
         "download" : "Download",
         "accept": "Accept",
         "error" : "An error has occured.",
+   
         "yes" : "Yes",
         "no": "No",
         "save": "Save",
         "payment" : "Payment",
+        
         "email" : {
             "email_sent_message" : "Email has been sent",
             "email_already_sent_message" : "Email already sent.",
@@ -40,7 +42,7 @@
             "first_name" : "First Name",
             "last_name" : "Last Name",
             "password" : "Password",
-            "password_confirmation" : "Confirm Password",
+            "password_confirmation" : "Password confirmation",
             "or" :"Or",
             "already_an_account" : "You already have an account ?",
             "sign_up":"Sign up",
@@ -71,7 +73,10 @@
          "reset_password": "Reset password",
          "or": "Or",
          "sign_in" : "Sign in",
-         "success" : "Mail has been sent"   
+         "success" : "Mail has been sent",
+         "change_password" : "Change password",
+         "new_password" : "New Password",
+         "updated": "Password has been updated successfully"     
         },
         "password_update" : {
             "success" : "Password updated successfuly" 
@@ -194,7 +199,10 @@
                 "reset_password": "Réinitialiser le mot de passe",
                 "or": "Ou",
                 "sign_in" : "Connectez-vous",   
-                "success" : "Un e-mail a été envoyé avec succés"   
+                "success" : "Un e-mail a été envoyé avec succés",   
+                "change_password" : "Changer mon mot de passe",
+                "new_password" : "Nouveau mot de passe" ,
+                "updated": "Mot de passe a été modifié avec succés"     
                },
                "password_update" : {
                 "success" : "Mot de passe a été modifié avec succés" 
@@ -280,5 +288,6 @@
         
         },
         "create_project" : " Créer un projet "
+       
     }
 }

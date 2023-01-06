@@ -25,8 +25,17 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'email' => 'required|email',
-            'password' => 'required|string|max:25|confirmed',
+            'password' => 'required|min:8|max:25',
+            'password_confirmation' => 'required|same:password',
             'token' => 'required|string',
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'password' => trans('pbs.password'),
+            'password_confirmation' => trans('pbs.password_confirmation'),
         ];
     }
 }

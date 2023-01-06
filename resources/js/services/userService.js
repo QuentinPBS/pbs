@@ -16,8 +16,10 @@ export default {
         return response.data;
     },
 
-    resetFormPasswordUser: async (data) => {
-        const response = await axios.post(`${APISettings.baseURL}/password/reset`, data);
+    resetFormPasswordUser: async (data, locale) => {
+        const response = await axios.post(`${APISettings.baseURL}/password/reset`, data, {
+            headers: { 'locale': locale }
+        });
         return response.data;
     },
 

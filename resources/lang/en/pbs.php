@@ -1,6 +1,7 @@
 <?php
 return [
-
+    "password" => "Password",
+    "password_confirmation" => "Password confirmation",
     "project" => [
 
         "name" =>  "Name of project"
