@@ -228,10 +228,10 @@ export default {
   components: {
     LangSwitch,
   },
-  watch : {
-    'state.status'(val)  {
-      this.state.errors = {}
-    }
+  watch: {
+    "state.status"(val) {
+      this.state.errors = {};
+    },
   },
   methods: {
     handleStatusChange: function () {
@@ -272,7 +272,6 @@ export default {
           this.state.errors = {};
         }
       } catch (e) {
-        
         this.state.errors = e.response.data.errors;
       } finally {
         this.state.isLoading = false;
