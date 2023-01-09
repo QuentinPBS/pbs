@@ -148,9 +148,9 @@ class StripeAccountController extends Controller
 
     public function makePayment(Request $request)
     {
-        $customerAccount = StripeAccount::where('status', 'success')->where('user_id', auth()->id())->firstOrFail();
+        $customerAccount = StripeAccount::where('status', 'success')->where('user_id', auth()->id())->where('type', 'customer')->firstOrFail();
         $feature = Feature::where('id', (int) request('feature_id'))->firstOrFail();
-        $prestaAccount = StripeAccount::where('status', 'success')->where('user_id', $feature->user_id)->firstOrFail();
+        $prestaAccount = StripeAccount::where('status', 'success')->where('user_id', $feature->user_id)->where('type', 'presta')->firstOrFail();
 
         $payment = Payment::create([
             'project_id'  => $feature->lead->project_id,

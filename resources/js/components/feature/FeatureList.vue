@@ -118,7 +118,7 @@
                   {{ $t("feature.step.validate_delivrable") }}
                 </button>
 
-                <span class="text-danger text-sm" v-if="isSuccess(feature)">
+                <span class="text-danger text-sm mmmmm" v-if="isSuccess(feature)">
                   {{ $t("feature.step.confirmed") }}</span
                 >
 
