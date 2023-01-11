@@ -394,7 +394,6 @@
     </vue-final-modal>
 
     <vue-final-modal
-      >>>>>>> features/stripe-integration
       v-model="state.showModalCreateStripeAccount" classes="modal-container"
       content-class="modal-content" >
       <div class="flex justify-between">
